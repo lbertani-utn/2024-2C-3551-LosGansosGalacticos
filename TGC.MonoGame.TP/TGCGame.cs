@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using TGC.MonoGame.TP.Cameras;
+using TGC.MonoGame.TP.Geometries.Textures;
 
 namespace TGC.MonoGame.TP
 {
@@ -39,12 +42,23 @@ namespace TGC.MonoGame.TP
 
         private GraphicsDeviceManager Graphics { get; }
         private SpriteBatch SpriteBatch { get; set; }
-        private Model Model { get; set; }
         private Effect Effect { get; set; }
+        private Random rnd = new Random();
+
+        private TargetCamera Camera { get; set; }
+        public static float CameraNearPlaneDistance { get; set; } = 1f;
+        public static float CameraFarPlaneDistance { get; set; } = 2000f;
+
+
+        // TODO crear clase para tanque jugador
+        private Model Model { get; set; }
         private float Rotation { get; set; }
+        private Vector3 Position { get; set; }
         private Matrix World { get; set; }
-        private Matrix View { get; set; }
-        private Matrix Projection { get; set; }
+
+        // terreno
+        private QuadPrimitive Terrain;
+        private List<Tree> Trees;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -53,20 +67,17 @@ namespace TGC.MonoGame.TP
         protected override void Initialize()
         {
             // La logica de inicializacion que no depende del contenido se recomienda poner en este metodo.
+            Terrain = new QuadPrimitive(Graphics.GraphicsDevice);
 
-            // Apago el backface culling.
-            // Esto se hace por un problema en el diseno del modelo del logo de la materia.
-            // Una vez que empiecen su juego, esto no es mas necesario y lo pueden sacar.
-            var rasterizerState = new RasterizerState();
-            rasterizerState.CullMode = CullMode.None;
-            GraphicsDevice.RasterizerState = rasterizerState;
-            // Seria hasta aca.
+            Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
+            Camera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
 
             // Configuramos nuestras matrices de la escena.
-            World = Matrix.Identity;
-            View = Matrix.CreateLookAt(Vector3.UnitZ * 150, Vector3.Zero, Vector3.Up);
-            Projection =
-                Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, 1, 250);
+            Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
+            World = Matrix.CreateTranslation(Position);
+
+            Trees = new List<Tree>();
+            Random rnd = new Random();
 
             base.Initialize();
         }
@@ -81,13 +92,13 @@ namespace TGC.MonoGame.TP
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // Cargo el modelo del logo.
-            Model = Content.Load<Model>(ContentFolder3D + "tgc-logo/tgc-logo");
-
             // Cargo un efecto basico propio declarado en el Content pipeline.
             // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
             Effect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
 
+            // Cargo el tanque
+            // TODO mover esto a su clase
+            Model = Content.Load<Model>(ContentFolder3D + "tank/tank");
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.
             foreach (var mesh in Model.Meshes)
@@ -98,6 +109,23 @@ namespace TGC.MonoGame.TP
                     meshPart.Effect = Effect;
                 }
             }
+
+            // Cargo el árbol
+            // TODO mover esto a su clase
+            Tree.Model = Content.Load<Model>(ContentFolder3D + "tree/tree");
+            Tree.Random = rnd;
+            // Asigno el efecto que cargue a cada parte del mesh.
+            // Un modelo puede tener mas de 1 mesh internamente.
+            foreach (var mesh in Tree.Model.Meshes)
+            {
+                // Un mesh puede tener mas de 1 mesh part (cada 1 puede tener su propio efecto).
+                foreach (var meshPart in mesh.MeshParts)
+                {
+                    meshPart.Effect = Effect;
+                }
+            }
+
+            LoadTrees();
 
             base.LoadContent();
         }
@@ -110,18 +138,48 @@ namespace TGC.MonoGame.TP
         protected override void Update(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logica de actualizacion del juego.
+            float elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
 
             // Capturar Input teclado
-            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+            var keyboardState = Keyboard.GetState();
+            if (keyboardState.IsKeyDown(Keys.Escape))
             {
-                //Salgo del juego.
+                // Salgo del juego.
                 Exit();
             }
-            
-            // Basado en el tiempo que paso se va generando una rotacion.
-            Rotation += Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
 
-            World = Matrix.CreateRotationY(Rotation);
+            float direction = 0f;
+            
+            // TODO revisar dirección rotación y avance/retroceso
+            if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)))
+            {
+                Rotation -= elapsedTime;
+            }
+            else if ((keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A)))
+            {
+                Rotation += elapsedTime;
+            }
+            else if (keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W))
+            {
+                direction = elapsedTime;
+            }
+            else if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S))
+            {
+                direction = -elapsedTime;
+            }
+
+
+            Matrix RotationMatrix = Matrix.CreateRotationY(Rotation);
+            Vector3 movement = direction * RotationMatrix.Forward * 25;  // TODO definir velocidad
+            Position = Position + movement;
+            World = Matrix.CreateScale(0.01f) * Matrix.CreateRotationY(Rotation) * Matrix.CreateTranslation(Position); // TODO definir escala tanque
+
+            Terrain.World = Matrix.Identity * Matrix.CreateScale(100f); // TODO definir escala terreno
+
+            Camera.TargetPosition = Position + RotationMatrix.Forward * 10; // TODO revisar posición objetivo 
+            Camera.Position = Position + RotationMatrix.Backward * 20 + Vector3.UnitY * 10; // TODO revisar posición cámara
+            Camera.BuildView();
+
 
             base.Update(gameTime);
         }
@@ -135,16 +193,29 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
 
+            // terreno
+            Terrain.Draw(Camera.View, Camera.Projection, Effect, new Vector3(0.50f, 1.00f, 0.00f));
+
+
+            // árboles
+            foreach (Tree t in Trees)
+            {
+                t.Draw(Camera.View, Camera.Projection, Effect);
+            }
+
+
+            // tanque
             // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
-            Effect.Parameters["View"].SetValue(View);
-            Effect.Parameters["Projection"].SetValue(Projection);
-            Effect.Parameters["DiffuseColor"].SetValue(Color.DarkBlue.ToVector3());
+            Effect.Parameters["View"].SetValue(Camera.View);
+            Effect.Parameters["Projection"].SetValue(Camera.Projection);
+            Effect.Parameters["DiffuseColor"].SetValue(new Vector3(0.33f,0.33f,0.20f));
 
             foreach (var mesh in Model.Meshes)
             {
                 Effect.Parameters["World"].SetValue(mesh.ParentBone.Transform * World);
                 mesh.Draw();
             }
+
         }
 
         /// <summary>
@@ -157,5 +228,22 @@ namespace TGC.MonoGame.TP
 
             base.UnloadContent();
         }
+
+        private void LoadTrees()
+        {
+            for (int i = 0; i < 100; i++)
+            {
+                float x = (float) rnd.NextDouble() * 200f - 100f;
+                float y = 0;
+                float z = (float) rnd.NextDouble() * 200f - 100f;
+                float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
+
+                Tree t = new Tree(new Vector3(x,y,z),rot);
+                Trees.Add(t);
+                
+            }
+        }
+        
+
     }
 }
