@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
+using TGC.MonoGame.TP.Tank;
 
 namespace TGC.MonoGame.TP
 {
@@ -43,6 +44,7 @@ namespace TGC.MonoGame.TP
         }
 
         private GraphicsDeviceManager Graphics { get; }
+        private Point ScreenCenter;
         private SpriteBatch SpriteBatch { get; set; }
         private Effect Effect { get; set; }
         private Random rnd = new Random();
@@ -54,9 +56,15 @@ namespace TGC.MonoGame.TP
 
         // TODO crear clase para tanque jugador
         private Model Model { get; set; }
+        private Steamroller Tank;
         private float Rotation;
         private Vector3 Position;
         private Matrix World { get; set; }
+        private float Velocidad = 0f;
+        private const float VelocidadIncremento = 0.5f;
+        private const float VelocidadMaxima = 12;
+        private const float Rozamiento = 0.05f;
+
 
         // terreno
         private Terrain terrain;
@@ -64,8 +72,11 @@ namespace TGC.MonoGame.TP
         private List<WorldEntity> Entities;
 
         // Mapeo de teclas
-        private Dictionary<Keys, BindingAction> KeyBindings;
+        //private Dictionary<Keys, BindingAction> KeyBindings;
+        private KeyboardState currentKeyboardState;
         private KeyboardState previousKeyboardState;
+        private MouseState currentMouseState;
+        private MouseState previousMouseState;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -74,17 +85,19 @@ namespace TGC.MonoGame.TP
         protected override void Initialize()
         {
             // La logica de inicializacion que no depende del contenido se recomienda poner en este metodo.
+            ScreenCenter = new Point(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
+            Mouse.SetPosition(ScreenCenter.X, ScreenCenter.Y);
 
-            KeyBindings = new() {
-                {Keys.W, BindingLogic.PositiveDirection},
-                {Keys.Up, BindingLogic.PositiveDirection},
-                {Keys.A, BindingLogic.PositiveRotation},
-                {Keys.Left, BindingLogic.PositiveRotation},
-                {Keys.S, BindingLogic.NegativeDirection},
-                {Keys.Down, BindingLogic.NegativeDirection},
-                {Keys.D, BindingLogic.NegativeRotation},
-                {Keys.Right, BindingLogic.NegativeRotation},
-            };
+            //KeyBindings = new() {
+            //    {Keys.W, BindingLogic.PositiveDirection},
+            //    {Keys.Up, BindingLogic.PositiveDirection},
+            //    {Keys.A, BindingLogic.PositiveRotation},
+            //    {Keys.Left, BindingLogic.PositiveRotation},
+            //    {Keys.S, BindingLogic.NegativeDirection},
+            //    {Keys.Down, BindingLogic.NegativeDirection},
+            //    {Keys.D, BindingLogic.NegativeRotation},
+            //    {Keys.Right, BindingLogic.NegativeRotation},
+            //};
 
             Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero)
             {
@@ -118,6 +131,10 @@ namespace TGC.MonoGame.TP
             // Cargo el tanque
             // TODO mover esto a su clase
             Model = Content.Load<Model>(ContentFolder3D + "tank/tank");
+            ApplyEffect(Model, Effect);
+            Tank = new Steamroller();
+            Tank.Load(Model);
+
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.
             foreach (var mesh in Model.Meshes)
@@ -150,37 +167,84 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logica de actualizacion del juego.
             float elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
 
-            float direction = 0f;
 
-            // Capturar Input teclado
-            var newKeyboardState = Keyboard.GetState();
-            if (newKeyboardState.IsKeyDown(Keys.Escape))
+            // Capturar Input teclado y mouse
+            previousKeyboardState = currentKeyboardState;
+            previousMouseState = currentMouseState;
+            currentKeyboardState = Keyboard.GetState();
+            currentMouseState = Mouse.GetState();
+
+
+            if (currentKeyboardState.IsKeyDown(Keys.Escape))
             {
                 // Salgo del juego.
                 Exit();
-            } else if (newKeyboardState.IsKeyDown(Keys.L) && !previousKeyboardState.IsKeyDown(Keys.L)) {
-                Console.WriteLine(World.Translation.ToString());
-                //Terrain.GetPositionHeight(World.Translation.X, World.Translation.Z, 0, true);
-            } else {
-                foreach (Keys key in newKeyboardState.GetPressedKeys().Intersect(KeyBindings.Keys)) {
-                    KeyBindings[key](ref Rotation, ref direction, elapsedTime);
-                }
             }
-            previousKeyboardState = newKeyboardState;
+
+            // rozamiento
+            if (Velocidad > 0)
+            {
+                Velocidad = MathHelper.Clamp(Velocidad - Rozamiento, 0, VelocidadMaxima);
+            }
+            else if (Velocidad < 0)
+            {
+                Velocidad = MathHelper.Clamp(Velocidad + Rozamiento, -VelocidadMaxima, 0);
+            }
+
+            // dirección rotación
+            if ((currentKeyboardState.IsKeyDown(Keys.Right) || currentKeyboardState.IsKeyDown(Keys.D)))
+            {
+                Rotation -= elapsedTime;
+                Tank.SteerRotation -= elapsedTime;
+            }
+            else if ((currentKeyboardState.IsKeyDown(Keys.Left) || currentKeyboardState.IsKeyDown(Keys.A)))
+            {
+                Rotation += elapsedTime;
+                Tank.SteerRotation += elapsedTime;
+            }
+
+            // avance/retroceso
+            if (currentKeyboardState.IsKeyDown(Keys.Up) || currentKeyboardState.IsKeyDown(Keys.W))
+            {
+                Velocidad = MathHelper.Clamp(Velocidad + VelocidadIncremento, -VelocidadMaxima, VelocidadMaxima);
+            }
+            else if (currentKeyboardState.IsKeyDown(Keys.Down) || currentKeyboardState.IsKeyDown(Keys.S))
+            {
+                Velocidad = MathHelper.Clamp(Velocidad - VelocidadIncremento, -VelocidadMaxima, VelocidadMaxima);
+            }
+
+            // torreta y cañon
+            Vector2 mousePosition = currentMouseState.Position.ToVector2();
+            if (mousePosition.X < ScreenCenter.X * 0.667f)
+            {
+                Tank.TurretRotation -= elapsedTime;
+            }
+            else if (mousePosition.X > ScreenCenter.X * 1.334f)
+            {
+                Tank.TurretRotation += elapsedTime;
+            }
+
+            if (mousePosition.Y < ScreenCenter.Y * 0.667f)
+            {
+                Tank.CannonRotation += elapsedTime;
+            }
+            else if (mousePosition.Y > ScreenCenter.Y * 1.334f)
+            {
+                Tank.CannonRotation -= elapsedTime;
+            }
 
             Matrix RotationMatrix = Matrix.CreateRotationY(Rotation);
-            Vector3 movement = direction * RotationMatrix.Forward * 25;  // TODO definir velocidad
-            Position += movement;
-            Position.Y = 2f + Terrain.GetPositionHeight(Position.X, Position.Z);
-            World = Matrix.CreateScale(0.01f) * Matrix.CreateRotationY(Rotation) * Matrix.CreateTranslation(Position); // TODO definir escala tanque
+            Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(Rotation + Tank.TurretRotation, -Tank.CannonRotation, 0f);
 
-            // Mostrar entidades cercanas en el SpacialGrid
-            // Entities.ForEach(t => terrain.spacialMap.GetNearbyEntities(t).AsParallel().ForAll(
-            //     (collisionData) => collisionData.entity.DebugCollision(collisionData))
-            // );
+            Vector3 movement = RotationMatrix.Forward * Velocidad * elapsedTime;
+            Position = Position + movement;
+            Position.Y = Terrain.GetPositionHeight(Position.X, Position.Z);
+            World = Matrix.CreateScale(0.01f) * Matrix.CreateRotationY(Rotation + MathHelper.Pi) * Matrix.CreateTranslation(Position); // TODO definir escala tanque
 
-            Camera.TargetPosition = Position + RotationMatrix.Forward * 10; // TODO revisar posición objetivo 
-            Camera.Position = Position + RotationMatrix.Backward * 90 + Vector3.UnitY * 50; // TODO revisar posición cámara
+            Tank.WheelRotation += (Velocidad * elapsedTime / 8f); // TODO revisar esta fórmula
+
+            Camera.TargetPosition = Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
+            Camera.Position = Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
             Camera.BuildView();
 
             base.Update(gameTime);
@@ -204,18 +268,7 @@ namespace TGC.MonoGame.TP
                 e.Draw(Camera.View, Camera.Projection, Effect);
             }
 
-            // tanque
-            // Para dibujar le modelo necesitamos pasarle informacion que el efecto esta esperando.
-            Effect.Parameters["View"].SetValue(Camera.View);
-            Effect.Parameters["Projection"].SetValue(Camera.Projection);
-            Effect.Parameters["DiffuseColor"].SetValue(new Vector3(0.33f,0.33f,0.20f));
-
-            foreach (var mesh in Model.Meshes)
-            {
-                Effect.Parameters["World"].SetValue(mesh.ParentBone.Transform * World);
-                mesh.Draw();
-            }
-
+            Tank.Draw(World, Camera.View, Camera.Projection, Effect);
         }
 
         /// <summary>
@@ -256,5 +309,20 @@ namespace TGC.MonoGame.TP
                 }
             }
         }
+
+                private void ApplyEffect(Model model, Effect effect)
+        {
+            // Asigno el efecto que cargue a cada parte del mesh.
+            // Un modelo puede tener mas de 1 mesh internamente.
+            foreach (var mesh in model.Meshes)
+            {
+                // Un mesh puede tener mas de 1 mesh part (cada 1 puede tener su propio efecto).
+                foreach (var meshPart in mesh.MeshParts)
+                {
+                    meshPart.Effect = effect;
+                }
+            }
+        }
+
     }
 }
