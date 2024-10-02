@@ -5,19 +5,27 @@ using System;
 
 namespace TGC.MonoGame.TP
 {
-    internal class Tree : WorldEntity
+    internal class Rock : WorldEntity
     {
         public static Model Model;
+        private readonly float moduloCorrimiento = 10.75f;
+        private readonly float anguloCorrimiento = 0.1f;
+        private readonly float alturaCorrimiento = 0.0f;
 
-        public Tree(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
+        public Rock(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
-            _world = Matrix.CreateScale(scale) *  Matrix.CreateRotationX(-MathHelper.PiOver2) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position);
+            // Modelo local está descentrado del origen de coordenadas
+            _yaw = yaw - MathHelper.Pi - anguloCorrimiento;
+            _world = Matrix.CreateScale(scale) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position - new Vector3(-(float)Math.Cos(yaw),alturaCorrimiento,(float)Math.Sin(yaw)) * moduloCorrimiento);
+
+            // Console.WriteLine(_world.Translation.ToString());
+
             _defaultColor = GetDefaultColor();
         }
 
         public static void LoadContent(ContentManager Content, Effect Effect)
         {
-            Model = LoadContent(Content, "tree/tree", Effect);
+            Model = LoadContent(Content, "rock/rock", Effect);
         }
 
         protected void Update(GameTime gameTime)
@@ -27,9 +35,10 @@ namespace TGC.MonoGame.TP
 
         public override Vector3 GetDefaultColor()
         {
-            float r = (float)(Random.NextDouble() * 0.2f) + 0.2f;
-            float g = (float)(Random.NextDouble() * 0.2f) + 0.8f;
-            float b = (float)(Random.NextDouble() * 0.5f);
+            var num = Random.NextDouble() * 0.3f + 0.3f;
+            float r = (float)(num + Random.NextDouble() * 0.05f);
+            float g = (float)(num + Random.NextDouble() * 0.05f);
+            float b = (float)(num + Random.NextDouble() * 0.05f);
 
             return new Vector3(r, g, b);
         }

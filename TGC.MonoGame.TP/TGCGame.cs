@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -57,14 +59,13 @@ namespace TGC.MonoGame.TP
         private Matrix World { get; set; }
 
         // terreno
-        //private QuadPrimitive Terrain;
-
         private Terrain terrain;
 
-        private List<Tree> Trees;
+        private List<WorldEntity> Entities;
 
         // Mapeo de teclas
         private Dictionary<Keys, BindingAction> KeyBindings;
+        private KeyboardState previousKeyboardState;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -73,7 +74,6 @@ namespace TGC.MonoGame.TP
         protected override void Initialize()
         {
             // La logica de inicializacion que no depende del contenido se recomienda poner en este metodo.
-            //Terrain = new QuadPrimitive(Graphics.GraphicsDevice);
 
             KeyBindings = new() {
                 {Keys.W, BindingLogic.PositiveDirection},
@@ -95,8 +95,8 @@ namespace TGC.MonoGame.TP
             Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
             World = Matrix.CreateTranslation(Position);
 
-            Trees = new List<Tree>();
-            Random rnd = new Random();
+            Entities = new List<WorldEntity>();
+            Random rnd = new();
 
             base.Initialize();
         }
@@ -129,26 +129,15 @@ namespace TGC.MonoGame.TP
                 }
             }
 
-            terrain = new(this, Effect, GraphicsDevice, new(200.0f, 200.0f), 1f);
+            terrain = new(this, Effect, GraphicsDevice, (200.0f, 200.0f), 1f);
 
-            // Cargo el árbol
-            // TODO mover esto a su clase
-            Tree.Model = Content.Load<Model>(ContentFolder3D + "tree/tree");
-            Tree.Random = rnd;
-            // Asigno el efecto que cargue a cada parte del mesh.
-            // Un modelo puede tener mas de 1 mesh internamente.
-            foreach (var mesh in Tree.Model.Meshes)
-            {
-                // Un mesh puede tener mas de 1 mesh part (cada 1 puede tener su propio efecto).
-                foreach (var meshPart in mesh.MeshParts)
-                {
-                    meshPart.Effect = Effect;
-                }
-            }
+            Tree.LoadContent(Content, Effect);
+            Rock.LoadContent(Content, Effect);
 
-            LoadTrees();
+            LoadSurfaceObjects();
 
             base.LoadContent();
+            previousKeyboardState = Keyboard.GetState();
         }
 
         /// <summary>
@@ -164,22 +153,31 @@ namespace TGC.MonoGame.TP
             float direction = 0f;
 
             // Capturar Input teclado
-            var keyboardState = Keyboard.GetState();
-            if (keyboardState.IsKeyDown(Keys.Escape))
+            var newKeyboardState = Keyboard.GetState();
+            if (newKeyboardState.IsKeyDown(Keys.Escape))
             {
                 // Salgo del juego.
                 Exit();
+            } else if (newKeyboardState.IsKeyDown(Keys.L) && !previousKeyboardState.IsKeyDown(Keys.L)) {
+                Console.WriteLine(World.Translation.ToString());
+                //Terrain.GetPositionHeight(World.Translation.X, World.Translation.Z, 0, true);
             } else {
-                foreach (Keys key in keyboardState.GetPressedKeys().Intersect(KeyBindings.Keys)) {
+                foreach (Keys key in newKeyboardState.GetPressedKeys().Intersect(KeyBindings.Keys)) {
                     KeyBindings[key](ref Rotation, ref direction, elapsedTime);
                 }
             }
+            previousKeyboardState = newKeyboardState;
 
             Matrix RotationMatrix = Matrix.CreateRotationY(Rotation);
             Vector3 movement = direction * RotationMatrix.Forward * 25;  // TODO definir velocidad
             Position += movement;
             Position.Y = 2f + Terrain.GetPositionHeight(Position.X, Position.Z);
             World = Matrix.CreateScale(0.01f) * Matrix.CreateRotationY(Rotation) * Matrix.CreateTranslation(Position); // TODO definir escala tanque
+
+            // Mostrar entidades cercanas en el SpacialGrid
+            // Entities.ForEach(t => terrain.spacialMap.GetNearbyEntities(t).AsParallel().ForAll(
+            //     (collisionData) => collisionData.entity.DebugCollision(collisionData))
+            // );
 
             Camera.TargetPosition = Position + RotationMatrix.Forward * 10; // TODO revisar posición objetivo 
             Camera.Position = Position + RotationMatrix.Backward * 90 + Vector3.UnitY * 50; // TODO revisar posición cámara
@@ -200,10 +198,10 @@ namespace TGC.MonoGame.TP
             // terreno
             terrain.Draw(GraphicsDevice, Effect);
 
-            // árboles
-            foreach (Tree t in Trees)
+            foreach (WorldEntity e in Entities)
             {
-                t.Draw(Camera.View, Camera.Projection, Effect);
+                terrain.spacialMap.Update(e);
+                e.Draw(Camera.View, Camera.Projection, Effect);
             }
 
             // tanque
@@ -231,27 +229,32 @@ namespace TGC.MonoGame.TP
             base.UnloadContent();
         }
 
-        private void LoadTrees()
+        private void LoadSurfaceObjects()
         {
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 200; i++)
             {
+                // posición
                 float x = (float) rnd.NextDouble() * 200f - 100f;
                 float z = (float) rnd.NextDouble() * 200f - 100f;
                 float y = Terrain.GetPositionHeight(x,z);
-                
-                // if (y % 1 != 0) {
-                //     Console.WriteLine("(" + x + ", " + z + "): " + y);
-                //     Console.WriteLine();
-                // }
 
+                // escala
+                float height = (float)rnd.NextDouble() * 0.4f + 0.8f;
+                float width = (float)rnd.NextDouble() * 0.4f + 0.8f;
+
+                // rotación
                 float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
 
-                Tree t = new(new Vector3(x,y,z),rot);
-                Trees.Add(t);
-                
+                if (rnd.NextDouble() > 0.5f) {
+                    Tree t = new(new Vector3(x,y,z), new Vector3(width, height, width), rot);
+                    Entities.Add(t);
+                    terrain.spacialMap.Add(t);
+                } else {
+                    Rock r = new(new Vector3(x,y,z), new Vector3(width, height, width), rot);
+                    Entities.Add(r);
+                    terrain.spacialMap.Add(r);
+                }
             }
         }
-        
-
     }
 }

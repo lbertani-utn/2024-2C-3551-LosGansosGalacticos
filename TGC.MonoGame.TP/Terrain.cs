@@ -10,7 +10,10 @@ namespace TGC.MonoGame.TP
         private Vector3 _defaultColor;
         private Matrix _world;
 
+        public readonly SpacialMap spacialMap;
+
         private readonly Effect effect;
+        private readonly GraphicsDevice _graphicsDevice;
 
         private static Texture2D HeightData;
         private static Color[] Texels;
@@ -20,9 +23,9 @@ namespace TGC.MonoGame.TP
         private readonly int primitiveCount;
         private readonly int quadsCount;
         private static float HeightScale;
-        private static Vector2 TerrainSize;
+        private static (float X, float Z) TerrainSize;
 
-        public Terrain(Game game, Effect effect, GraphicsDevice GraphicsDevice, Vector2 terrainSize, float heightScale)
+        public Terrain(Game game, Effect effect, GraphicsDevice GraphicsDevice, (float X, float Z) terrainSize, float heightScale)
         {
             HeightData = game.Content.Load<Texture2D>(ContentFolderModels + "terrain/heightmap");
             Texels = new Color[HeightData.Width * HeightData.Height];
@@ -32,15 +35,18 @@ namespace TGC.MonoGame.TP
             this.effect = effect;
 
             _world = Matrix.Identity;
+            _graphicsDevice = GraphicsDevice;
 
-            vertexBuffer = new(GraphicsDevice, VertexPosition.VertexDeclaration, HeightData.Width * HeightData.Height, BufferUsage.None);
-            indexBuffer = new(GraphicsDevice, IndexElementSize.SixteenBits, 6 * quadsCount, BufferUsage.None);
+            vertexBuffer = new(_graphicsDevice, VertexPosition.VertexDeclaration, HeightData.Width * HeightData.Height, BufferUsage.None);
+            indexBuffer = new(_graphicsDevice, IndexElementSize.SixteenBits, 6 * quadsCount, BufferUsage.None);
 
             GenerateTerrainMesh(TerrainSize = terrainSize, HeightScale = heightScale);
+
+            spacialMap = new(terrainSize, (25, 25));
         }
 
-        public static float GetPositionHeight(float x, float z, float outOfTerrainHeight = 0.0f) {
-            if (x < (-TerrainSize.X / 2) || x > (TerrainSize.X / 2) || z < (-TerrainSize.Y / 2) || z > (TerrainSize.Y / 2)) {
+        public static float GetPositionHeight(float x, float z, float outOfTerrainHeight = 0.0f, bool verbose = false) {
+            if (x < (-TerrainSize.X / 2) || x > (TerrainSize.X / 2) || z < (-TerrainSize.Z / 2) || z > (TerrainSize.Z / 2)) {
                 return outOfTerrainHeight;
             } else {
                 float xFloatIndex = (x + (TerrainSize.X / 2)) * (HeightData.Width - 1) / TerrainSize.X; // Unscale position and move it to range from 0 to HeightData.Width - 1
@@ -48,7 +54,7 @@ namespace TGC.MonoGame.TP
                 float xIndexFracPart = xFloatIndex - xIndex;
                 int nextXIndex = xIndex + 1;
 
-                float zFloatIndex = (z + (TerrainSize.Y / 2)) * (HeightData.Height - 1) / TerrainSize.Y; // Unscale position and move it to range from 0 to HeightData.Width - 1
+                float zFloatIndex = (z + (TerrainSize.Z / 2)) * (HeightData.Height - 1) / TerrainSize.Z; // Unscale position and move it to range from 0 to HeightData.Width - 1
                 int zIndex = (int) zFloatIndex;
                 float zIndexFracPart = zFloatIndex - zIndex;
                 int nextZIndex = zIndex + 1;
@@ -71,27 +77,26 @@ namespace TGC.MonoGame.TP
                     zIndexFracPart = 1 - zIndexFracPart;
                 }
 
-                // if (height == nextHeightX && nextHeightX == nextHeightZ) {}
-                // else {
-                //     Console.WriteLine("XFloatIndex: " + xFloatIndex);
-                //     Console.WriteLine("ZFloatIndex: " + zFloatIndex);
-                //     Console.WriteLine("X: " + xIndex + ", Z: " + zIndex + ", Height: " + Texels[zIndex * HeightData.Width + xIndex].R * HeightScale);
-                //     Console.WriteLine("X + 1: " + nextXIndex + ", Z: " + zIndex + ", Height: " + Texels[zIndex * HeightData.Width + nextXIndex].R * HeightScale);
-                //     Console.WriteLine("X: " + xIndex + ", Z + 1: " + nextZIndex + ", Height: " + Texels[nextZIndex * HeightData.Width + xIndex].R * HeightScale);
-                //     Console.WriteLine("X + 1: " + nextXIndex + ", Z + 1: " + nextZIndex + ", Height: " + Texels[nextZIndex * HeightData.Width + nextXIndex].R * HeightScale);
-                //     Console.WriteLine("Height Output: " + (height + (nextHeightX - height) * xIndexFracPart + (nextHeightZ - height) * zIndexFracPart));
-                // }
+                if (verbose) {
+                    Console.WriteLine("XFloatIndex: " + xFloatIndex);
+                    Console.WriteLine("ZFloatIndex: " + zFloatIndex);
+                    Console.WriteLine("X: " + xIndex + ", Z: " + zIndex + ", Height: " + Texels[zIndex * HeightData.Width + xIndex].R * HeightScale);
+                    Console.WriteLine("X + 1: " + nextXIndex + ", Z: " + zIndex + ", Height: " + Texels[zIndex * HeightData.Width + nextXIndex].R * HeightScale);
+                    Console.WriteLine("X: " + xIndex + ", Z + 1: " + nextZIndex + ", Height: " + Texels[nextZIndex * HeightData.Width + xIndex].R * HeightScale);
+                    Console.WriteLine("X + 1: " + nextXIndex + ", Z + 1: " + nextZIndex + ", Height: " + Texels[nextZIndex * HeightData.Width + nextXIndex].R * HeightScale);
+                    Console.WriteLine("Height Output: " + (height + (nextHeightX - height) * xIndexFracPart + (nextHeightZ - height) * zIndexFracPart));
+                }
 
                 return height + (nextHeightX - height) * xIndexFracPart + (nextHeightZ - height) * zIndexFracPart;
             }
         }
 
-        public void GenerateTerrainMesh(Vector2 terrainSize, float heightScale) {
+        public void GenerateTerrainMesh((float X, float Z) terrainSize, float heightScale) {
             HeightData.GetData(Texels);
 
             float scaleX = terrainSize.X / (HeightData.Width - 1);
             float scaleY = heightScale;
-            float scaleZ = terrainSize.Y / (HeightData.Height - 1);
+            float scaleZ = terrainSize.Z / (HeightData.Height - 1);
             float offsetX = scaleX * (HeightData.Width - 1) / 2;
             float offsetZ = scaleZ * (HeightData.Height - 1) / 2;
 
@@ -100,7 +105,7 @@ namespace TGC.MonoGame.TP
             for (int j = 0; j < HeightData.Height; j++) {
                 for (int i = 0; i < HeightData.Width; i++) {
                     float height = Texels[j * HeightData.Width + i].R * scaleY;
-                    // Console.Write(height.ToString("0.##") + "\t");
+                    // Console.Write(height.ToString() + ";");
                     Vector3 position = new(
                         i * scaleX - offsetX,
                         height,
@@ -142,14 +147,14 @@ namespace TGC.MonoGame.TP
 
         public void Draw(GraphicsDevice GraphicsDevice, Effect effect)
         {
-            effect.Parameters["World"].SetValue(_world);
-            effect.Parameters["DiffuseColor"].SetValue(_defaultColor);
+            this.effect.Parameters["World"].SetValue(_world);
+            this.effect.Parameters["DiffuseColor"].SetValue(_defaultColor);
 
-            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            GraphicsDevice.SetVertexBuffer(vertexBuffer);
-            GraphicsDevice.Indices = indexBuffer;
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-            GraphicsDevice.BlendState = BlendState.Opaque;
+            _graphicsDevice.DepthStencilState = DepthStencilState.Default;
+            _graphicsDevice.SetVertexBuffer(vertexBuffer);
+            _graphicsDevice.Indices = indexBuffer;
+            _graphicsDevice.RasterizerState = RasterizerState.CullNone;
+            _graphicsDevice.BlendState = BlendState.Opaque;
 
             foreach (var pass in effect.CurrentTechnique.Passes)
             {
