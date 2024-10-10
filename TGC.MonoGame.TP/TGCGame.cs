@@ -52,6 +52,8 @@ namespace TGC.MonoGame.TP
         private TargetCamera Camera { get; set; }
         public static float CameraNearPlaneDistance { get; set; } = 1f;
         public static float CameraFarPlaneDistance { get; set; } = 2000f;
+        private const float camX = 0.2f;
+        private const float camY = -0.1f;
 
 
         // TODO crear clase para tanque jugador
@@ -73,9 +75,9 @@ namespace TGC.MonoGame.TP
 
         // Mapeo de teclas
         //private Dictionary<Keys, BindingAction> KeyBindings;
-        private KeyboardState currentKeyboardState;
+        private KeyboardState keyboardState;
         private KeyboardState previousKeyboardState;
-        private MouseState currentMouseState;
+        private MouseState mouseState;
         private MouseState previousMouseState;
 
         /// <summary>
@@ -169,13 +171,14 @@ namespace TGC.MonoGame.TP
 
 
             // Capturar Input teclado y mouse
-            previousKeyboardState = currentKeyboardState;
-            previousMouseState = currentMouseState;
-            currentKeyboardState = Keyboard.GetState();
-            currentMouseState = Mouse.GetState();
+            previousKeyboardState = keyboardState;
+            previousMouseState = mouseState;
+            keyboardState = Keyboard.GetState();
+            mouseState = Mouse.GetState();
+            float mouseDeltaX = previousMouseState.Position.X - mouseState.Position.X;
+            float mouseDeltaY = previousMouseState.Position.Y - mouseState.Position.Y;
 
-
-            if (currentKeyboardState.IsKeyDown(Keys.Escape))
+            if (keyboardState.IsKeyDown(Keys.Escape))
             {
                 // Salgo del juego.
                 Exit();
@@ -192,46 +195,30 @@ namespace TGC.MonoGame.TP
             }
 
             // dirección rotación
-            if ((currentKeyboardState.IsKeyDown(Keys.Right) || currentKeyboardState.IsKeyDown(Keys.D)))
+            if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)))
             {
                 Rotation -= elapsedTime;
                 Tank.SteerRotation -= elapsedTime;
             }
-            else if ((currentKeyboardState.IsKeyDown(Keys.Left) || currentKeyboardState.IsKeyDown(Keys.A)))
+            else if ((keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A)))
             {
                 Rotation += elapsedTime;
                 Tank.SteerRotation += elapsedTime;
             }
 
             // avance/retroceso
-            if (currentKeyboardState.IsKeyDown(Keys.Up) || currentKeyboardState.IsKeyDown(Keys.W))
+            if (keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W))
             {
                 Velocidad = MathHelper.Clamp(Velocidad + VelocidadIncremento, -VelocidadMaxima, VelocidadMaxima);
             }
-            else if (currentKeyboardState.IsKeyDown(Keys.Down) || currentKeyboardState.IsKeyDown(Keys.S))
+            else if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S))
             {
                 Velocidad = MathHelper.Clamp(Velocidad - VelocidadIncremento, -VelocidadMaxima, VelocidadMaxima);
             }
 
             // torreta y cañon
-            Vector2 mousePosition = currentMouseState.Position.ToVector2();
-            if (mousePosition.X < ScreenCenter.X * 0.667f)
-            {
-                Tank.TurretRotation -= elapsedTime;
-            }
-            else if (mousePosition.X > ScreenCenter.X * 1.334f)
-            {
-                Tank.TurretRotation += elapsedTime;
-            }
-
-            if (mousePosition.Y < ScreenCenter.Y * 0.667f)
-            {
-                Tank.CannonRotation += elapsedTime;
-            }
-            else if (mousePosition.Y > ScreenCenter.Y * 1.334f)
-            {
-                Tank.CannonRotation -= elapsedTime;
-            }
+            Tank.TurretRotation += mouseDeltaX * elapsedTime * camX;
+            Tank.CannonRotation += mouseDeltaY * elapsedTime * camY;
 
             Matrix RotationMatrix = Matrix.CreateRotationY(Rotation);
             Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(Rotation + Tank.TurretRotation, -Tank.CannonRotation, 0f);
@@ -310,7 +297,7 @@ namespace TGC.MonoGame.TP
             }
         }
 
-                private void ApplyEffect(Model model, Effect effect)
+        private void ApplyEffect(Model model, Effect effect)
         {
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.

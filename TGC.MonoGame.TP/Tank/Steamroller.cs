@@ -14,7 +14,8 @@ namespace TGC.MonoGame.TP.Tank
     {
 
         protected Vector3[] DiffuseColors;
-        private const float PiOver6 = 0.52356f;
+        private const float PiOver6 =  0.52356f;
+        private const float PiOver12 = 0.26180f;
 
         public Vector3 position { get; set; }
         public Vector3 scale { get; set; }
@@ -42,7 +43,7 @@ namespace TGC.MonoGame.TP.Tank
             get => _turretRotation;
             set => _turretRotation = MathHelper.Clamp(value, -MathHelper.PiOver4, MathHelper.PiOver4);
         }
-        private float _cannonRotation;
+        private float _cannonRotation = -PiOver12;
         public float CannonRotation
         {
             get => _cannonRotation;
@@ -112,12 +113,12 @@ namespace TGC.MonoGame.TP.Tank
             boneTransforms = new Matrix[tankModel.Bones.Count];
 
             // default colors
-            Vector3 hullColor = new Vector3(0.7f, 0.7f, 0.7f);
-            Vector3 engineColor = new Vector3(0.5f, 0.5f, 0.5f);
-            Vector3 steerColor = new Vector3(0.3f, 0.3f, 0.3f);
+            Vector3 hullColor = new Vector3(0.3f, 0.3f, 0.3f);
+            Vector3 engineColor = new Vector3(0.4f, 0.4f, 0.4f);
+            Vector3 steerColor = new Vector3(0.2f, 0.2f, 0.2f);
             Vector3 wheelColor = new Vector3(0.1f, 0.1f, 0.1f);
-            Vector3 turretColor = new Vector3(0.3f, 0.3f, 0.3f);
-            Vector3 cannonColor = new Vector3(0.1f, 0.1f, 0.1f);
+            Vector3 turretColor = new Vector3(0.2f, 0.2f, 0.2f);
+            Vector3 cannonColor = new Vector3(0.3f, 0.3f, 0.3f);
             Vector3 hatchColor = new Vector3(0.3f, 0.3f, 0.3f);
             DiffuseColors = new Vector3[tankModel.Meshes.Count];
             DiffuseColors[0] = hullColor;
