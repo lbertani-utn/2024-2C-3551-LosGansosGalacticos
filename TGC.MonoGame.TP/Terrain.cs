@@ -45,49 +45,35 @@ namespace TGC.MonoGame.TP
             spacialMap = new(terrainSize, (25, 25));
         }
 
-        public static float GetPositionHeight(float x, float z, float outOfTerrainHeight = 0.0f, bool verbose = false) {
-            if (x < (-TerrainSize.X / 2) || x > (TerrainSize.X / 2) || z < (-TerrainSize.Z / 2) || z > (TerrainSize.Z / 2)) {
+        public static float GetPositionHeight(float x, float z, float outOfTerrainHeight = 0.0f, bool verbose = false)
+        {
+            if (x < (-TerrainSize.X / 2) || x > (TerrainSize.X / 2) || z < (-TerrainSize.Z / 2) || z > (TerrainSize.Z / 2))
+            {
                 return outOfTerrainHeight;
-            } else {
+            }
+            else
+            {
                 float xFloatIndex = (x + (TerrainSize.X / 2)) * (HeightData.Width - 1) / TerrainSize.X; // Unscale position and move it to range from 0 to HeightData.Width - 1
-                int xIndex = (int) xFloatIndex;
+                int xIndex = (int)xFloatIndex;
                 float xIndexFracPart = xFloatIndex - xIndex;
                 int nextXIndex = xIndex + 1;
 
                 float zFloatIndex = (z + (TerrainSize.Z / 2)) * (HeightData.Height - 1) / TerrainSize.Z; // Unscale position and move it to range from 0 to HeightData.Width - 1
-                int zIndex = (int) zFloatIndex;
+                int zIndex = (int)zFloatIndex;
                 float zIndexFracPart = zFloatIndex - zIndex;
                 int nextZIndex = zIndex + 1;
-
-                float height;
-                float nextHeightX = Texels[zIndex * HeightData.Width + nextXIndex].R * HeightScale;
-                float nextHeightZ = Texels[nextZIndex * HeightData.Width + xIndex].R * HeightScale;
 
                 //     (xIndex; zIndex) -> a__b <- (xIndex + 1; zIndex)
                 //                         | /|
                 //                         |/_|
                 // (xIndex; zIndex + 1) -> c  d <- (xIndex + 1; zIndex + 1)
 
-                // Me fijo si debo calcular la altura en el triangulo superior del quad o en el inferior
-                if (zIndexFracPart <= 1 - xIndexFracPart) {
-                    height = Texels[zIndex * HeightData.Width + xIndex].R * HeightScale;
-                } else {
-                    height = Texels[nextZIndex * HeightData.Width + nextXIndex].R * HeightScale;
-                    xIndexFracPart = 1 - xIndexFracPart;
-                    zIndexFracPart = 1 - zIndexFracPart;
-                }
+                float heightA = Texels[zIndex * HeightData.Width + xIndex].R * HeightScale;
+                float heightB = Texels[zIndex * HeightData.Width + nextXIndex].R * HeightScale;
+                float heightC = Texels[nextZIndex * HeightData.Width + xIndex].R * HeightScale;
+                float heightD = Texels[nextZIndex * HeightData.Width + nextXIndex].R * HeightScale;
 
-                if (verbose) {
-                    Console.WriteLine("XFloatIndex: " + xFloatIndex);
-                    Console.WriteLine("ZFloatIndex: " + zFloatIndex);
-                    Console.WriteLine("X: " + xIndex + ", Z: " + zIndex + ", Height: " + Texels[zIndex * HeightData.Width + xIndex].R * HeightScale);
-                    Console.WriteLine("X + 1: " + nextXIndex + ", Z: " + zIndex + ", Height: " + Texels[zIndex * HeightData.Width + nextXIndex].R * HeightScale);
-                    Console.WriteLine("X: " + xIndex + ", Z + 1: " + nextZIndex + ", Height: " + Texels[nextZIndex * HeightData.Width + xIndex].R * HeightScale);
-                    Console.WriteLine("X + 1: " + nextXIndex + ", Z + 1: " + nextZIndex + ", Height: " + Texels[nextZIndex * HeightData.Width + nextXIndex].R * HeightScale);
-                    Console.WriteLine("Height Output: " + (height + (nextHeightX - height) * xIndexFracPart + (nextHeightZ - height) * zIndexFracPart));
-                }
-
-                return height + (nextHeightX - height) * xIndexFracPart + (nextHeightZ - height) * zIndexFracPart;
+                return (heightA * (1 - xIndexFracPart) + heightB * xIndexFracPart) * (1 - zIndexFracPart) + (heightC * (1 - xIndexFracPart) + heightD * xIndexFracPart) * zIndexFracPart;
             }
         }
 
