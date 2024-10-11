@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -46,6 +43,7 @@ namespace TGC.MonoGame.TP
         private GraphicsDeviceManager Graphics { get; }
         private Point ScreenCenter;
         private SpriteBatch SpriteBatch { get; set; }
+        public Gizmos.Gizmos Gizmos { get; }
         private Effect Effect { get; set; }
         private Random rnd = new Random();
 
@@ -89,6 +87,9 @@ namespace TGC.MonoGame.TP
             // La logica de inicializacion que no depende del contenido se recomienda poner en este metodo.
             ScreenCenter = new Point(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
             Mouse.SetPosition(ScreenCenter.X, ScreenCenter.Y);
+
+            // deshabilito el backface culling
+            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
             //KeyBindings = new() {
             //    {Keys.W, BindingLogic.PositiveDirection},
