@@ -51,6 +51,10 @@ namespace TGC.MonoGame.TP {
         }
 
         public virtual void Draw(Matrix view, Matrix projection, Effect effect) {}
+        public virtual void DrawGizmos(Gizmos.Gizmos gizmos)
+        {
+            gizmos.DrawCube((_boundingBox.Max + _boundingBox.Min) / 2f, _boundingBox.Max - _boundingBox.Min, Color.Red);
+        }
 
         public virtual Vector3 GetDefaultColor() {
             return new Vector3((float) Random.NextDouble() * 255, (float) Random.NextDouble() * 255, (float) Random.NextDouble() * 255);
