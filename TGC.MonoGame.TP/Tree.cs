@@ -11,7 +11,7 @@ namespace TGC.MonoGame.TP
 
         public Tree(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
-            _world = Matrix.CreateScale(scale) *  Matrix.CreateRotationX(-MathHelper.PiOver2) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position);
+            _world = Matrix.CreateRotationX(-MathHelper.PiOver2) * Matrix.CreateScale(scale) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position);
             _defaultColor = GetDefaultColor();
         }
 
@@ -23,6 +23,13 @@ namespace TGC.MonoGame.TP
         protected void Update(GameTime gameTime)
         {
             // ¿¿??
+        }
+
+        public override (Vector3 center, Vector3 radius) GetLocalBoundingBox(Model model)
+        {
+            Vector3 center = new Vector3(-0.09898247f, 7.900349819f, 0.064710855f);
+            Vector3 radius = new Vector3(0.542698812f, 7.915688181f, 0.542698812f);
+            return (center, radius);
         }
 
         public override Vector3 GetDefaultColor()
@@ -40,9 +47,13 @@ namespace TGC.MonoGame.TP
             effect.Parameters["Projection"].SetValue(projection);
             effect.Parameters["DiffuseColor"].SetValue(_defaultColor);
 
+            Model.Root.Transform = _world;
+            var modelMeshesBaseTransforms = new Matrix[Model.Bones.Count];
+            Model.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
             foreach (var mesh in Model.Meshes)
             {
-                effect.Parameters["World"].SetValue(mesh.ParentBone.Transform * _world);
+                var relativeTransform = modelMeshesBaseTransforms[mesh.ParentBone.Index];
+                effect.Parameters["World"].SetValue(relativeTransform);
                 mesh.Draw();
             }
         }

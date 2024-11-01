@@ -20,11 +20,9 @@ namespace TGC.MonoGame.TP {
             _scale = scale;
             _yaw = yaw;
 
-            float radius = model.Meshes[0].BoundingSphere.Radius;
-            Vector3 center = model.Meshes[0].BoundingSphere.Center + _position;
-            Vector3 offset = new(radius, radius, radius);
-            _boundingBox.Min = center - offset;
-            _boundingBox.Max = center + offset;
+            (Vector3 center, Vector3 radius) localBox = GetLocalBoundingBox(model);
+            _boundingBox.Min = position + localBox.center * scale - localBox.radius * scale;
+            _boundingBox.Max = position + localBox.center * scale + localBox.radius * scale;
         }
 
         public Vector3 GetPosition() {
@@ -46,7 +44,7 @@ namespace TGC.MonoGame.TP {
                     meshPart.Effect = Effect;
                 }
             }
-
+            
             return model;
         }
 
@@ -68,6 +66,13 @@ namespace TGC.MonoGame.TP {
 
         public BoundingBox GetBoundingBox() {
             return _boundingBox;
+        }
+
+        public virtual (Vector3 center, Vector3 radius) GetLocalBoundingBox(Model model)
+        {
+            Vector3 center = model.Meshes[0].BoundingSphere.Center;
+            Vector3 radius = new Vector3(model.Meshes[0].BoundingSphere.Radius, model.Meshes[0].BoundingSphere.Radius, model.Meshes[0].BoundingSphere.Radius);
+            return (center, radius);
         }
 
         public ((int gridX, int gridZ) Min, (int gridX, int gridZ) Max) GetGridIndices() {
