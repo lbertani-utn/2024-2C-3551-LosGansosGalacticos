@@ -298,7 +298,7 @@ namespace TGC.MonoGame.TP
 
         private void LoadSurfaceObjects()
         {
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 200; i++)
             {
                 // posición
                 float x = (float) rnd.NextDouble() * 200f - 100f;
