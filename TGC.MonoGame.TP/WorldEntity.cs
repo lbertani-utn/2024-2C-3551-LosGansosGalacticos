@@ -49,9 +49,13 @@ namespace TGC.MonoGame.TP {
         }
 
         public virtual void Draw(Matrix view, Matrix projection, Effect effect) {}
-        public virtual void DrawGizmos(Gizmos.Gizmos gizmos)
+        public void DrawBoundingBox(Gizmos.Gizmos gizmos)
         {
             gizmos.DrawCube((_boundingBox.Max + _boundingBox.Min) / 2f, _boundingBox.Max - _boundingBox.Min, Color.Red);
+        }
+        public void DrawPosition(Gizmos.Gizmos gizmos)
+        {
+            gizmos.DrawSphere(_position, Vector3.One, Color.White);
         }
 
         public virtual Vector3[] GetDefaultColors(int meshes) {

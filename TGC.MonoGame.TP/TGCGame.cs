@@ -46,7 +46,8 @@ namespace TGC.MonoGame.TP
         private Point ScreenCenter;
         private SpriteBatch SpriteBatch { get; set; }
         private Gizmos.Gizmos Gizmos;
-        private bool DrawGizmos = true;
+        private bool DrawBoundingBoxes = false;
+        private bool DrawPositions = false;
         private Effect Effect { get; set; }
         private Random rnd = new Random();
 
@@ -193,9 +194,13 @@ namespace TGC.MonoGame.TP
             }
 
             // gizmos
-            if (keyboardState.IsKeyDown(Keys.G) && previousKeyboardState.IsKeyUp(Keys.G))
+            if (keyboardState.IsKeyDown(Keys.B) && previousKeyboardState.IsKeyUp(Keys.B))
             {
-                DrawGizmos = !DrawGizmos;
+                DrawBoundingBoxes = !DrawBoundingBoxes;
+            }
+            if (keyboardState.IsKeyDown(Keys.P) && previousKeyboardState.IsKeyUp(Keys.P))
+            {
+                DrawPositions = !DrawPositions;
             }
 
             // rozamiento
@@ -275,11 +280,21 @@ namespace TGC.MonoGame.TP
             Tank.Draw(World, Camera.View, Camera.Projection, Effect);
 
             // gizmos
-            if (DrawGizmos)
+            if (DrawBoundingBoxes || DrawPositions)
             {
-                foreach (WorldEntity e in Entities)
+                if (DrawBoundingBoxes)
                 {
-                    e.DrawGizmos(Gizmos);
+                    foreach (WorldEntity e in Entities)
+                    {
+                        e.DrawBoundingBox(Gizmos);
+                    }
+                }
+                if (DrawPositions)
+                {
+                    foreach (WorldEntity e in Entities)
+                    {
+                        e.DrawPosition(Gizmos);
+                    }
                 }
                 Gizmos.Draw();
             }
