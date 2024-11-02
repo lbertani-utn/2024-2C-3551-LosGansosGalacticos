@@ -9,7 +9,7 @@ namespace TGC.MonoGame.TP {
         public static Random Random;
         protected Vector3 _position;
         protected BoundingBox _boundingBox;
-        protected Vector3 _defaultColor;
+        protected Vector3[] _defaultColors;
         protected Matrix _world;
         protected Vector3 _scale;
         protected float _yaw;
@@ -20,11 +20,9 @@ namespace TGC.MonoGame.TP {
             _scale = scale;
             _yaw = yaw;
 
-            float radius = model.Meshes[0].BoundingSphere.Radius;
-            Vector3 center = model.Meshes[0].BoundingSphere.Center + _position;
-            Vector3 offset = new(radius, radius, radius);
-            _boundingBox.Min = center - offset;
-            _boundingBox.Max = center + offset;
+            (Vector3 center, Vector3 radius) localBox = GetLocalBoundingBox(model);
+            _boundingBox.Min = position + (localBox.center - localBox.radius) * scale;
+            _boundingBox.Max = position + (localBox.center + localBox.radius) * scale;
         }
 
         public Vector3 GetPosition() {
@@ -46,24 +44,48 @@ namespace TGC.MonoGame.TP {
                     meshPart.Effect = Effect;
                 }
             }
-
+            
             return model;
         }
 
         public virtual void Draw(Matrix view, Matrix projection, Effect effect) {}
+        public void DrawBoundingBox(Gizmos.Gizmos gizmos)
+        {
+            gizmos.DrawCube((_boundingBox.Max + _boundingBox.Min) / 2f, _boundingBox.Max - _boundingBox.Min, Color.Red);
+        }
+        public void DrawPosition(Gizmos.Gizmos gizmos)
+        {
+            gizmos.DrawSphere(_position, Vector3.One, Color.White);
+        }
 
-        public virtual Vector3 GetDefaultColor() {
-            return new Vector3((float) Random.NextDouble() * 255, (float) Random.NextDouble() * 255, (float) Random.NextDouble() * 255);
+        public virtual Vector3[] GetDefaultColors(int meshes) {
+            Vector3[] colors = new Vector3[meshes];
+            for (int i = 0; i < meshes; i++) 
+            {
+                colors[i] = new Vector3((float)Random.NextDouble(), (float)Random.NextDouble(), (float)Random.NextDouble());
+            }
+            return colors;
         }
 
         public void DebugCollision(CollisionData data) {
             var x = data.gridPosition.x / (float) data.gridSize.x;
             var z = data.gridPosition.z / (float) data.gridSize.z;
-            _defaultColor = new Vector3(x, 0, z);
+
+            for (int i = 0; i < _defaultColors.Length; i++)
+            {
+                _defaultColors[i] = new Vector3(x, 0, z);
+            }
         }
 
         public BoundingBox GetBoundingBox() {
             return _boundingBox;
+        }
+
+        public virtual (Vector3 center, Vector3 radius) GetLocalBoundingBox(Model model)
+        {
+            Vector3 center = model.Meshes[0].BoundingSphere.Center;
+            Vector3 radius = new Vector3(model.Meshes[0].BoundingSphere.Radius, model.Meshes[0].BoundingSphere.Radius, model.Meshes[0].BoundingSphere.Radius);
+            return (center, radius);
         }
 
         public ((int gridX, int gridZ) Min, (int gridX, int gridZ) Max) GetGridIndices() {

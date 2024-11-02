@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
@@ -15,6 +16,7 @@ namespace TGC.MonoGame.TP
     /// </summary>
     public class TGCGame : Game
     {
+        public const string ContentFolder = "Content";
         public const string ContentFolder3D = "Models/";
         public const string ContentFolderEffects = "Effects/";
         public const string ContentFolderMusic = "Music/";
@@ -43,7 +45,9 @@ namespace TGC.MonoGame.TP
         private GraphicsDeviceManager Graphics { get; }
         private Point ScreenCenter;
         private SpriteBatch SpriteBatch { get; set; }
-        public Gizmos.Gizmos Gizmos { get; }
+        private Gizmos.Gizmos Gizmos;
+        private bool DrawBoundingBoxes = false;
+        private bool DrawPositions = false;
         private Effect Effect { get; set; }
         private Random rnd = new Random();
 
@@ -126,6 +130,10 @@ namespace TGC.MonoGame.TP
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
+            
+            Gizmos = new Gizmos.Gizmos();
+            Gizmos.LoadContent(GraphicsDevice, new ContentManager(Content.ServiceProvider, ContentFolder));
+            Gizmos.Enabled = true;
 
             // Cargo un efecto basico propio declarado en el Content pipeline.
             // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
@@ -185,6 +193,16 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
 
+            // gizmos
+            if (keyboardState.IsKeyDown(Keys.B) && previousKeyboardState.IsKeyUp(Keys.B))
+            {
+                DrawBoundingBoxes = !DrawBoundingBoxes;
+            }
+            if (keyboardState.IsKeyDown(Keys.P) && previousKeyboardState.IsKeyUp(Keys.P))
+            {
+                DrawPositions = !DrawPositions;
+            }
+
             // rozamiento
             if (Velocidad > 0)
             {
@@ -235,6 +253,9 @@ namespace TGC.MonoGame.TP
             Camera.Position = Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
             Camera.BuildView();
 
+
+            Gizmos.UpdateViewProjection(Camera.View, Camera.Projection);
+
             base.Update(gameTime);
         }
 
@@ -257,6 +278,26 @@ namespace TGC.MonoGame.TP
             }
 
             Tank.Draw(World, Camera.View, Camera.Projection, Effect);
+
+            // gizmos
+            if (DrawBoundingBoxes || DrawPositions)
+            {
+                if (DrawBoundingBoxes)
+                {
+                    foreach (WorldEntity e in Entities)
+                    {
+                        e.DrawBoundingBox(Gizmos);
+                    }
+                }
+                if (DrawPositions)
+                {
+                    foreach (WorldEntity e in Entities)
+                    {
+                        e.DrawPosition(Gizmos);
+                    }
+                }
+                Gizmos.Draw();
+            }
         }
 
         /// <summary>
