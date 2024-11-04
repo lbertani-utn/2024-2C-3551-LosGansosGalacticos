@@ -39,6 +39,7 @@ namespace TGC.MonoGame.TP
         public Vector3 ObjectPositionToBoxCenter
         {
             get => _objectPositionToBoxCenter;
+            set => _objectPositionToBoxCenter = value;
         }
 
         public BoundingBoxLocalCoordinates(Vector3 center, float radius)
