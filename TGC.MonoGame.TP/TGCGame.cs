@@ -161,6 +161,7 @@ namespace TGC.MonoGame.TP
 
             Tree.LoadContent(Content, Effect);
             Rock.LoadContent(Content, Effect);
+            Bush.LoadContent(Content, Effect);
 
             LoadSurfaceObjects();
 
@@ -327,12 +328,19 @@ namespace TGC.MonoGame.TP
                 // rotación
                 float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
 
-                if (rnd.NextDouble() > 0.5f) {
-                    Tree t = new(new Vector3(x,y,z), new Vector3(width, height, width), rot);
+                if (rnd.NextDouble() > 0.4f) {
+                    Tree t = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(t);
                     terrain.spacialMap.Add(t);
-                } else {
-                    Rock r = new(new Vector3(x,y,z), new Vector3(width, height, width), rot);
+                }
+                else if (rnd.NextDouble() > 0.1f)
+                {
+                    Bush b = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
+                    Entities.Add(b);
+                    terrain.spacialMap.Add(b);
+                }
+                else {
+                    Rock r = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(r);
                     terrain.spacialMap.Add(r);
                 }
