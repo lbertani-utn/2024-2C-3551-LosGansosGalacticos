@@ -246,7 +246,23 @@ namespace TGC.MonoGame.TP
             Vector3 movement = RotationMatrix.Forward * Velocidad * elapsedTime;
             Position = Position + movement;
             Position.Y = Terrain.GetPositionHeight(Position.X, Position.Z);
-            World = Matrix.CreateScale(0.01f) * Matrix.CreateRotationY(Rotation + MathHelper.Pi) * Matrix.CreateTranslation(Position); // TODO definir escala tanque
+
+
+
+            float distanceForward = 3.303362f;
+            float distanceRight = 3.032239f;
+
+            Vector3 positionForward = Position + RotationMatrix.Forward * distanceForward;
+            positionForward.Y = Terrain.GetPositionHeight(positionForward.X, positionForward.Z);
+            Vector3 positionRight = Position + RotationMatrix.Right * distanceRight;
+            positionRight.Y = Terrain.GetPositionHeight(positionRight.X, positionRight.Z);
+
+
+            float pitch = (Position.Y - positionForward.Y) / (Position - positionForward).Length();
+            float yaw = Rotation + MathHelper.Pi;
+            float roll = (Position.Y - positionRight.Y) / (Position - positionRight).Length();
+
+            World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(Position); // TODO definir escala tanque
 
             Tank.WheelRotation += (Velocidad * elapsedTime / 8f); // TODO revisar esta fórmula
 
