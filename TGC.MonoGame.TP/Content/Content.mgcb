@@ -151,3 +151,27 @@
 /processorParam:TextureFormat=Compressed
 /build:Models/tree/tree.fbx
 
+#begin Textures/Rolling Hills Height Map/Rolling Hills Bitmap 1025.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Rolling Hills Height Map/Rolling Hills Bitmap 1025.png
+
+#begin Textures/Rolling Hills Height Map/Rolling Hills Height Map 256.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/Rolling Hills Height Map/Rolling Hills Height Map 256.png
+
