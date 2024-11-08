@@ -25,20 +25,23 @@ namespace TGC.MonoGame.TP
             // ¿¿??
         }
 
-        public override (Vector3 center, Vector3 radius) GetLocalBoundingBox(Model model)
+        public override BoundingBoxLocalCoordinates GetLocalBoundingBox(Model model)
         {
-            Vector3 center = new Vector3(-0.09898247f, 7.900349819f, 0.064710855f);
-            Vector3 radius = new Vector3(0.542698812f, 7.915688181f, 0.542698812f);
-            return (center, radius);
+            Vector3 min = new Vector3(-0.48368357f, -0.015338364f, -0.44941229f);
+            Vector3 max = new Vector3(0.28571863f, 15.816038f, 0.31998991f);
+            BoundingBoxLocalCoordinates localBox = new BoundingBoxLocalCoordinates(min, max);
+            return localBox;
         }
 
         public override Vector3[] GetDefaultColors(int meshes)
         {
+            float g = (float)(Random.NextDouble() * 0.2f) + 0.33f;
             float rb = (float)(Random.NextDouble() * 0.1f) + 0.05f;
-            Vector3 green = new Vector3(rb, (float)(Random.NextDouble() * 0.2f) + 0.33f, rb);
+            Vector3 green = new Vector3(rb, g, rb);
 
+            float r = (float)(Random.NextDouble() * 0.11f) + 0.25f;
             float gb = (float)(Random.NextDouble() * 0.12f) + 0.05f;
-            Vector3 brown = new Vector3((float)(Random.NextDouble() * 0.11f) + 0.25f, gb, gb);
+            Vector3 brown = new Vector3(r, gb, gb);
 
             Vector3[] colors = new Vector3[meshes];
             colors[0] = brown;

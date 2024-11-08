@@ -8,18 +8,10 @@ namespace TGC.MonoGame.TP
     internal class Rock : WorldEntity
     {
         public static Model Model;
-        private readonly float moduloCorrimiento = 10.75f;
-        private readonly float anguloCorrimiento = 0.1f;
-        private readonly float alturaCorrimiento = 0.0f;
 
         public Rock(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
-            // Modelo local está descentrado del origen de coordenadas
-            _yaw = yaw - MathHelper.Pi - anguloCorrimiento;
-            _world = Matrix.CreateScale(scale) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position - new Vector3(-(float)Math.Cos(yaw), alturaCorrimiento, (float)Math.Sin(yaw)) * moduloCorrimiento);
-
-            // Console.WriteLine(_world.Translation.ToString());
-
+            _world = Matrix.CreateTranslation(new Vector3(10.194115f, -0.923026f, -1.0564915f)) * Matrix.CreateScale(scale) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position);
             _defaultColors = GetDefaultColors(Model.Meshes.Count);
         }
 
@@ -33,12 +25,14 @@ namespace TGC.MonoGame.TP
             // ¿¿??
         }
 
-        //public override (Vector3 center, Vector3 radius) GetLocalBoundingBox(Model model)
-        //{
-        //    Vector3 center = new Vector3(-10.194115f, 0.9169125f, 1.0564915f);
-        //    Vector3 radius = new Vector3(2.141759265f, 0.8824215f, 2.141759265f);
-        //    return (center, radius);
-        //}
+        public override BoundingBoxLocalCoordinates GetLocalBoundingBox(Model model)
+        {
+            Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
+            Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
+            BoundingBoxLocalCoordinates localBox = new BoundingBoxLocalCoordinates(min, max);
+            localBox.ObjectPositionToBoxCenter = new Vector3(0f, -0.0061135f, 0f);
+            return localBox;
+        }
 
         public override Vector3[] GetDefaultColors(int meshes)
         {

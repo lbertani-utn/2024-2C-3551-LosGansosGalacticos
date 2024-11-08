@@ -1,15 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace TGC.MonoGame.Samples.Collisions
+namespace TGC.MonoGame.TP.Collisions
 {
 
     /// <summary>
     ///     Represents a Bounding Cylinder to test for intersections
     /// </summary>
-    class BoundingCylinder
+    public class BoundingCylinder
     {
         // The center of the Cylinder in World Space
         private Vector3 _center;

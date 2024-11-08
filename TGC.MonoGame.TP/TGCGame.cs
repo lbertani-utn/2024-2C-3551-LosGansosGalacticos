@@ -61,7 +61,9 @@ namespace TGC.MonoGame.TP
         // TODO crear clase para tanque jugador
         private Model Model { get; set; }
         private Steamroller Tank;
-        private float Rotation;
+        private float TankPitch = 0f;
+        private float TankYaw = 0f;
+        private float TankRoll = 0f;
         private Vector3 Position;
         private Matrix World { get; set; }
         private float Velocidad = 0f;
@@ -72,6 +74,8 @@ namespace TGC.MonoGame.TP
 
         // terreno
         private Terrain terrain;
+        private float terrainSize;
+        private float heightScale; 
 
         private List<WorldEntity> Entities;
 
@@ -157,10 +161,16 @@ namespace TGC.MonoGame.TP
                 }
             }
 
-            terrain = new(this, Effect, GraphicsDevice, (200.0f, 200.0f), 1f);
+            terrainSize = 512f;
+            heightScale = 0.5f;
+            terrain = new(this, Effect, GraphicsDevice, (terrainSize, terrainSize), heightScale);
+
+
+            // TODO setear position.Y, pitch y roll del tanque en la posición inicial
 
             Tree.LoadContent(Content, Effect);
             Rock.LoadContent(Content, Effect);
+            Bush.LoadContent(Content, Effect);
 
             LoadSurfaceObjects();
 
@@ -216,12 +226,12 @@ namespace TGC.MonoGame.TP
             // dirección rotación
             if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)))
             {
-                Rotation -= elapsedTime;
+                TankYaw -= elapsedTime;
                 Tank.SteerRotation -= elapsedTime;
             }
             else if ((keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A)))
             {
-                Rotation += elapsedTime;
+                TankYaw += elapsedTime;
                 Tank.SteerRotation += elapsedTime;
             }
 
@@ -239,13 +249,33 @@ namespace TGC.MonoGame.TP
             Tank.TurretRotation += mouseDeltaX * elapsedTime * camX;
             Tank.CannonRotation += mouseDeltaY * elapsedTime * camY;
 
-            Matrix RotationMatrix = Matrix.CreateRotationY(Rotation);
-            Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(Rotation + Tank.TurretRotation, -Tank.CannonRotation, 0f);
+            Matrix RotationMatrix = Matrix.CreateRotationY(TankYaw);
+            Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(TankYaw + Tank.TurretRotation, -Tank.CannonRotation, 0f);
 
             Vector3 movement = RotationMatrix.Forward * Velocidad * elapsedTime;
             Position = Position + movement;
             Position.Y = Terrain.GetPositionHeight(Position.X, Position.Z);
-            World = Matrix.CreateScale(0.01f) * Matrix.CreateRotationY(Rotation + MathHelper.Pi) * Matrix.CreateTranslation(Position); // TODO definir escala tanque
+
+            float distanceForward = 3.303362f;
+            float distanceRight = 3.032239f;
+            float clampPitch = elapsedTime / 4;
+            float clampRoll = elapsedTime / 4;
+
+            Vector3 positionForward = Position + RotationMatrix.Forward * distanceForward;
+            positionForward.Y = Terrain.GetPositionHeight(positionForward.X, positionForward.Z);
+            float currentPitch = (Position.Y - positionForward.Y) / (Position - positionForward).Length();
+            float deltaPitch = currentPitch - TankPitch;
+            TankPitch += MathHelper.Clamp(deltaPitch, -clampPitch, clampPitch);
+
+            Vector3 positionRight = Position + RotationMatrix.Right * distanceRight;
+            positionRight.Y = Terrain.GetPositionHeight(positionRight.X, positionRight.Z);
+            float currentRoll = (Position.Y - positionRight.Y) / (Position - positionRight).Length();
+            float deltaRoll = currentRoll - TankRoll;
+            TankRoll += MathHelper.Clamp(deltaRoll, -clampRoll, clampRoll);
+
+            float yaw = TankYaw + MathHelper.Pi;
+
+            World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(yaw, TankPitch, TankRoll) * Matrix.CreateTranslation(Position); // TODO definir escala tanque
 
             Tank.WheelRotation += (Velocidad * elapsedTime / 8f); // TODO revisar esta fórmula
 
@@ -316,8 +346,8 @@ namespace TGC.MonoGame.TP
             for (int i = 0; i < 200; i++)
             {
                 // posición
-                float x = (float) rnd.NextDouble() * 200f - 100f;
-                float z = (float) rnd.NextDouble() * 200f - 100f;
+                float x = (float) rnd.NextDouble() * terrainSize - terrainSize/2;
+                float z = (float) rnd.NextDouble() * terrainSize - terrainSize/2;
                 float y = Terrain.GetPositionHeight(x,z);
 
                 // escala
@@ -327,12 +357,19 @@ namespace TGC.MonoGame.TP
                 // rotación
                 float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
 
-                if (rnd.NextDouble() > 0.5f) {
-                    Tree t = new(new Vector3(x,y,z), new Vector3(width, height, width), rot);
+                if (rnd.NextDouble() > 0.4f) {
+                    Tree t = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(t);
                     terrain.spacialMap.Add(t);
-                } else {
-                    Rock r = new(new Vector3(x,y,z), new Vector3(width, height, width), rot);
+                }
+                else if (rnd.NextDouble() > 0.1f)
+                {
+                    Bush b = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
+                    Entities.Add(b);
+                    terrain.spacialMap.Add(b);
+                }
+                else {
+                    Rock r = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(r);
                     terrain.spacialMap.Add(r);
                 }
