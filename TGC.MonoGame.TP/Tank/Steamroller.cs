@@ -1,7 +1,4 @@
-﻿using BepuPhysics.Collidables;
-using BepuPhysics.CollisionDetection.CollisionTasks;
-using BepuPhysics.Constraints;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
