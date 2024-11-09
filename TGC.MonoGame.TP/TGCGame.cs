@@ -318,6 +318,8 @@ namespace TGC.MonoGame.TP
                     {
                         e.DrawBoundingBox(Gizmos);
                     }
+
+                    Tank.DrawBoundingBox(Gizmos);
                 }
                 if (DrawPositions)
                 {
