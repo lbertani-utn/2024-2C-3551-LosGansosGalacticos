@@ -55,6 +55,26 @@ namespace TGC.MonoGame.TP {
         }
 
         public virtual void Draw(Matrix view, Matrix projection, Effect effect) {}
+
+        public void Draw(Matrix view, Matrix projection, Effect effect, Model model)
+        {
+            effect.Parameters["View"].SetValue(view);
+            effect.Parameters["Projection"].SetValue(projection);
+
+            model.Root.Transform = _world;
+            var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
+            model.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
+
+            for (int i = 0; i < model.Meshes.Count; i++)
+            {
+                var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
+                effect.Parameters["World"].SetValue(relativeTransform);
+                effect.Parameters["DiffuseColor"].SetValue(_defaultColors[i]);
+                model.Meshes[i].Draw();
+            }
+        }
+
+
         public void DrawBoundingBox(Gizmos.Gizmos gizmos)
         {
             gizmos.DrawCube((_boundingBox.Max + _boundingBox.Min) / 2f, _boundingBox.Max - _boundingBox.Min, Color.Red);
