@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -145,7 +146,12 @@ namespace TGC.MonoGame.TP
 
             // Cargo el tanque
             // TODO mover esto a su clase
+            Stopwatch sw = Stopwatch.StartNew();
             Model = Content.Load<Model>(ContentFolder3D + "tank/tank");
+            sw.Stop();
+            Debug.WriteLine("Load model tank/tank: {0} milliseconds", sw.ElapsedMilliseconds);
+
+
             ApplyEffect(Model, Effect);
             Tank = new Steamroller();
             Tank.Load(Model);
@@ -345,6 +351,10 @@ namespace TGC.MonoGame.TP
 
         private void LoadSurfaceObjects()
         {
+            int treeCount = 0;
+            int bushCount = 0;
+            int rockCount = 0;
+
             for (int i = 0; i < 200; i++)
             {
                 // posición
@@ -358,24 +368,33 @@ namespace TGC.MonoGame.TP
 
                 // rotación
                 float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
+                float objType = (float)rnd.NextDouble();
 
-                if (rnd.NextDouble() > 0.4f) {
+                if (objType > 0.4f) {
                     Tree t = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(t);
                     terrain.spacialMap.Add(t);
+                    treeCount += 1;
                 }
-                else if (rnd.NextDouble() > 0.1f)
+                else if (objType > 0.2f)
                 {
                     Bush b = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(b);
                     terrain.spacialMap.Add(b);
+                    bushCount += 1;
                 }
                 else {
                     Rock r = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(r);
                     terrain.spacialMap.Add(r);
+                    rockCount += 1;
                 }
+
             }
+
+            Debug.WriteLine("Trees: {0}", treeCount);
+            Debug.WriteLine("Bushes: {0}", bushCount);
+            Debug.WriteLine("Rocks: {0}", rockCount);
         }
 
         private void ApplyEffect(Model model, Effect effect)

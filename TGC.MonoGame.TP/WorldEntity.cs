@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -32,7 +33,12 @@ namespace TGC.MonoGame.TP {
         public static Model LoadContent(ContentManager Content, string modelRelativePath, Effect Effect)
         {
             // Cargo el modelo
+            Stopwatch sw = Stopwatch.StartNew();
             Model model = Content.Load<Model>(ContentFolder3D + modelRelativePath);
+            sw.Stop();
+            Debug.WriteLine("Load model {0}: {1} milliseconds", modelRelativePath, sw.ElapsedMilliseconds);
+
+
             Random = new Random();
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.
