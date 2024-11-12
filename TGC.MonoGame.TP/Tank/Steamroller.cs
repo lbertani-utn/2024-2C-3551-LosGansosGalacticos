@@ -212,12 +212,23 @@ namespace TGC.MonoGame.TP.Tank
 
             // Update bounding volumes
             Matrix rotationMatrix = Matrix.CreateFromYawPitchRoll(Yaw + MathHelper.Pi, Pitch, Roll);
+            // la posición de los cilindros 0 a 7 depende de la posición y rotación del tanque
+            // la posición del cilindros 8 (cañon) también depende de la torreta
             for (int i = 0; i < 9; i++)
             {
-                Matrix worldMatrix0 =  Matrix.CreateTranslation(BoundingVolumeTraslation[i] * new Vector3(-1f, 1f, -1f)) * rotationMatrix * Matrix.CreateTranslation(Position);
-                BoundingVolumes[i].Center = worldMatrix0.Translation;
-                BoundingVolumes[i].Rotation = BoundingVolumeRotation[i] * rotationMatrix;
+                Matrix worldMatrix =  Matrix.CreateTranslation(BoundingVolumeTraslation[i] * new Vector3(-1f, 1f, -1f)) * rotationMatrix * Matrix.CreateTranslation(Position);
+                BoundingVolumes[i].Center = worldMatrix.Translation;
             }
+            BoundingVolumes[0].Rotation = BoundingVolumeRotation[0] * rotationMatrix;
+            BoundingVolumes[1].Rotation = BoundingVolumeRotation[1] * rotationMatrix;
+            BoundingVolumes[2].Rotation = BoundingVolumeRotation[2] * rightBackWheelRotation * rotationMatrix;
+            BoundingVolumes[3].Rotation = BoundingVolumeRotation[3] * rightFrontWheelRotation * steerRotation * rotationMatrix;
+            BoundingVolumes[4].Rotation = BoundingVolumeRotation[4] * rotationMatrix;
+            BoundingVolumes[5].Rotation = BoundingVolumeRotation[5] * leftBackWheelRotation * rotationMatrix;
+            BoundingVolumes[6].Rotation = BoundingVolumeRotation[6] * leftFrontWheelRotation * steerRotation * rotationMatrix;
+            BoundingVolumes[7].Rotation = BoundingVolumeRotation[7] * turretRotation * rotationMatrix;
+            BoundingVolumes[8].Rotation = BoundingVolumeRotation[8] * cannonRotation * turretRotation * rotationMatrix;
+            
 
             // Draw the model
             effect.Parameters["View"].SetValue(view);
