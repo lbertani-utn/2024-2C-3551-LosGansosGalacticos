@@ -98,14 +98,14 @@ namespace TGC.MonoGame.TP.Tank
             BoundingVolumes[7] = new BoundingCylinder(Position, 1.47766f, 0.65884f);
 
             BoundingVolumeTraslation = new Vector3[8];
-            BoundingVolumeTraslation[0] = new Vector3(0.00000f, 1.37576f, 0.93567f);
-            BoundingVolumeTraslation[1] = new Vector3(1.66787f, 2.18925f, 0.29799f);
-            BoundingVolumeTraslation[2] = new Vector3(1.97411f, 1.05415f, 2.45230f);
-            BoundingVolumeTraslation[3] = new Vector3(1.70793f, 0.73387f, -2.40269f);
-            BoundingVolumeTraslation[4] = new Vector3(-1.66787f, 2.18925f, 0.29799f);
-            BoundingVolumeTraslation[5] = new Vector3(-1.97411f, 1.05415f, 2.45230f);
-            BoundingVolumeTraslation[6] = new Vector3(-1.70793f, 0.73387f, -2.40269f);
-            BoundingVolumeTraslation[7] = new Vector3(0.00000f, 2.97638f, 0.35596f);
+            BoundingVolumeTraslation[0] = new Vector3(-0.00000f, 1.37576f, -0.93567f);
+            BoundingVolumeTraslation[1] = new Vector3(-1.66787f, 2.18925f, -0.29799f);
+            BoundingVolumeTraslation[2] = new Vector3(-1.97411f, 1.05415f, -2.45230f);
+            BoundingVolumeTraslation[3] = new Vector3(-1.70793f, 0.73387f, 2.40269f);
+            BoundingVolumeTraslation[4] = new Vector3(1.66787f, 2.18925f, -0.29799f);
+            BoundingVolumeTraslation[5] = new Vector3(1.97411f, 1.05415f, -2.45230f);
+            BoundingVolumeTraslation[6] = new Vector3(1.70793f, 0.73387f, 2.40269f);
+            BoundingVolumeTraslation[7] = new Vector3(-0.00000f, 2.97638f, -0.35596f);
 
             BoundingVolumeRotation = new Matrix[8];
             BoundingVolumeRotation[0] = Matrix.Identity;
@@ -216,7 +216,7 @@ namespace TGC.MonoGame.TP.Tank
             Matrix rotationMatrix = Matrix.CreateFromYawPitchRoll(Yaw + MathHelper.Pi, Pitch, Roll);
             for (int i = 0; i < 8; i++)
             {
-                Matrix worldMatrix =  Matrix.CreateTranslation(BoundingVolumeTraslation[i] * new Vector3(-1f, 1f, -1f)) * rotationMatrix * Matrix.CreateTranslation(Position);
+                Matrix worldMatrix =  Matrix.CreateTranslation(BoundingVolumeTraslation[i]) * rotationMatrix * Matrix.CreateTranslation(Position);
                 BoundingVolumes[i].Center = worldMatrix.Translation;
             }
             BoundingVolumes[0].Rotation = BoundingVolumeRotation[0] * rotationMatrix;
