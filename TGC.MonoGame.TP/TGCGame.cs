@@ -49,7 +49,11 @@ namespace TGC.MonoGame.TP
         private Gizmos.Gizmos Gizmos;
         private bool DrawBoundingBoxes = false;
         private bool DrawPositions = false;
-        private Effect Effect { get; set; }
+
+        private Effect TerrainEffect { get; set; }
+        private Effect ObjectEffect { get; set; }
+
+
         private Random rnd = new Random();
 
         private TargetCamera Camera { get; set; }
@@ -137,7 +141,8 @@ namespace TGC.MonoGame.TP
 
             // Cargo un efecto basico propio declarado en el Content pipeline.
             // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
-            Effect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+            TerrainEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+            ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
 
             // Cargo el tanque
             // TODO mover esto a su clase
@@ -147,33 +152,23 @@ namespace TGC.MonoGame.TP
             Debug.WriteLine("Load model tank/tank: {0} milliseconds", sw.ElapsedMilliseconds);
 
 
-            ApplyEffect(Model, Effect);
+            ApplyEffect(Model, ObjectEffect);
             tank = new Steamroller();
             tank.Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
             tank.World = Matrix.CreateTranslation(tank.Position);
             tank.Load(Model);
 
-            // Asigno el efecto que cargue a cada parte del mesh.
-            // Un modelo puede tener mas de 1 mesh internamente.
-            foreach (var mesh in Model.Meshes)
-            {
-                // Un mesh puede tener mas de 1 mesh part (cada 1 puede tener su propio efecto).
-                foreach (var meshPart in mesh.MeshParts)
-                {
-                    meshPart.Effect = Effect;
-                }
-            }
 
             terrainSize = 512f;
             heightScale = 0.5f;
-            terrain = new(this, Effect, GraphicsDevice, (terrainSize, terrainSize), heightScale);
+            terrain = new(this, TerrainEffect, GraphicsDevice, (terrainSize, terrainSize), heightScale);
 
 
             // TODO setear position.Y, pitch y roll del tanque en la posición inicial
 
-            Tree.LoadContent(Content, Effect);
-            Rock.LoadContent(Content, Effect);
-            Bush.LoadContent(Content, Effect);
+            Tree.LoadContent(Content, ObjectEffect);
+            Rock.LoadContent(Content, ObjectEffect);
+            Bush.LoadContent(Content, ObjectEffect);
 
             LoadSurfaceObjects();
 
@@ -300,15 +295,15 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.Clear(new Color(23 / 255.0f, 171 / 255.0f, 237 / 255.0f));
 
             // terreno
-            terrain.Draw(GraphicsDevice, Effect);
+            terrain.Draw(GraphicsDevice, TerrainEffect);
 
             foreach (WorldEntity e in Entities)
             {
                 terrain.spacialMap.Update(e);
-                e.Draw(Camera.View, Camera.Projection, Effect);
+                e.Draw(Camera.View, Camera.Projection, ObjectEffect);
             }
 
-            tank.Draw(tank.World, Camera.View, Camera.Projection, Effect);
+            tank.Draw(tank.World, Camera.View, Camera.Projection, ObjectEffect);
 
             // gizmos
             if (DrawBoundingBoxes || DrawPositions)
