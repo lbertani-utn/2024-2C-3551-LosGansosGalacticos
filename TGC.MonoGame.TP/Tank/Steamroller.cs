@@ -14,9 +14,14 @@ namespace TGC.MonoGame.TP.Tank
         Vector3[] BoundingVolumeTraslation;
         Matrix[] BoundingVolumeRotation;
 
-        public Vector3 position { get; set; }
-        public Vector3 scale { get; set; }
-        public Quaternion rotation { get; set; }
+        public Vector3 Position;
+        public Vector3 Scale;
+        public Quaternion Rotation;
+        public float Pitch = 0f;
+        public float Yaw = 0f;
+        public float Roll = 0f;
+        public Matrix World;
+
 
         private const float FrontWheelRotation = 1.6f;
         private float cannonCooldown = 0f;
@@ -82,15 +87,15 @@ namespace TGC.MonoGame.TP.Tank
         public void LoadBoundingVolumes()
         {
             BoundingVolumes = new BoundingCylinder[9];
-            BoundingVolumes[0] = new BoundingCylinder(position, 2.54742f, 1.00186f);
-            BoundingVolumes[1] = new BoundingCylinder(position, 0.73622f, 3.09886f);
-            BoundingVolumes[2] = new BoundingCylinder(position, 1.22763f, 1.05816f);
-            BoundingVolumes[3] = new BoundingCylinder(position, 0.85413f, 0.84755f);
-            BoundingVolumes[4] = new BoundingCylinder(position, 0.73622f, 3.09886f);
-            BoundingVolumes[5] = new BoundingCylinder(position, 1.22763f, 1.05816f);
-            BoundingVolumes[6] = new BoundingCylinder(position, 0.85413f, 0.84755f);
-            BoundingVolumes[7] = new BoundingCylinder(position, 1.47766f, 0.65884f);
-            BoundingVolumes[8] = new BoundingCylinder(position, 0.30081f, 1.05092f);
+            BoundingVolumes[0] = new BoundingCylinder(Position, 2.54742f, 1.00186f);
+            BoundingVolumes[1] = new BoundingCylinder(Position, 0.73622f, 3.09886f);
+            BoundingVolumes[2] = new BoundingCylinder(Position, 1.22763f, 1.05816f);
+            BoundingVolumes[3] = new BoundingCylinder(Position, 0.85413f, 0.84755f);
+            BoundingVolumes[4] = new BoundingCylinder(Position, 0.73622f, 3.09886f);
+            BoundingVolumes[5] = new BoundingCylinder(Position, 1.22763f, 1.05816f);
+            BoundingVolumes[6] = new BoundingCylinder(Position, 0.85413f, 0.84755f);
+            BoundingVolumes[7] = new BoundingCylinder(Position, 1.47766f, 0.65884f);
+            BoundingVolumes[8] = new BoundingCylinder(Position, 0.30081f, 1.05092f);
 
 
             BoundingVolumeTraslation = new Vector3[9];
@@ -206,24 +211,12 @@ namespace TGC.MonoGame.TP.Tank
             tankModel.CopyAbsoluteBoneTransformsTo(boneTransforms);
 
             // Update bounding volumes
-
-            Vector3 boneTraslation;
-            Quaternion boneRotation;
-            Vector3 boneScale;
-
-
-            for (int i = 0; i < 3; i++)
+            Matrix rotationMatrix = Matrix.CreateFromYawPitchRoll(Yaw + MathHelper.Pi, Pitch, Roll);
+            for (int i = 0; i < 9; i++)
             {
-                for (int j = 0; j < 3; j++)
-                {
-                    int boneIndex = i * 4 + j;
-                    int boundingIndex = i * 3 + j;
-
-                    boneTransforms[boneIndex].Decompose(out boneScale, out boneRotation, out boneTraslation);
-                    BoundingVolumes[boundingIndex].Center = boneTraslation;
-                    BoundingVolumes[boundingIndex].Rotation = BoundingVolumeRotation[boundingIndex] * Matrix.CreateFromQuaternion(boneRotation);
-
-                }
+                Matrix worldMatrix0 =  Matrix.CreateTranslation(BoundingVolumeTraslation[i] * new Vector3(-1f, 1f, -1f)) * rotationMatrix * Matrix.CreateTranslation(Position);
+                BoundingVolumes[i].Center = worldMatrix0.Translation;
+                BoundingVolumes[i].Rotation = BoundingVolumeRotation[i] * rotationMatrix;
             }
 
             // Draw the model
