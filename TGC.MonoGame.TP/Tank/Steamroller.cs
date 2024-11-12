@@ -1,9 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP.Tank
 {
@@ -13,10 +10,18 @@ namespace TGC.MonoGame.TP.Tank
         protected Vector3[] DiffuseColors;
         private const float PiOver6 =  0.52356f;
         private const float PiOver12 = 0.26180f;
+        BoundingCylinder[] BoundingVolumes;
+        Vector3[] BoundingVolumeTraslation;
+        Matrix[] BoundingVolumeRotation;
 
-        public Vector3 position { get; set; }
-        public Vector3 scale { get; set; }
-        public Quaternion rotation { get; set; }
+        public Vector3 Position;
+        public Vector3 Scale;
+        public Quaternion Rotation;
+        public float Pitch = 0f;
+        public float Yaw = 0f;
+        public float Roll = 0f;
+        public Matrix World;
+
 
         private const float FrontWheelRotation = 1.6f;
         private float cannonCooldown = 0f;
@@ -79,12 +84,51 @@ namespace TGC.MonoGame.TP.Tank
         private Matrix[] boneTransforms;
         #endregion Fields
 
+        public void LoadBoundingVolumes()
+        {
+            BoundingVolumes = new BoundingCylinder[9];
+            BoundingVolumes[0] = new BoundingCylinder(Position, 2.54742f, 1.00186f);
+            BoundingVolumes[1] = new BoundingCylinder(Position, 0.73622f, 3.09886f);
+            BoundingVolumes[2] = new BoundingCylinder(Position, 1.22763f, 1.05816f);
+            BoundingVolumes[3] = new BoundingCylinder(Position, 0.85413f, 0.84755f);
+            BoundingVolumes[4] = new BoundingCylinder(Position, 0.73622f, 3.09886f);
+            BoundingVolumes[5] = new BoundingCylinder(Position, 1.22763f, 1.05816f);
+            BoundingVolumes[6] = new BoundingCylinder(Position, 0.85413f, 0.84755f);
+            BoundingVolumes[7] = new BoundingCylinder(Position, 1.47766f, 0.65884f);
+            BoundingVolumes[8] = new BoundingCylinder(Position, 0.30081f, 1.05092f);
+
+
+            BoundingVolumeTraslation = new Vector3[9];
+            BoundingVolumeTraslation[0] = new Vector3(0.00000f, 1.37576f, 0.93567f);
+            BoundingVolumeTraslation[1] = new Vector3(1.66787f, 2.18925f, 0.29799f);
+            BoundingVolumeTraslation[2] = new Vector3(1.97411f, 1.05415f, 2.45230f);
+            BoundingVolumeTraslation[3] = new Vector3(1.70793f, 0.73387f, -2.40269f);
+            BoundingVolumeTraslation[4] = new Vector3(-1.66787f, 2.18925f, 0.29799f);
+            BoundingVolumeTraslation[5] = new Vector3(-1.97411f, 1.05415f, 2.45230f);
+            BoundingVolumeTraslation[6] = new Vector3(-1.70793f, 0.73387f, -2.40269f);
+            BoundingVolumeTraslation[7] = new Vector3(0.00000f, 2.97638f, 0.35596f);
+            BoundingVolumeTraslation[8] = new Vector3(-0.00851f, 3.36608f, -1.45659f);
+
+            BoundingVolumeRotation = new Matrix[9];
+            BoundingVolumeRotation[0] = Matrix.Identity;
+            BoundingVolumeRotation[1] = Matrix.CreateFromYawPitchRoll(0f, MathHelper.PiOver2, 0f);
+            BoundingVolumeRotation[2] = Matrix.CreateFromYawPitchRoll(0f, 0f, MathHelper.PiOver2);
+            BoundingVolumeRotation[3] = Matrix.CreateFromYawPitchRoll(0f, 0f, MathHelper.PiOver2);
+            BoundingVolumeRotation[4] = Matrix.CreateFromYawPitchRoll(0f, MathHelper.PiOver2, 0f);
+            BoundingVolumeRotation[5] = Matrix.CreateFromYawPitchRoll(0f, 0f, MathHelper.PiOver2);
+            BoundingVolumeRotation[6] = Matrix.CreateFromYawPitchRoll(0f, 0f, MathHelper.PiOver2);
+            BoundingVolumeRotation[7] = Matrix.Identity;
+            BoundingVolumeRotation[8] = Matrix.CreateFromYawPitchRoll(0f, MathHelper.PiOver2, 0f);
+        }
+
         /// <summary>
         ///     Loads the tank model.
         /// </summary>
         public void Load(Model model)
         {
             tankModel = model;
+            LoadBoundingVolumes();
+
 
             // Look up shortcut references to the bones we are going to animate.
             leftBackWheelBone = tankModel.Bones["l_back_wheel_geo"];
@@ -147,8 +191,8 @@ namespace TGC.MonoGame.TP.Tank
             // Calculate matrices based on the current animation position.
             Matrix leftBackWheelRotation = Matrix.CreateRotationX(WheelRotation);
             Matrix rightBackWheelRotation = Matrix.CreateRotationX(WheelRotation);
-            Matrix leftFrontWheelRotation = Matrix.CreateRotationX(WheelRotation) * FrontWheelRotation;
-            Matrix rightFrontWheelRotation = Matrix.CreateRotationX(WheelRotation) * FrontWheelRotation;
+            Matrix leftFrontWheelRotation = Matrix.CreateRotationX(WheelRotation * FrontWheelRotation);
+            Matrix rightFrontWheelRotation = Matrix.CreateRotationX(WheelRotation * FrontWheelRotation);
             Matrix steerRotation = Matrix.CreateRotationY(SteerRotation);
             Matrix turretRotation = Matrix.CreateRotationY(TurretRotation);
             Matrix cannonRotation = Matrix.CreateRotationX(CannonRotation);
@@ -166,6 +210,26 @@ namespace TGC.MonoGame.TP.Tank
             // Look up combined bone matrices for the entire model.
             tankModel.CopyAbsoluteBoneTransformsTo(boneTransforms);
 
+            // Update bounding volumes
+            Matrix rotationMatrix = Matrix.CreateFromYawPitchRoll(Yaw + MathHelper.Pi, Pitch, Roll);
+            // la posición de los cilindros 0 a 7 depende de la posición y rotación del tanque
+            // la posición del cilindros 8 (cañon) también depende de la torreta
+            for (int i = 0; i < 9; i++)
+            {
+                Matrix worldMatrix =  Matrix.CreateTranslation(BoundingVolumeTraslation[i] * new Vector3(-1f, 1f, -1f)) * rotationMatrix * Matrix.CreateTranslation(Position);
+                BoundingVolumes[i].Center = worldMatrix.Translation;
+            }
+            BoundingVolumes[0].Rotation = BoundingVolumeRotation[0] * rotationMatrix;
+            BoundingVolumes[1].Rotation = BoundingVolumeRotation[1] * rotationMatrix;
+            BoundingVolumes[2].Rotation = BoundingVolumeRotation[2] * rightBackWheelRotation * rotationMatrix;
+            BoundingVolumes[3].Rotation = BoundingVolumeRotation[3] * rightFrontWheelRotation * steerRotation * rotationMatrix;
+            BoundingVolumes[4].Rotation = BoundingVolumeRotation[4] * rotationMatrix;
+            BoundingVolumes[5].Rotation = BoundingVolumeRotation[5] * leftBackWheelRotation * rotationMatrix;
+            BoundingVolumes[6].Rotation = BoundingVolumeRotation[6] * leftFrontWheelRotation * steerRotation * rotationMatrix;
+            BoundingVolumes[7].Rotation = BoundingVolumeRotation[7] * turretRotation * rotationMatrix;
+            BoundingVolumes[8].Rotation = BoundingVolumeRotation[8] * cannonRotation * turretRotation * rotationMatrix;
+            
+
             // Draw the model
             effect.Parameters["View"].SetValue(view);
             effect.Parameters["Projection"].SetValue(projection);
@@ -176,12 +240,15 @@ namespace TGC.MonoGame.TP.Tank
                 effect.Parameters["DiffuseColor"].SetValue(DiffuseColors[mesh.ParentBone.Index]);
                 mesh.Draw();
             }
-
         }
 
+        public void DrawBoundingBox(Gizmos.Gizmos gizmos)
+        {
+            foreach (BoundingCylinder c in BoundingVolumes)
+            {
+                gizmos.DrawCylinder(c.Transform, Color.Yellow);
+            }
+        }
 
     }
-
-
-
 }

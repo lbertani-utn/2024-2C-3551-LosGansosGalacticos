@@ -61,12 +61,8 @@ namespace TGC.MonoGame.TP
 
         // TODO crear clase para tanque jugador
         private Model Model { get; set; }
-        private Steamroller Tank;
-        private float TankPitch = 0f;
-        private float TankYaw = 0f;
-        private float TankRoll = 0f;
-        private Vector3 Position;
-        private Matrix World { get; set; }
+        private Steamroller tank;
+
         private float Velocidad = 0f;
         private const float VelocidadIncremento = 0.5f;
         private const float VelocidadMaxima = 12;
@@ -117,8 +113,7 @@ namespace TGC.MonoGame.TP
             };
 
             // Configuramos nuestras matrices de la escena.
-            Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
-            World = Matrix.CreateTranslation(Position);
+
 
             Entities = new List<WorldEntity>();
             Random rnd = new();
@@ -153,8 +148,10 @@ namespace TGC.MonoGame.TP
 
 
             ApplyEffect(Model, Effect);
-            Tank = new Steamroller();
-            Tank.Load(Model);
+            tank = new Steamroller();
+            tank.Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
+            tank.World = Matrix.CreateTranslation(tank.Position);
+            tank.Load(Model);
 
             // Asigno el efecto que cargue a cada parte del mesh.
             // Un modelo puede tener mas de 1 mesh internamente.
@@ -232,13 +229,13 @@ namespace TGC.MonoGame.TP
             // dirección rotación
             if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)))
             {
-                TankYaw -= elapsedTime;
-                Tank.SteerRotation -= elapsedTime;
+                tank.Yaw -= elapsedTime;
+                tank.SteerRotation -= elapsedTime;
             }
             else if ((keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A)))
             {
-                TankYaw += elapsedTime;
-                Tank.SteerRotation += elapsedTime;
+                tank.Yaw += elapsedTime;
+                tank.SteerRotation += elapsedTime;
             }
 
             // avance/retroceso
@@ -252,41 +249,39 @@ namespace TGC.MonoGame.TP
             }
 
             // torreta y cañon
-            Tank.TurretRotation += mouseDeltaX * elapsedTime * camX;
-            Tank.CannonRotation += mouseDeltaY * elapsedTime * camY;
+            tank.TurretRotation += mouseDeltaX * elapsedTime * camX;
+            tank.CannonRotation += mouseDeltaY * elapsedTime * camY;
 
-            Matrix RotationMatrix = Matrix.CreateRotationY(TankYaw);
-            Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(TankYaw + Tank.TurretRotation, -Tank.CannonRotation, 0f);
+            Matrix RotationMatrix = Matrix.CreateRotationY(tank.Yaw);
+            Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(tank.Yaw + tank.TurretRotation, -tank.CannonRotation, 0f);
 
             Vector3 movement = RotationMatrix.Forward * Velocidad * elapsedTime;
-            Position = Position + movement;
-            Position.Y = Terrain.GetPositionHeight(Position.X, Position.Z);
+            tank.Position = tank.Position + movement;
+            tank.Position.Y = Terrain.GetPositionHeight(tank.Position.X, tank.Position.Z);
 
             float distanceForward = 3.303362f;
             float distanceRight = 3.032239f;
             float clampPitch = elapsedTime / 4;
             float clampRoll = elapsedTime / 4;
 
-            Vector3 positionForward = Position + RotationMatrix.Forward * distanceForward;
+            Vector3 positionForward = tank.Position + RotationMatrix.Forward * distanceForward;
             positionForward.Y = Terrain.GetPositionHeight(positionForward.X, positionForward.Z);
-            float currentPitch = (Position.Y - positionForward.Y) / (Position - positionForward).Length();
-            float deltaPitch = currentPitch - TankPitch;
-            TankPitch += MathHelper.Clamp(deltaPitch, -clampPitch, clampPitch);
+            float currentPitch = (tank.Position.Y - positionForward.Y) / (tank.Position - positionForward).Length();
+            float deltaPitch = currentPitch - tank.Pitch;
+            tank.Pitch += MathHelper.Clamp(deltaPitch, -clampPitch, clampPitch);
 
-            Vector3 positionRight = Position + RotationMatrix.Right * distanceRight;
+            Vector3 positionRight = tank.Position + RotationMatrix.Right * distanceRight;
             positionRight.Y = Terrain.GetPositionHeight(positionRight.X, positionRight.Z);
-            float currentRoll = (Position.Y - positionRight.Y) / (Position - positionRight).Length();
-            float deltaRoll = currentRoll - TankRoll;
-            TankRoll += MathHelper.Clamp(deltaRoll, -clampRoll, clampRoll);
+            float currentRoll = (tank.Position.Y - positionRight.Y) / (tank.Position - positionRight).Length();
+            float deltaRoll = currentRoll - tank.Roll;
+            tank.Roll += MathHelper.Clamp(deltaRoll, -clampRoll, clampRoll);
 
-            float yaw = TankYaw + MathHelper.Pi;
+            tank.World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(tank.Yaw + MathHelper.Pi, tank.Pitch, tank.Roll) * Matrix.CreateTranslation(tank.Position); // TODO definir escala tanque
 
-            World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(yaw, TankPitch, TankRoll) * Matrix.CreateTranslation(Position); // TODO definir escala tanque
+            tank.WheelRotation += (Velocidad * elapsedTime / 8f); // TODO revisar esta fórmula
 
-            Tank.WheelRotation += (Velocidad * elapsedTime / 8f); // TODO revisar esta fórmula
-
-            Camera.TargetPosition = Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
-            Camera.Position = Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
+            Camera.TargetPosition = tank.Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
+            Camera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
             Camera.BuildView();
 
 
@@ -313,7 +308,7 @@ namespace TGC.MonoGame.TP
                 e.Draw(Camera.View, Camera.Projection, Effect);
             }
 
-            Tank.Draw(World, Camera.View, Camera.Projection, Effect);
+            tank.Draw(tank.World, Camera.View, Camera.Projection, Effect);
 
             // gizmos
             if (DrawBoundingBoxes || DrawPositions)
@@ -324,6 +319,8 @@ namespace TGC.MonoGame.TP
                     {
                         e.DrawBoundingBox(Gizmos);
                     }
+
+                    tank.DrawBoundingBox(Gizmos);
                 }
                 if (DrawPositions)
                 {

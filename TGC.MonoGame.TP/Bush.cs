@@ -47,20 +47,7 @@ namespace TGC.MonoGame.TP
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            effect.Parameters["View"].SetValue(view);
-            effect.Parameters["Projection"].SetValue(projection);
-
-            Model.Root.Transform = _world;
-            var modelMeshesBaseTransforms = new Matrix[Model.Bones.Count];
-            Model.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
-
-            for (int i = 0; i < Model.Meshes.Count; i++)
-            {
-                var relativeTransform = modelMeshesBaseTransforms[Model.Meshes[i].ParentBone.Index];
-                effect.Parameters["World"].SetValue(relativeTransform);
-                effect.Parameters["DiffuseColor"].SetValue(_defaultColors[i]);
-                Model.Meshes[i].Draw();
-            }
+            base.Draw(view, projection, effect, Model);
         }
     }
 }
