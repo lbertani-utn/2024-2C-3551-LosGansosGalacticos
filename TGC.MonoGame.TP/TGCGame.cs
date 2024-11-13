@@ -53,14 +53,13 @@ namespace TGC.MonoGame.TP
         private Effect TerrainEffect { get; set; }
         private Effect ObjectEffect { get; set; }
 
-
-        private Random rnd = new Random();
-
+        BoundingFrustum BoundingFrustum;
         private TargetCamera Camera { get; set; }
         public static float CameraNearPlaneDistance { get; set; } = 1f;
         public static float CameraFarPlaneDistance { get; set; } = 2000f;
         private const float camX = 0.2f;
         private const float camY = -0.1f;
+
 
 
         // TODO crear clase para tanque jugador
@@ -111,17 +110,13 @@ namespace TGC.MonoGame.TP
             //    {Keys.Right, BindingLogic.NegativeRotation},
             //};
 
-            Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero)
-            {
-                Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance)
-            };
+            Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
+            Camera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
 
-            // Configuramos nuestras matrices de la escena.
-
-
+            // Create a bounding frustum to check bounding volumes against it
+            BoundingFrustum = new BoundingFrustum(Camera.View * Camera.Projection);
+            
             Entities = new List<WorldEntity>();
-            Random rnd = new();
-
             base.Initialize();
         }
 
@@ -279,6 +274,8 @@ namespace TGC.MonoGame.TP
             Camera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
             Camera.BuildView();
 
+            // Update the view projection matrix of the bounding frustum
+            BoundingFrustum.Matrix = Camera.View * Camera.Projection;
 
             Gizmos.UpdateViewProjection(Camera.View, Camera.Projection);
 
@@ -296,12 +293,18 @@ namespace TGC.MonoGame.TP
 
             // terreno
             terrain.Draw(GraphicsDevice, TerrainEffect);
-
+            
+            int drawWorldEntity = 0;
             foreach (WorldEntity e in Entities)
             {
-                terrain.spacialMap.Update(e);
-                e.Draw(Camera.View, Camera.Projection, ObjectEffect);
+                if (BoundingFrustum.Intersects(e.GetBoundingBox()))
+                { 
+                    terrain.spacialMap.Update(e);
+                    e.Draw(Camera.View, Camera.Projection, ObjectEffect);
+                    drawWorldEntity += 1;
+                }
             }
+            Debug.WriteLine(drawWorldEntity);
 
             tank.Draw(tank.World, Camera.View, Camera.Projection, ObjectEffect);
 
@@ -341,6 +344,7 @@ namespace TGC.MonoGame.TP
 
         private void LoadSurfaceObjects()
         {
+            Random rnd = new Random();
             int treeCount = 0;
             int bushCount = 0;
             int rockCount = 0;
