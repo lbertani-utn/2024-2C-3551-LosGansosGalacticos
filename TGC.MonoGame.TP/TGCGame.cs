@@ -49,14 +49,17 @@ namespace TGC.MonoGame.TP
         private Gizmos.Gizmos Gizmos;
         private bool DrawBoundingBoxes = false;
         private bool DrawPositions = false;
-        private Effect Effect { get; set; }
-        private Random rnd = new Random();
 
+        private Effect TerrainEffect { get; set; }
+        private Effect ObjectEffect { get; set; }
+
+        BoundingFrustum BoundingFrustum;
         private TargetCamera Camera { get; set; }
         public static float CameraNearPlaneDistance { get; set; } = 1f;
         public static float CameraFarPlaneDistance { get; set; } = 2000f;
         private const float camX = 0.2f;
         private const float camY = -0.1f;
+
 
 
         // TODO crear clase para tanque jugador
@@ -107,17 +110,13 @@ namespace TGC.MonoGame.TP
             //    {Keys.Right, BindingLogic.NegativeRotation},
             //};
 
-            Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero)
-            {
-                Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance)
-            };
+            Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
+            Camera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
 
-            // Configuramos nuestras matrices de la escena.
-
-
+            // Create a bounding frustum to check bounding volumes against it
+            BoundingFrustum = new BoundingFrustum(Camera.View * Camera.Projection);
+            
             Entities = new List<WorldEntity>();
-            Random rnd = new();
-
             base.Initialize();
         }
 
@@ -137,7 +136,8 @@ namespace TGC.MonoGame.TP
 
             // Cargo un efecto basico propio declarado en el Content pipeline.
             // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
-            Effect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+            TerrainEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+            ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
 
             // Cargo el tanque
             // TODO mover esto a su clase
@@ -147,33 +147,23 @@ namespace TGC.MonoGame.TP
             Debug.WriteLine("Load model tank/tank: {0} milliseconds", sw.ElapsedMilliseconds);
 
 
-            ApplyEffect(Model, Effect);
+            ApplyEffect(Model, ObjectEffect);
             tank = new Steamroller();
             tank.Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
             tank.World = Matrix.CreateTranslation(tank.Position);
             tank.Load(Model);
 
-            // Asigno el efecto que cargue a cada parte del mesh.
-            // Un modelo puede tener mas de 1 mesh internamente.
-            foreach (var mesh in Model.Meshes)
-            {
-                // Un mesh puede tener mas de 1 mesh part (cada 1 puede tener su propio efecto).
-                foreach (var meshPart in mesh.MeshParts)
-                {
-                    meshPart.Effect = Effect;
-                }
-            }
 
             terrainSize = 512f;
             heightScale = 0.5f;
-            terrain = new(this, Effect, GraphicsDevice, (terrainSize, terrainSize), heightScale);
+            terrain = new(this, TerrainEffect, GraphicsDevice, (terrainSize, terrainSize), heightScale);
 
 
             // TODO setear position.Y, pitch y roll del tanque en la posición inicial
 
-            Tree.LoadContent(Content, Effect);
-            Rock.LoadContent(Content, Effect);
-            Bush.LoadContent(Content, Effect);
+            Tree.LoadContent(Content, ObjectEffect);
+            Rock.LoadContent(Content, ObjectEffect);
+            Bush.LoadContent(Content, ObjectEffect);
 
             LoadSurfaceObjects();
 
@@ -284,8 +274,23 @@ namespace TGC.MonoGame.TP
             Camera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
             Camera.BuildView();
 
+            // Update the view projection matrix of the bounding frustum
+            BoundingFrustum.Matrix = Camera.View * Camera.Projection;
 
             Gizmos.UpdateViewProjection(Camera.View, Camera.Projection);
+
+
+            //// colisiones entre tanque y objetos del escenario
+            //foreach (WorldEntity e in Entities)
+            //{
+            //    if (e.Status != WorldEntityStatus.Destroyed)
+            //    {
+            //        if (tank.Intersects(e.GetBoundingBox()) != Collisions.BoxCylinderIntersection.None)
+            //        { 
+            //            e.Status = WorldEntityStatus.Destroyed;
+            //        }
+            //    }
+            //}
 
             base.Update(gameTime);
         }
@@ -300,34 +305,40 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.Clear(new Color(23 / 255.0f, 171 / 255.0f, 237 / 255.0f));
 
             // terreno
-            terrain.Draw(GraphicsDevice, Effect);
-
+            terrain.Draw(GraphicsDevice, TerrainEffect);
+            
+            int drawWorldEntity = 0;
             foreach (WorldEntity e in Entities)
             {
-                terrain.spacialMap.Update(e);
-                e.Draw(Camera.View, Camera.Projection, Effect);
+                if (e.Status!=WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetBoundingBox()))
+                { 
+                    terrain.spacialMap.Update(e);
+                    e.Draw(Camera.View, Camera.Projection, ObjectEffect);
+                    drawWorldEntity += 1;
+                }
             }
+            Debug.WriteLine(drawWorldEntity);
 
-            tank.Draw(tank.World, Camera.View, Camera.Projection, Effect);
+            tank.Draw(tank.World, Camera.View, Camera.Projection, ObjectEffect);
 
             // gizmos
             if (DrawBoundingBoxes || DrawPositions)
             {
-                if (DrawBoundingBoxes)
+                foreach (WorldEntity e in Entities)
                 {
-                    foreach (WorldEntity e in Entities)
+                    if (e.Status != WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetBoundingBox()))
                     {
-                        e.DrawBoundingBox(Gizmos);
+                        if (DrawBoundingBoxes)
+                        {
+                            e.DrawBoundingBox(Gizmos);
+                        }
+                        if (DrawPositions)
+                        {
+                            e.DrawPosition(Gizmos);
+                        }
                     }
 
                     tank.DrawBoundingBox(Gizmos);
-                }
-                if (DrawPositions)
-                {
-                    foreach (WorldEntity e in Entities)
-                    {
-                        e.DrawPosition(Gizmos);
-                    }
                 }
                 Gizmos.Draw();
             }
@@ -346,6 +357,7 @@ namespace TGC.MonoGame.TP
 
         private void LoadSurfaceObjects()
         {
+            Random rnd = new Random();
             int treeCount = 0;
             int bushCount = 0;
             int rockCount = 0;

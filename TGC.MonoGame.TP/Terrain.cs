@@ -6,7 +6,6 @@ namespace TGC.MonoGame.TP
 {
     internal class Terrain
     {
-        public const string ContentFolderModels = "Models/";
         public const string ContentFolderTextures = "Textures/";
         private Vector3 _defaultColor;
         private Matrix _world;
@@ -28,7 +27,6 @@ namespace TGC.MonoGame.TP
 
         public Terrain(Game game, Effect effect, GraphicsDevice GraphicsDevice, (float X, float Z) terrainSize, float heightScale)
         {
-            //HeightData = game.Content.Load<Texture2D>(ContentFolderModels + "terrain/heightmap");
             HeightData = game.Content.Load<Texture2D>(ContentFolderTextures + "Rolling Hills Height Map/Rolling Hills Height Map 256");
             Texels = new Color[HeightData.Width * HeightData.Height];
             _defaultColor = new Vector3(42 / 255.0f, 120 / 255.0f, 49 / 255.0f);

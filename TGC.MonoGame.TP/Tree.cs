@@ -1,13 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using System;
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP
 {
     internal class Tree : WorldEntity
     {
         public static Model Model;
+        public static BoundingBoxHelper ModelBox;
 
         public Tree(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
@@ -18,6 +19,10 @@ namespace TGC.MonoGame.TP
         public static void LoadContent(ContentManager Content, Effect Effect)
         {
             Model = LoadContent(Content, "tree/tree", Effect);
+
+            Vector3 min = new Vector3(-0.48368357f, -0.015338364f, -0.44941229f);
+            Vector3 max = new Vector3(0.28571863f, 15.816038f, 0.31998991f);
+            ModelBox = new BoundingBoxHelper(min, max);
         }
 
         protected void Update(GameTime gameTime)
@@ -25,15 +30,12 @@ namespace TGC.MonoGame.TP
             // ¿¿??
         }
 
-        public override BoundingBoxLocalCoordinates GetLocalBoundingBox(Model model)
+        protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
-            Vector3 min = new Vector3(-0.48368357f, -0.015338364f, -0.44941229f);
-            Vector3 max = new Vector3(0.28571863f, 15.816038f, 0.31998991f);
-            BoundingBoxLocalCoordinates localBox = new BoundingBoxLocalCoordinates(min, max);
-            return localBox;
+            return ModelBox.GetBoundingBox(position, scale);
         }
 
-        public override Vector3[] GetDefaultColors(int meshes)
+        protected override Vector3[] GetDefaultColors(int meshes)
         {
             float g = (float)(Random.NextDouble() * 0.2f) + 0.33f;
             float rb = (float)(Random.NextDouble() * 0.1f) + 0.05f;

@@ -3,27 +3,35 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP {
+
     public class WorldEntity {
         private const string ContentFolder3D = "Models/";
-        public static Random Random;
+        protected static Random Random;
         protected Vector3 _position;
         protected BoundingBox _boundingBox;
         protected Vector3[] _defaultColors;
         protected Matrix _world;
         protected Vector3 _scale;
         protected float _yaw;
+        protected WorldEntityStatus _status;
         protected ((int gridX, int gridZ) Min, (int gridX, int gridZ) Max) gridIndices = new();
 
+        public WorldEntityStatus Status
+        {
+            get => _status;
+            set => _status = value;
+        }
+
         public WorldEntity(Vector3 position, Vector3 scale, float yaw, Model model) {
+            _status = WorldEntityStatus.Intact;
             _position = position;
             _scale = scale;
             _yaw = yaw;
 
-            BoundingBoxLocalCoordinates localBox = GetLocalBoundingBox(model);
-            _boundingBox.Min = position + (localBox.ObjectPositionToBoxCenter - localBox.Distance) * scale;
-            _boundingBox.Max = position + (localBox.ObjectPositionToBoxCenter + localBox.Distance) * scale;
+            _boundingBox = CreateBoundingBox(model, position, scale);
         }
 
         public Vector3 GetPosition() {
@@ -53,6 +61,8 @@ namespace TGC.MonoGame.TP {
             
             return model;
         }
+
+
 
         public virtual void Draw(Matrix view, Matrix projection, Effect effect) {}
 
@@ -84,7 +94,7 @@ namespace TGC.MonoGame.TP {
             gizmos.DrawSphere(_position, Vector3.One, Color.White);
         }
 
-        public virtual Vector3[] GetDefaultColors(int meshes) {
+        protected virtual Vector3[] GetDefaultColors(int meshes) {
             Vector3[] colors = new Vector3[meshes];
             for (int i = 0; i < meshes; i++) 
             {
@@ -107,9 +117,10 @@ namespace TGC.MonoGame.TP {
             return _boundingBox;
         }
 
-        public virtual BoundingBoxLocalCoordinates GetLocalBoundingBox(Model model)
+        protected virtual BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
-            return new BoundingBoxLocalCoordinates(model.Meshes[0].BoundingSphere.Center, model.Meshes[0].BoundingSphere.Radius);
+            BoundingBoxHelper boxHelper =new BoundingBoxHelper(model.Meshes[0].BoundingSphere.Center, model.Meshes[0].BoundingSphere.Radius);
+            return boxHelper.GetBoundingBox(position, scale);
         }
 
         public ((int gridX, int gridZ) Min, (int gridX, int gridZ) Max) GetGridIndices() {
