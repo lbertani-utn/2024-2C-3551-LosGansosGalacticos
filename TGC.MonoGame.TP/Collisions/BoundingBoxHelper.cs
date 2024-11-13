@@ -1,38 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace TGC.MonoGame.TP
+namespace TGC.MonoGame.TP.Collisions
 {
-    public class BoundingBoxLocalCoordinates
+    public class BoundingBoxHelper
     {
         private Vector3 _center;
-        public Vector3 Center
-        {
-            get => _center;
-        }
-
         private Vector3 _distance;
-        public Vector3 Distance
-        {
-            get => _distance;
-        }
-
         private Vector3 _min;
-        public Vector3 Min
-        {
-            get => _min;
-        }
-
         private Vector3 _max;
-        public Vector3 Max
-        {
-            get => _max;
-        }
-
         private Vector3 _size;
-        public Vector3 Size
-        {
-            get => _size;
-        }
 
         private Vector3 _objectPositionToBoxCenter;
         public Vector3 ObjectPositionToBoxCenter
@@ -41,7 +17,7 @@ namespace TGC.MonoGame.TP
             set => _objectPositionToBoxCenter = value;
         }
 
-        public BoundingBoxLocalCoordinates(Vector3 center, float radius)
+        public BoundingBoxHelper(Vector3 center, float radius)
         {
             _center = center;
             _distance = new Vector3(radius, radius, radius);
@@ -51,7 +27,7 @@ namespace TGC.MonoGame.TP
             _objectPositionToBoxCenter = new Vector3(0, center.Y, 0);
         }
 
-        public BoundingBoxLocalCoordinates(Vector3 min, Vector3 max)
+        public BoundingBoxHelper(Vector3 min, Vector3 max)
         {
             _min = min;
             _max = max;
@@ -59,6 +35,16 @@ namespace TGC.MonoGame.TP
             _distance = (max - min) / 2;
             _size = _distance * 2;
             _objectPositionToBoxCenter = new Vector3(0, _center.Y, 0);
+        }
+
+        public BoundingBox GetBoundingBox(Vector3 position, Vector3 scale)
+        {
+            return new BoundingBox(position + (_objectPositionToBoxCenter - _distance) * scale, position + (_objectPositionToBoxCenter + _distance) * scale);
+        }
+
+        public BoundingCylinder GetBoundingCylinder(Vector3 position, Vector3 scale)
+        {
+            return new BoundingCylinder(position + _objectPositionToBoxCenter * scale, _distance.X * scale.X, _distance.Y * scale.Y);
         }
 
     }

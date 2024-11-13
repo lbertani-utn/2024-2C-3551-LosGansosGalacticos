@@ -1,13 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using System;
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP
 {
     internal class Rock : WorldEntity
     {
         public static Model Model;
+        public static BoundingBoxHelper ModelBox;
 
         public Rock(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
@@ -18,6 +19,11 @@ namespace TGC.MonoGame.TP
         public static void LoadContent(ContentManager Content, Effect Effect)
         {
             Model = LoadContent(Content, "rock/rock", Effect);
+
+            Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
+            Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
+            ModelBox = new BoundingBoxHelper(min, max);
+            ModelBox.ObjectPositionToBoxCenter = new Vector3(0f, -0.0061135f, 0f);
         }
 
         protected void Update(GameTime gameTime)
@@ -25,14 +31,11 @@ namespace TGC.MonoGame.TP
             // ¿¿??
         }
 
-        public override BoundingBoxLocalCoordinates GetLocalBoundingBox(Model model)
+        public override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
-            Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
-            Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
-            BoundingBoxLocalCoordinates localBox = new BoundingBoxLocalCoordinates(min, max);
-            localBox.ObjectPositionToBoxCenter = new Vector3(0f, -0.0061135f, 0f);
-            return localBox;
+            return ModelBox.GetBoundingBox(position, scale);
         }
+
 
         public override Vector3[] GetDefaultColors(int meshes)
         {

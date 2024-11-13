@@ -1,13 +1,14 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using System;
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP
 {
     internal class Bush : WorldEntity
     {
         public static Model Model;
+        public static BoundingBoxHelper ModelBox;
 
         public Bush(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
@@ -19,6 +20,10 @@ namespace TGC.MonoGame.TP
         public static void LoadContent(ContentManager Content, Effect Effect)
         {
             Model = LoadContent(Content, "bush/bush1", Effect);
+
+            Vector3 min = new Vector3(-1.55790175f, -0.743808021f, -1.55288585f);
+            Vector3 max = new Vector3(1.76620225f, 2.097365639f, 1.77121815f);
+            ModelBox = new BoundingBoxHelper(min, max);
         }
 
         protected void Update(GameTime gameTime)
@@ -26,13 +31,11 @@ namespace TGC.MonoGame.TP
             // ¿¿??
         }
 
-        public override BoundingBoxLocalCoordinates GetLocalBoundingBox(Model model)
+        public override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
-            Vector3 min = new Vector3(-1.55790175f, -0.743808021f, -1.55288585f);
-            Vector3 max = new Vector3(1.76620225f, 2.097365639f, 1.77121815f);
-            BoundingBoxLocalCoordinates localBox = new BoundingBoxLocalCoordinates(min, max);
-            return localBox;
+            return ModelBox.GetBoundingBox(position, scale);
         }
+
 
         public override Vector3[] GetDefaultColors(int meshes)
         {

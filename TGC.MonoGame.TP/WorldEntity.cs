@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TGC.MonoGame.TP.Collisions;
 
 namespace TGC.MonoGame.TP {
     public class WorldEntity {
@@ -21,9 +22,7 @@ namespace TGC.MonoGame.TP {
             _scale = scale;
             _yaw = yaw;
 
-            BoundingBoxLocalCoordinates localBox = GetLocalBoundingBox(model);
-            _boundingBox.Min = position + (localBox.ObjectPositionToBoxCenter - localBox.Distance) * scale;
-            _boundingBox.Max = position + (localBox.ObjectPositionToBoxCenter + localBox.Distance) * scale;
+            _boundingBox = CreateBoundingBox(model, position, scale);
         }
 
         public Vector3 GetPosition() {
@@ -107,9 +106,10 @@ namespace TGC.MonoGame.TP {
             return _boundingBox;
         }
 
-        public virtual BoundingBoxLocalCoordinates GetLocalBoundingBox(Model model)
+        public virtual BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
-            return new BoundingBoxLocalCoordinates(model.Meshes[0].BoundingSphere.Center, model.Meshes[0].BoundingSphere.Radius);
+            BoundingBoxHelper boxHelper =new BoundingBoxHelper(model.Meshes[0].BoundingSphere.Center, model.Meshes[0].BoundingSphere.Radius);
+            return boxHelper.GetBoundingBox(position, scale);
         }
 
         public ((int gridX, int gridZ) Min, (int gridX, int gridZ) Max) GetGridIndices() {
