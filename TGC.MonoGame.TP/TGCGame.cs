@@ -279,6 +279,19 @@ namespace TGC.MonoGame.TP
 
             Gizmos.UpdateViewProjection(Camera.View, Camera.Projection);
 
+
+            //// colisiones entre tanque y objetos del escenario
+            //foreach (WorldEntity e in Entities)
+            //{
+            //    if (e.Status != WorldEntityStatus.Destroyed)
+            //    {
+            //        if (tank.Intersects(e.GetBoundingBox()) != Collisions.BoxCylinderIntersection.None)
+            //        { 
+            //            e.Status = WorldEntityStatus.Destroyed;
+            //        }
+            //    }
+            //}
+
             base.Update(gameTime);
         }
 
@@ -297,7 +310,7 @@ namespace TGC.MonoGame.TP
             int drawWorldEntity = 0;
             foreach (WorldEntity e in Entities)
             {
-                if (BoundingFrustum.Intersects(e.GetBoundingBox()))
+                if (e.Status!=WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetBoundingBox()))
                 { 
                     terrain.spacialMap.Update(e);
                     e.Draw(Camera.View, Camera.Projection, ObjectEffect);
@@ -311,21 +324,21 @@ namespace TGC.MonoGame.TP
             // gizmos
             if (DrawBoundingBoxes || DrawPositions)
             {
-                if (DrawBoundingBoxes)
+                foreach (WorldEntity e in Entities)
                 {
-                    foreach (WorldEntity e in Entities)
+                    if (e.Status != WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetBoundingBox()))
                     {
-                        e.DrawBoundingBox(Gizmos);
+                        if (DrawBoundingBoxes)
+                        {
+                            e.DrawBoundingBox(Gizmos);
+                        }
+                        if (DrawPositions)
+                        {
+                            e.DrawPosition(Gizmos);
+                        }
                     }
 
                     tank.DrawBoundingBox(Gizmos);
-                }
-                if (DrawPositions)
-                {
-                    foreach (WorldEntity e in Entities)
-                    {
-                        e.DrawPosition(Gizmos);
-                    }
                 }
                 Gizmos.Draw();
             }

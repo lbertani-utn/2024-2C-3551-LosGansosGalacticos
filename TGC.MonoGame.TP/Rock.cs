@@ -31,13 +31,13 @@ namespace TGC.MonoGame.TP
             // ¿¿??
         }
 
-        public override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
+        protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
             return ModelBox.GetBoundingBox(position, scale);
         }
 
 
-        public override Vector3[] GetDefaultColors(int meshes)
+        protected override Vector3[] GetDefaultColors(int meshes)
         {
             var num = Random.NextDouble() * 0.3f + 0.3f;
             float r = (float)(num + Random.NextDouble() * 0.05f);

@@ -31,13 +31,13 @@ namespace TGC.MonoGame.TP
             // ¿¿??
         }
 
-        public override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
+        protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
             return ModelBox.GetBoundingBox(position, scale);
         }
 
 
-        public override Vector3[] GetDefaultColors(int meshes)
+        protected override Vector3[] GetDefaultColors(int meshes)
         {
             Vector3 green = new Vector3(0.050980392f, 0.180392157f, 0.109803922f);
             Vector3 brown = new Vector3(0.105882353f, 0.074509804f, 0.050980392f);

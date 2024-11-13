@@ -248,5 +248,17 @@ namespace TGC.MonoGame.TP.Tank
             }
         }
 
+        public BoxCylinderIntersection Intersects(BoundingBox box)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (BoundingVolumes[i].Intersects(box) != BoxCylinderIntersection.None)
+                {
+                    return BoundingVolumes[i].Intersects(box);
+                }
+            }
+            return BoxCylinderIntersection.None;
+        }
+
     }
 }
