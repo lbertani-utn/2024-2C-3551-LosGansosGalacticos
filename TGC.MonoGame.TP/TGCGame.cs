@@ -281,16 +281,16 @@ namespace TGC.MonoGame.TP
 
 
             //// colisiones entre tanque y objetos del escenario
-            //foreach (WorldEntity e in Entities)
-            //{
-            //    if (e.Status != WorldEntityStatus.Destroyed)
-            //    {
-            //        if (tank.Intersects(e.GetBoundingBox()) != Collisions.BoxCylinderIntersection.None)
-            //        { 
-            //            e.Status = WorldEntityStatus.Destroyed;
-            //        }
-            //    }
-            //}
+            foreach (WorldEntity e in Entities)
+            {
+                if (e.Status != WorldEntityStatus.Destroyed)
+                {
+                    if (tank.Intersects(e.GetHitBox()))
+                    {
+                        e.Status = WorldEntityStatus.Destroyed;
+                    }
+                }
+            }
 
             base.Update(gameTime);
         }
