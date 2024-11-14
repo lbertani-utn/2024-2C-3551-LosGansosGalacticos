@@ -22,8 +22,9 @@ namespace TGC.MonoGame.TP
 
             Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
             Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
-            ModelBoundingBox = new BoundingBoxHelper(min, max);
-            ModelBoundingBox.ObjectPositionToBoxCenter = new Vector3(0f, -0.0061135f, 0f);
+            Vector3 optbc = new Vector3(0f, -0.0061135f, 0f);
+            ModelBoundingBox = new BoundingBoxHelper(min, max, optbc);
+            
         }
 
         protected void Update(GameTime gameTime)
