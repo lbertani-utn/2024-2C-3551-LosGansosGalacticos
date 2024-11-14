@@ -45,18 +45,22 @@ namespace TGC.MonoGame.TP
 
         private GraphicsDeviceManager Graphics { get; }
         private Point ScreenCenter;
-        private SpriteBatch SpriteBatch { get; set; }
+        private SpriteBatch SpriteBatch;
         private Gizmos.Gizmos Gizmos;
         private bool DrawBoundingBoxes = false;
         private bool DrawPositions = false;
 
-        private Effect TerrainEffect { get; set; }
-        private Effect ObjectEffect { get; set; }
+        private Effect TerrainEffect;
+        private Effect ObjectEffect;
 
-        BoundingFrustum BoundingFrustum;
-        private TargetCamera Camera { get; set; }
-        public static float CameraNearPlaneDistance { get; set; } = 1f;
-        public static float CameraFarPlaneDistance { get; set; } = 2000f;
+        private BoundingFrustum BoundingFrustum;
+        private CameraType SelectedCamera;
+        private TargetCamera FollowCamera;
+        private TargetCamera SatelliteCamera;
+        private TargetCamera _camera;
+        private TargetCamera Camera { get => _camera; }
+        private static float CameraNearPlaneDistance = 1f;
+        private static float CameraFarPlaneDistance = 2000f;
         private const float camX = 0.2f;
         private const float camY = -0.1f;
 
@@ -110,11 +114,15 @@ namespace TGC.MonoGame.TP
             //    {Keys.Right, BindingLogic.NegativeRotation},
             //};
 
-            Camera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
-            Camera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
+            FollowCamera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
+            FollowCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
+            _camera = FollowCamera;
+
+            SatelliteCamera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.UnitY * 100f, Vector3.Zero);
+            SatelliteCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
 
             // Create a bounding frustum to check bounding volumes against it
-            BoundingFrustum = new BoundingFrustum(Camera.View * Camera.Projection);
+            BoundingFrustum = new BoundingFrustum(FollowCamera.View * FollowCamera.Projection);
             
             Entities = new List<WorldEntity>();
             base.Initialize();
@@ -205,6 +213,19 @@ namespace TGC.MonoGame.TP
             {
                 DrawPositions = !DrawPositions;
             }
+            if (keyboardState.IsKeyDown(Keys.C) && previousKeyboardState.IsKeyUp(Keys.C))
+            {
+                if (SelectedCamera == CameraType.Follow)
+                {
+                    SelectedCamera = CameraType.Satellite;
+                    _camera = SatelliteCamera;
+                }
+                else if (SelectedCamera == CameraType.Satellite)
+                {
+                    SelectedCamera = CameraType.Follow;
+                    _camera = FollowCamera;
+                }
+            }
 
             // rozamiento
             if (Velocidad > 0)
@@ -270,12 +291,18 @@ namespace TGC.MonoGame.TP
 
             tank.WheelRotation += (Velocidad * elapsedTime / 8f); // TODO revisar esta fórmula
 
-            Camera.TargetPosition = tank.Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
-            Camera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
-            Camera.BuildView();
+
+            FollowCamera.TargetPosition = tank.Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
+            FollowCamera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
+            FollowCamera.BuildView();
+
+            SatelliteCamera.TargetPosition = tank.Position;
+            SatelliteCamera.Position = tank.Position + new Vector3(0.01f, 1000f, 0.01f);
+            SatelliteCamera.BuildView();
+
 
             // Update the view projection matrix of the bounding frustum
-            BoundingFrustum.Matrix = Camera.View * Camera.Projection;
+            BoundingFrustum.Matrix = FollowCamera.View * FollowCamera.Projection;
 
             Gizmos.UpdateViewProjection(Camera.View, Camera.Projection);
 
