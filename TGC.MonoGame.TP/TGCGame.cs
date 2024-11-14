@@ -332,7 +332,7 @@ namespace TGC.MonoGame.TP
             GraphicsDevice.Clear(new Color(23 / 255.0f, 171 / 255.0f, 237 / 255.0f));
 
             // terreno
-            terrain.Draw(GraphicsDevice, TerrainEffect);
+            terrain.Draw(Camera.View, Camera.Projection);
             
             int drawWorldEntity = 0;
             foreach (WorldEntity e in Entities)
@@ -364,9 +364,14 @@ namespace TGC.MonoGame.TP
                             e.DrawPosition(Gizmos);
                         }
                     }
-
-                    tank.DrawBoundingBox(Gizmos);
                 }
+
+                if (DrawBoundingBoxes)
+                {
+                    tank.DrawBoundingBox(Gizmos);
+                    Gizmos.DrawFrustum(FollowCamera.View * FollowCamera.Projection, Color.White);
+                }
+
                 Gizmos.Draw();
             }
         }
