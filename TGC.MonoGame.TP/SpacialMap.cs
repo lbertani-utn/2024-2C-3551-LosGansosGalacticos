@@ -45,7 +45,7 @@ namespace TGC.MonoGame.TP {
         }
 
         public void Update(WorldEntity entity) {
-            BoundingBox box = entity.GetBoundingBox();
+            BoundingBox box = entity.GetHitBox();
 
             int minX = (int) Math.Floor(box.Min.X / cellSizeX + gridSizeX / 2.0f);
             int maxX = (int) Math.Floor(box.Max.X  / cellSizeX + gridSizeX / 2.0f);

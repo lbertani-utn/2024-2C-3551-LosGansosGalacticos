@@ -7,8 +7,8 @@ namespace TGC.MonoGame.TP
 {
     internal class Bush : WorldEntity
     {
-        public static Model Model;
-        public static BoundingBoxHelper ModelBox;
+        private static Model Model;
+        private static BoundingBoxHelper ModelBoundingBox;
 
         public Bush(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
@@ -23,7 +23,7 @@ namespace TGC.MonoGame.TP
 
             Vector3 min = new Vector3(-1.55790175f, -0.743808021f, -1.55288585f);
             Vector3 max = new Vector3(1.76620225f, 2.097365639f, 1.77121815f);
-            ModelBox = new BoundingBoxHelper(min, max);
+            ModelBoundingBox = new BoundingBoxHelper(min, max);
         }
 
         protected void Update(GameTime gameTime)
@@ -33,7 +33,7 @@ namespace TGC.MonoGame.TP
 
         protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
-            return ModelBox.GetBoundingBox(position, scale);
+            return ModelBoundingBox.GetBoundingBox(position, scale);
         }
 
 

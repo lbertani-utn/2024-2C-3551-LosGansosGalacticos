@@ -310,7 +310,7 @@ namespace TGC.MonoGame.TP
             int drawWorldEntity = 0;
             foreach (WorldEntity e in Entities)
             {
-                if (e.Status!=WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetBoundingBox()))
+                if (e.Status!=WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetDrawBox()))
                 { 
                     terrain.spacialMap.Update(e);
                     e.Draw(Camera.View, Camera.Projection, ObjectEffect);
@@ -326,7 +326,7 @@ namespace TGC.MonoGame.TP
             {
                 foreach (WorldEntity e in Entities)
                 {
-                    if (e.Status != WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetBoundingBox()))
+                    if (e.Status != WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetDrawBox()))
                     {
                         if (DrawBoundingBoxes)
                         {

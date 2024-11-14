@@ -84,11 +84,11 @@ namespace TGC.MonoGame.TP {
             }
         }
 
-
-        public void DrawBoundingBox(Gizmos.Gizmos gizmos)
+        public virtual void DrawBoundingBox(Gizmos.Gizmos gizmos)
         {
             gizmos.DrawCube((_boundingBox.Max + _boundingBox.Min) / 2f, _boundingBox.Max - _boundingBox.Min, Color.Red);
         }
+
         public void DrawPosition(Gizmos.Gizmos gizmos)
         {
             gizmos.DrawSphere(_position, Vector3.One, Color.White);
@@ -113,7 +113,11 @@ namespace TGC.MonoGame.TP {
             }
         }
 
-        public BoundingBox GetBoundingBox() {
+        public BoundingBox GetHitBox() {
+            return _boundingBox;
+        }
+        public virtual BoundingBox GetDrawBox()
+        {
             return _boundingBox;
         }
 
