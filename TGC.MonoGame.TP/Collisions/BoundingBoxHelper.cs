@@ -42,9 +42,9 @@ namespace TGC.MonoGame.TP.Collisions
             return new BoundingBox(position + (_objectPositionToBoxCenter - _distance) * scale, position + (_objectPositionToBoxCenter + _distance) * scale);
         }
 
-        public BoundingCylinder GetBoundingCylinder(Vector3 position, Vector3 scale)
+        public OrientedBoundingBox GetOrientedBoundingBox(Vector3 position, Vector3 scale)
         {
-            return new BoundingCylinder(position + _objectPositionToBoxCenter * scale, _distance.X * scale.X, _distance.Y * scale.Y);
+            return new OrientedBoundingBox(position + _objectPositionToBoxCenter * scale, _distance * scale);
         }
 
     }
