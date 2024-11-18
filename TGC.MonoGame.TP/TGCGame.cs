@@ -72,7 +72,7 @@ namespace TGC.MonoGame.TP
 
         private float Velocidad = 0f;
         private const float VelocidadIncremento = 0.5f;
-        private const float VelocidadMaxima = 12;
+        private const float VelocidadMaxima = 20f;
         private const float Rozamiento = 0.05f;
 
 
@@ -290,6 +290,9 @@ namespace TGC.MonoGame.TP
             tank.World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(tank.Yaw + MathHelper.Pi, tank.Pitch, tank.Roll) * Matrix.CreateTranslation(tank.Position); // TODO definir escala tanque
 
             tank.WheelRotation += (Velocidad * elapsedTime / 8f); // TODO revisar esta fórmula
+
+            // pendiente
+            Velocidad += (float) Math.Sin(currentPitch) * 0.5f;
 
 
             FollowCamera.TargetPosition = tank.Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
