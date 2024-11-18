@@ -24,6 +24,15 @@ namespace TGC.MonoGame.TP.Tank
         public float Roll = 0f;
         public Matrix World;
 
+        public float Speed
+        {
+            get => Propulsion + Downhill;
+        }
+        public float Propulsion = 0f;
+        public float Downhill = 0f;
+        public const float SpeedIncrease = 0.25f;
+        public const float SpeedLimit = 15f;
+        public const float Friction = 0.05f;
 
         private const float FrontWheelRotation = 1.6f;
         private float cannonCooldown = 0f;

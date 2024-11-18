@@ -64,17 +64,9 @@ namespace TGC.MonoGame.TP
         private const float camX = 0.2f;
         private const float camY = -0.1f;
 
-
-
         // TODO crear clase para tanque jugador
         private Model Model { get; set; }
         private Steamroller tank;
-
-        private float Velocidad = 0f;
-        private const float VelocidadIncremento = 0.5f;
-        private const float VelocidadMaxima = 20f;
-        private const float Rozamiento = 0.05f;
-
 
         // terreno
         private Terrain terrain;
@@ -228,13 +220,13 @@ namespace TGC.MonoGame.TP
             }
 
             // rozamiento
-            if (Velocidad > 0)
+            if (tank.Propulsion > 0)
             {
-                Velocidad = MathHelper.Clamp(Velocidad - Rozamiento, 0, VelocidadMaxima);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Steamroller.Friction, 0, Steamroller.SpeedLimit);
             }
-            else if (Velocidad < 0)
+            else if (tank.Propulsion < 0)
             {
-                Velocidad = MathHelper.Clamp(Velocidad + Rozamiento, -VelocidadMaxima, 0);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Steamroller.Friction, -Steamroller.SpeedLimit, 0);
             }
 
             // dirección rotación
@@ -252,11 +244,11 @@ namespace TGC.MonoGame.TP
             // avance/retroceso
             if (keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W))
             {
-                Velocidad = MathHelper.Clamp(Velocidad + VelocidadIncremento, -VelocidadMaxima, VelocidadMaxima);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Steamroller.SpeedIncrease, -Steamroller.SpeedLimit, Steamroller.SpeedLimit);
             }
             else if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S))
             {
-                Velocidad = MathHelper.Clamp(Velocidad - VelocidadIncremento, -VelocidadMaxima, VelocidadMaxima);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Steamroller.SpeedIncrease, -Steamroller.SpeedLimit, Steamroller.SpeedLimit);
             }
 
             // torreta y cañon
@@ -266,7 +258,8 @@ namespace TGC.MonoGame.TP
             Matrix RotationMatrix = Matrix.CreateRotationY(tank.Yaw);
             Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(tank.Yaw + tank.TurretRotation, -tank.CannonRotation, 0f);
 
-            Vector3 movement = RotationMatrix.Forward * Velocidad * elapsedTime;
+            Vector3 movement = RotationMatrix.Forward * tank.Speed * elapsedTime;
+            tank.WheelRotation += (tank.Speed * elapsedTime / 8f); // TODO revisar esta fórmula
             tank.Position = tank.Position + movement;
             tank.Position.Y = Terrain.GetPositionHeight(tank.Position.X, tank.Position.Z);
 
@@ -275,24 +268,26 @@ namespace TGC.MonoGame.TP
             float clampPitch = elapsedTime / 4;
             float clampRoll = elapsedTime / 4;
 
+            // pendiente hacia adelante/atrás 
             Vector3 positionForward = tank.Position + RotationMatrix.Forward * distanceForward;
             positionForward.Y = Terrain.GetPositionHeight(positionForward.X, positionForward.Z);
             float currentPitch = (tank.Position.Y - positionForward.Y) / (tank.Position - positionForward).Length();
             float deltaPitch = currentPitch - tank.Pitch;
             tank.Pitch += MathHelper.Clamp(deltaPitch, -clampPitch, clampPitch);
 
+            // velocidad en pendiente
+            tank.Downhill = tank.Propulsion * (float)Math.Sin(currentPitch);
+
+            // pendiente hacia los costados
             Vector3 positionRight = tank.Position + RotationMatrix.Right * distanceRight;
             positionRight.Y = Terrain.GetPositionHeight(positionRight.X, positionRight.Z);
             float currentRoll = (tank.Position.Y - positionRight.Y) / (tank.Position - positionRight).Length();
             float deltaRoll = currentRoll - tank.Roll;
             tank.Roll += MathHelper.Clamp(deltaRoll, -clampRoll, clampRoll);
 
+
             tank.World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(tank.Yaw + MathHelper.Pi, tank.Pitch, tank.Roll) * Matrix.CreateTranslation(tank.Position); // TODO definir escala tanque
 
-            tank.WheelRotation += (Velocidad * elapsedTime / 8f); // TODO revisar esta fórmula
-
-            // pendiente
-            Velocidad += (float) Math.Sin(currentPitch) * 0.5f;
 
 
             FollowCamera.TargetPosition = tank.Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
