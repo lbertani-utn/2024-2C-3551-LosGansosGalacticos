@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.ObjectModel;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
 
@@ -7,9 +8,9 @@ namespace TGC.MonoGame.TP.Tank
     internal class Steamroller : Tank
     {
         protected Vector3[] DiffuseColors;
-        BoundingCylinder[] BoundingVolumes;
+        OrientedBoundingBox[] BoundingVolumes;
         Vector3[] BoundingVolumeTraslation;
-        Matrix[] BoundingVolumeRotation;
+        Vector3[] BoundingVolumeScale;
 
         private const float PiOver6 =  0.52356f;
         private const float PiOver12 = 0.26180f;
@@ -87,16 +88,6 @@ namespace TGC.MonoGame.TP.Tank
 
         public void LoadBoundingVolumes()
         {
-            BoundingVolumes = new BoundingCylinder[8];
-            BoundingVolumes[0] = new BoundingCylinder(Position, 2.54742f, 1.00186f);
-            BoundingVolumes[1] = new BoundingCylinder(Position, 0.73622f, 3.09886f);
-            BoundingVolumes[2] = new BoundingCylinder(Position, 1.22763f, 1.05816f);
-            BoundingVolumes[3] = new BoundingCylinder(Position, 0.85413f, 0.84755f);
-            BoundingVolumes[4] = new BoundingCylinder(Position, 0.73622f, 3.09886f);
-            BoundingVolumes[5] = new BoundingCylinder(Position, 1.22763f, 1.05816f);
-            BoundingVolumes[6] = new BoundingCylinder(Position, 0.85413f, 0.84755f);
-            BoundingVolumes[7] = new BoundingCylinder(Position, 1.47766f, 0.65884f);
-
             BoundingVolumeTraslation = new Vector3[8];
             BoundingVolumeTraslation[0] = new Vector3(-0.00000f, 1.37576f, -0.93567f);
             BoundingVolumeTraslation[1] = new Vector3(-1.66787f, 2.18925f, -0.29799f);
@@ -107,15 +98,23 @@ namespace TGC.MonoGame.TP.Tank
             BoundingVolumeTraslation[6] = new Vector3(1.70793f, 0.73387f, 2.40269f);
             BoundingVolumeTraslation[7] = new Vector3(-0.00000f, 2.97638f, -0.35596f);
 
-            BoundingVolumeRotation = new Matrix[8];
-            BoundingVolumeRotation[0] = Matrix.Identity;
-            BoundingVolumeRotation[1] = Matrix.CreateFromYawPitchRoll(0f, MathHelper.PiOver2, 0f);
-            BoundingVolumeRotation[2] = Matrix.CreateFromYawPitchRoll(0f, 0f, MathHelper.PiOver2);
-            BoundingVolumeRotation[3] = Matrix.CreateFromYawPitchRoll(0f, 0f, MathHelper.PiOver2);
-            BoundingVolumeRotation[4] = Matrix.CreateFromYawPitchRoll(0f, MathHelper.PiOver2, 0f);
-            BoundingVolumeRotation[5] = Matrix.CreateFromYawPitchRoll(0f, 0f, MathHelper.PiOver2);
-            BoundingVolumeRotation[6] = Matrix.CreateFromYawPitchRoll(0f, 0f, MathHelper.PiOver2);
-            BoundingVolumeRotation[7] = Matrix.Identity;
+            BoundingVolumeScale = new Vector3[8];
+            BoundingVolumeScale[0] = new Vector3(2.54742f, 1.00186f, 2.54742f);
+            BoundingVolumeScale[1] = new Vector3(0.73622f, 0.73622f, 3.09886f);
+            BoundingVolumeScale[2] = new Vector3(1.22763f, 1.05816f, 1.22763f);
+            BoundingVolumeScale[3] = new Vector3(0.85413f, 0.84755f, 0.85413f);
+            BoundingVolumeScale[4] = new Vector3(0.73622f, 0.73622f, 3.09886f);
+            BoundingVolumeScale[5] = new Vector3(1.22763f, 1.05816f, 1.22763f);
+            BoundingVolumeScale[6] = new Vector3(0.85413f, 0.84755f, 0.85413f);
+            BoundingVolumeScale[7] = new Vector3(1.47766f, 0.65884f, 1.47766f);
+
+
+            BoundingVolumes = new OrientedBoundingBox[8];
+            for (int i = 0; i < 8; i++)
+            {
+                BoundingVolumes[i] = new OrientedBoundingBox(BoundingVolumeTraslation[i], BoundingVolumeScale[i]);
+            }
+
         }
 
         /// <summary>
@@ -219,14 +218,14 @@ namespace TGC.MonoGame.TP.Tank
                 Matrix worldMatrix =  Matrix.CreateTranslation(BoundingVolumeTraslation[i]) * rotationMatrix * Matrix.CreateTranslation(Position);
                 BoundingVolumes[i].Center = worldMatrix.Translation;
             }
-            BoundingVolumes[0].Rotation = BoundingVolumeRotation[0] * rotationMatrix;
-            BoundingVolumes[1].Rotation = BoundingVolumeRotation[1] * rotationMatrix;
-            BoundingVolumes[2].Rotation = BoundingVolumeRotation[2] * rightBackWheelRotation * rotationMatrix;
-            BoundingVolumes[3].Rotation = BoundingVolumeRotation[3] * rightFrontWheelRotation * steerRotation * rotationMatrix;
-            BoundingVolumes[4].Rotation = BoundingVolumeRotation[4] * rotationMatrix;
-            BoundingVolumes[5].Rotation = BoundingVolumeRotation[5] * leftBackWheelRotation * rotationMatrix;
-            BoundingVolumes[6].Rotation = BoundingVolumeRotation[6] * leftFrontWheelRotation * steerRotation * rotationMatrix;
-            BoundingVolumes[7].Rotation = BoundingVolumeRotation[7] * turretRotation * rotationMatrix;
+            BoundingVolumes[0].Orientation = rotationMatrix;
+            BoundingVolumes[1].Orientation = rotationMatrix;
+            BoundingVolumes[2].Orientation = rightBackWheelRotation * rotationMatrix;
+            BoundingVolumes[3].Orientation = rightFrontWheelRotation * steerRotation * rotationMatrix;
+            BoundingVolumes[4].Orientation = rotationMatrix;
+            BoundingVolumes[5].Orientation = leftBackWheelRotation * rotationMatrix;
+            BoundingVolumes[6].Orientation = leftFrontWheelRotation * steerRotation * rotationMatrix;
+            BoundingVolumes[7].Orientation = turretRotation * rotationMatrix;
 
             // Draw the model
             effect.Parameters["View"].SetValue(view);
@@ -242,22 +241,22 @@ namespace TGC.MonoGame.TP.Tank
 
         public void DrawBoundingBox(Gizmos.Gizmos gizmos)
         {
-            foreach (BoundingCylinder c in BoundingVolumes)
+            foreach (OrientedBoundingBox obb in BoundingVolumes)
             {
-                gizmos.DrawCylinder(c.Transform, Color.Yellow);
+                gizmos.DrawCube(Matrix.CreateScale(obb.Extents * 2) * obb.Orientation * Matrix.CreateTranslation(obb.Center), Color.Yellow);
             }
         }
 
-        public BoxCylinderIntersection Intersects(BoundingBox box)
+        public bool Intersects(BoundingBox box)
         {
             for (int i = 0; i < 8; i++)
             {
-                if (BoundingVolumes[i].Intersects(box) != BoxCylinderIntersection.None)
+                if (BoundingVolumes[i].Intersects(box))
                 {
-                    return BoundingVolumes[i].Intersects(box);
+                    return true;
                 }
             }
-            return BoxCylinderIntersection.None;
+            return false;
         }
 
     }

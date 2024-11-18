@@ -7,8 +7,8 @@ namespace TGC.MonoGame.TP
 {
     internal class Rock : WorldEntity
     {
-        public static Model Model;
-        public static BoundingBoxHelper ModelBox;
+        private static Model Model;
+        private static BoundingBoxHelper ModelBoundingBox;
 
         public Rock(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
@@ -22,8 +22,9 @@ namespace TGC.MonoGame.TP
 
             Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
             Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
-            ModelBox = new BoundingBoxHelper(min, max);
-            ModelBox.ObjectPositionToBoxCenter = new Vector3(0f, -0.0061135f, 0f);
+            Vector3 optbc = new Vector3(0f, -0.0061135f, 0f);
+            ModelBoundingBox = new BoundingBoxHelper(min, max, optbc);
+            
         }
 
         protected void Update(GameTime gameTime)
@@ -33,7 +34,7 @@ namespace TGC.MonoGame.TP
 
         protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
-            return ModelBox.GetBoundingBox(position, scale);
+            return ModelBoundingBox.GetBoundingBox(position, scale);
         }
 
 

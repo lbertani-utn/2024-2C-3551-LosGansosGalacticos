@@ -33,7 +33,7 @@ namespace TGC.MonoGame.TP
             primitiveCount = HeightData.Width * HeightData.Height * 2;
             quadsCount = (HeightData.Width - 1) * (HeightData.Height - 1);
             this.effect = effect;
-
+            
             _world = Matrix.Identity;
             _graphicsDevice = GraphicsDevice;
 
@@ -131,8 +131,10 @@ namespace TGC.MonoGame.TP
             indexBuffer.SetData(indexes);
         }
 
-        public void Draw(GraphicsDevice GraphicsDevice, Effect effect)
+        public void Draw(Matrix view, Matrix projection)
         {
+            this.effect.Parameters["View"].SetValue(view);
+            this.effect.Parameters["Projection"].SetValue(projection);
             this.effect.Parameters["World"].SetValue(_world);
             this.effect.Parameters["DiffuseColor"].SetValue(_defaultColor);
 
@@ -145,7 +147,7 @@ namespace TGC.MonoGame.TP
             foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, primitiveCount);
+                _graphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, primitiveCount);
             }
         }
     }
