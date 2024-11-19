@@ -21,11 +21,11 @@ namespace TGC.MonoGame.TP
         public static void LoadContent(ContentManager Content, Effect Effect)
         {
             Model = LoadContent(Content, "bush/bush1", Effect);
-            //Textures = new Texture[Model.Meshes.Count];
-            //Texture branch = Content.Load<Texture2D>("Models/bush/branch1 2");
-            //Texture leaf = Content.Load<Texture2D>("Models/bush/leaf2");
-            //Textures[0] = branch;
-            //Textures[1] = leaf;
+            Textures = new Texture[Model.Meshes.Count];
+            Texture branch = Content.Load<Texture2D>("Models/bush/branch1 2");
+            Texture leaf = Content.Load<Texture2D>("Models/bush/leaf2");
+            Textures[0] = branch;
+            Textures[1] = leaf;
 
             Vector3 min = new Vector3(-1.55790175f, -0.743808021f, -1.55288585f);
             Vector3 max = new Vector3(1.76620225f, 2.097365639f, 1.77121815f);
@@ -56,7 +56,7 @@ namespace TGC.MonoGame.TP
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model); //, Textures); 
+            base.Draw(view, projection, effect, Model, Textures); 
         }
     }
 }

@@ -1,5 +1,5 @@
-﻿using System.Collections.ObjectModel;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
 
@@ -8,6 +8,7 @@ namespace TGC.MonoGame.TP.Tank
     internal class Steamroller : Tank
     {
         protected Vector3[] DiffuseColors;
+        protected static Texture[] Textures;
         OrientedBoundingBox[] BoundingVolumes;
         Vector3[] BoundingVolumeTraslation;
         Vector3[] BoundingVolumeScale;
@@ -129,12 +130,13 @@ namespace TGC.MonoGame.TP.Tank
         /// <summary>
         ///     Loads the tank model.
         /// </summary>
-        public void Load(Model model)
+        public void Load(ContentManager Content, Model model)
         {
             tankModel = model;
             LoadBoundingVolumes();
             LoadDiffuseColors();
-
+            LoadTextures(Content);
+            
             // Look up shortcut references to the bones we are going to animate.
             leftBackWheelBone = tankModel.Bones["l_back_wheel_geo"];
             rightBackWheelBone = tankModel.Bones["r_back_wheel_geo"];
@@ -178,6 +180,25 @@ namespace TGC.MonoGame.TP.Tank
             DiffuseColors[9] = hullColor;
             DiffuseColors[10] = hullColor;
             DiffuseColors[11] = hullColor;
+        }
+
+        public void LoadTextures(ContentManager Content)
+        {
+            Texture engine = Content.Load<Texture2D>("Models/tank/engine_diff_tex");
+            Texture turret = Content.Load<Texture2D>("Models/tank/turret_alt_diff_tex");
+            Textures = new Texture[tankModel.Meshes.Count];
+            Textures[0] = turret;
+            Textures[1] = engine;
+            Textures[2] = engine;
+            Textures[3] = engine;
+            Textures[4] = engine;
+            Textures[5] = engine;
+            Textures[6] = engine;
+            Textures[7] = engine;
+            Textures[8] = engine;
+            Textures[9] = turret;
+            Textures[10] = turret;
+            Textures[11] = turret;
         }
 
         public void Update(float elapsedTime)
@@ -237,6 +258,7 @@ namespace TGC.MonoGame.TP.Tank
                 effect.Parameters["World"].SetValue(relativeTransform);
                 effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
                 effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
+                effect.Parameters["baseTexture"].SetValue(Textures[i]);
                 tankModel.Meshes[i].Draw();
             }
         }
