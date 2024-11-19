@@ -32,10 +32,10 @@ namespace TGC.MonoGame.TP
         {
             // Maneja la configuracion y la administracion del dispositivo grafico.
             Graphics = new GraphicsDeviceManager(this);
-
+            
             Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 100;
             Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
-
+            
             // Para que el juego sea pantalla completa se puede usar Graphics IsFullScreen.
             // Carpeta raiz donde va a estar toda la Media.
             Content.RootDirectory = "Content";
@@ -72,8 +72,14 @@ namespace TGC.MonoGame.TP
         // terreno
         private Terrain terrain;
         private float terrainSize;
-        private float heightScale;
+        private float heightScale; 
         private List<WorldEntity> Entities;
+
+        // iluminación
+        private Vector3 LightPosition;
+        private Vector3 AmbientColor;
+        private Vector3 DiffuseColor;
+        private Vector3 SpecularColor;
 
         // Mapeo de teclas
         //private Dictionary<Keys, BindingAction> KeyBindings;
@@ -116,7 +122,7 @@ namespace TGC.MonoGame.TP
 
             // Create a bounding frustum to check bounding volumes against it
             BoundingFrustum = new BoundingFrustum(FollowCamera.View * FollowCamera.Projection);
-
+            
             Entities = new List<WorldEntity>();
             base.Initialize();
         }
@@ -130,15 +136,32 @@ namespace TGC.MonoGame.TP
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-
+            
             Gizmos = new Gizmos.Gizmos();
             Gizmos.LoadContent(GraphicsDevice, new ContentManager(Content.ServiceProvider, ContentFolder));
             Gizmos.Enabled = true;
 
             // Cargo un efecto basico propio declarado en el Content pipeline.
             // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
+            LightPosition = new Vector3(-1000f, 550f, 600f);
+            AmbientColor = Vector3.One;
+            DiffuseColor = Vector3.One;
+            SpecularColor = Vector3.One;
+
             TerrainEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
-            ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
+            ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong");
+
+            ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
+            ObjectEffect.Parameters["ambientColor"].SetValue(AmbientColor);
+            ObjectEffect.Parameters["diffuseColor"].SetValue(DiffuseColor);
+            ObjectEffect.Parameters["specularColor"].SetValue(SpecularColor);
+            
+            // TODO coeficientes que dependen del material
+            ObjectEffect.Parameters["KAmbient"].SetValue(0.1f);
+            ObjectEffect.Parameters["KDiffuse"].SetValue(0.6f);
+            ObjectEffect.Parameters["KSpecular"].SetValue(0.2f);
+            ObjectEffect.Parameters["shininess"].SetValue(16.0f);
+
 
             // Cargo el tanque
             // TODO mover esto a su clase
@@ -299,6 +322,8 @@ namespace TGC.MonoGame.TP
             FollowCamera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
             FollowCamera.BuildView();
 
+            ObjectEffect.Parameters["eyePosition"].SetValue(FollowCamera.Position);
+
 
             // Update the view projection matrix of the bounding frustum
             BoundingFrustum.Matrix = FollowCamera.View * FollowCamera.Projection;
@@ -330,14 +355,15 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(new Color(23 / 255.0f, 171 / 255.0f, 237 / 255.0f));
 
-            // terreno
+            Sky.Draw(Camera.View, Camera.Projection, Camera.Position);
             terrain.Draw(Camera.View, Camera.Projection);
+            tank.Draw(tank.World, Camera.View, Camera.Projection, ObjectEffect);
 
             int drawWorldEntity = 0;
             foreach (WorldEntity e in Entities)
             {
                 if (e.Status != WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetDrawBox()))
-                {
+                { 
                     terrain.spacialMap.Update(e);
                     e.Draw(Camera.View, Camera.Projection, ObjectEffect);
                     drawWorldEntity += 1;
@@ -345,9 +371,6 @@ namespace TGC.MonoGame.TP
             }
             Debug.WriteLine(drawWorldEntity);
 
-            tank.Draw(tank.World, Camera.View, Camera.Projection, ObjectEffect);
-
-            Sky.Draw(Camera.View, Camera.Projection, Camera.Position);
 
             // gizmos
             if (DrawBoundingBoxes || DrawPositions)

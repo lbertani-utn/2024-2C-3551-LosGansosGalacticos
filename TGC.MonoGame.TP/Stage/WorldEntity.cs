@@ -68,9 +68,6 @@ namespace TGC.MonoGame.TP {
 
         public void Draw(Matrix view, Matrix projection, Effect effect, Model model)
         {
-            effect.Parameters["View"].SetValue(view);
-            effect.Parameters["Projection"].SetValue(projection);
-
             model.Root.Transform = _world;
             var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
             model.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
@@ -79,7 +76,25 @@ namespace TGC.MonoGame.TP {
             {
                 var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
                 effect.Parameters["World"].SetValue(relativeTransform);
-                effect.Parameters["DiffuseColor"].SetValue(_defaultColors[i]);
+                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
+                effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
+                model.Meshes[i].Draw();
+            }
+        }
+
+        public void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures)
+        {
+            model.Root.Transform = _world;
+            var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
+            model.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
+
+            for (int i = 0; i < model.Meshes.Count; i++)
+            {
+                var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
+                effect.Parameters["World"].SetValue(relativeTransform);
+                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
+                effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
+                effect.Parameters["baseTexture"].SetValue(textures[i]);
                 model.Meshes[i].Draw();
             }
         }
@@ -94,9 +109,11 @@ namespace TGC.MonoGame.TP {
             gizmos.DrawSphere(_position, Vector3.One, Color.White);
         }
 
-        protected virtual Vector3[] GetDefaultColors(int meshes) {
+
+        protected virtual Vector3[] GetDefaultColors(int meshes)
+        {
             Vector3[] colors = new Vector3[meshes];
-            for (int i = 0; i < meshes; i++) 
+            for (int i = 0; i < meshes; i++)
             {
                 colors[i] = new Vector3((float)Random.NextDouble(), (float)Random.NextDouble(), (float)Random.NextDouble());
             }

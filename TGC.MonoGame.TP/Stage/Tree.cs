@@ -8,6 +8,7 @@ namespace TGC.MonoGame.TP
     internal class Tree : WorldEntity
     {
         private static Model Model;
+        private static Texture[] Textures;
         private static BoundingBoxHelper ModelBoundingBox;
         private static BoundingBoxHelper ModelDrawBox;
         private BoundingBox _drawBox;
@@ -23,6 +24,15 @@ namespace TGC.MonoGame.TP
         public static void LoadContent(ContentManager Content, Effect Effect)
         {
             Model = LoadContent(Content, "tree/tree", Effect);
+            //Textures = new Texture[Model.Meshes.Count];
+            //Texture wood = Content.Load<Texture2D>("Models/tree/bark_loo");
+            //Texture leaf = Content.Load<Texture2D>("Models/tree/blatt1");
+            //Textures[0] = wood;
+            //Textures[1] = wood;
+            //Textures[2] = wood;
+            //Textures[3] = wood;
+            //Textures[4] = leaf;
+            //Textures[5] = leaf;
 
             Vector3 min = new Vector3(-0.48368357f, -0.015338364f, -0.44941229f);
             Vector3 max = new Vector3(0.28571863f, 15.816038f, 0.31998991f);
@@ -45,14 +55,8 @@ namespace TGC.MonoGame.TP
 
         protected override Vector3[] GetDefaultColors(int meshes)
         {
-            float g = (float)(Random.NextDouble() * 0.2f) + 0.33f;
-            float rb = (float)(Random.NextDouble() * 0.1f) + 0.05f;
-            Vector3 green = new Vector3(rb, g, rb);
-
-            float r = (float)(Random.NextDouble() * 0.11f) + 0.25f;
-            float gb = (float)(Random.NextDouble() * 0.12f) + 0.05f;
-            Vector3 brown = new Vector3(r, gb, gb);
-
+            Vector3 green = new Vector3(0.117647059f, 0.345098039f, 0.117647059f);
+            Vector3 brown = new Vector3(0.254901961f, 0.066666667f, 0.066666667f);
             Vector3[] colors = new Vector3[meshes];
             colors[0] = brown;
             colors[1] = brown;
@@ -76,7 +80,7 @@ namespace TGC.MonoGame.TP
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model);
+            base.Draw(view, projection, effect, Model); //, Textures);
         }
     }
 }
