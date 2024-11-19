@@ -4,7 +4,6 @@
     {
         Follow,
         Aerial,
-        Satellite,
         Light
     }
 }

@@ -32,10 +32,10 @@ namespace TGC.MonoGame.TP
         {
             // Maneja la configuracion y la administracion del dispositivo grafico.
             Graphics = new GraphicsDeviceManager(this);
-            
+
             Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 100;
             Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
-            
+
             // Para que el juego sea pantalla completa se puede usar Graphics IsFullScreen.
             // Carpeta raiz donde va a estar toda la Media.
             Content.RootDirectory = "Content";
@@ -57,9 +57,9 @@ namespace TGC.MonoGame.TP
         private BoundingFrustum BoundingFrustum;
         private CameraType SelectedCamera;
         private TargetCamera FollowCamera;
-        private TargetCamera SatelliteCamera;
-        private TargetCamera _camera;
-        private TargetCamera Camera { get => _camera; }
+        private StaticCamera AerialCamera;
+        private Camera _camera;
+        private Camera Camera { get => _camera; }
         private static float CameraNearPlaneDistance = 1f;
         private static float CameraFarPlaneDistance = 2000f;
         private const float camX = 0.2f;
@@ -72,8 +72,7 @@ namespace TGC.MonoGame.TP
         // terreno
         private Terrain terrain;
         private float terrainSize;
-        private float heightScale; 
-
+        private float heightScale;
         private List<WorldEntity> Entities;
 
         // Mapeo de teclas
@@ -111,12 +110,13 @@ namespace TGC.MonoGame.TP
             FollowCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
             _camera = FollowCamera;
 
-            SatelliteCamera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.UnitY * 100f, Vector3.Zero);
-            SatelliteCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
+            AerialCamera = new StaticCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.UnitY * 1000f, new Vector3(-0.001f, -1f, -0.001f), Vector3.Up);
+            AerialCamera.RightDirection = Vector3.UnitX;
+            AerialCamera.BuildView();
 
             // Create a bounding frustum to check bounding volumes against it
             BoundingFrustum = new BoundingFrustum(FollowCamera.View * FollowCamera.Projection);
-            
+
             Entities = new List<WorldEntity>();
             base.Initialize();
         }
@@ -130,7 +130,7 @@ namespace TGC.MonoGame.TP
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            
+
             Gizmos = new Gizmos.Gizmos();
             Gizmos.LoadContent(GraphicsDevice, new ContentManager(Content.ServiceProvider, ContentFolder));
             Gizmos.Enabled = true;
@@ -214,10 +214,10 @@ namespace TGC.MonoGame.TP
             {
                 if (SelectedCamera == CameraType.Follow)
                 {
-                    SelectedCamera = CameraType.Satellite;
-                    _camera = SatelliteCamera;
+                    SelectedCamera = CameraType.Aerial;
+                    _camera = AerialCamera;
                 }
-                else if (SelectedCamera == CameraType.Satellite)
+                else if (SelectedCamera == CameraType.Aerial)
                 {
                     SelectedCamera = CameraType.Follow;
                     _camera = FollowCamera;
@@ -299,10 +299,6 @@ namespace TGC.MonoGame.TP
             FollowCamera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
             FollowCamera.BuildView();
 
-            SatelliteCamera.TargetPosition = tank.Position;
-            SatelliteCamera.Position = tank.Position + new Vector3(0.01f, 1000f, 0.01f);
-            SatelliteCamera.BuildView();
-
 
             // Update the view projection matrix of the bounding frustum
             BoundingFrustum.Matrix = FollowCamera.View * FollowCamera.Projection;
@@ -336,12 +332,12 @@ namespace TGC.MonoGame.TP
 
             // terreno
             terrain.Draw(Camera.View, Camera.Projection);
-            
+
             int drawWorldEntity = 0;
             foreach (WorldEntity e in Entities)
             {
-                if (e.Status!=WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetDrawBox()))
-                { 
+                if (e.Status != WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetDrawBox()))
+                {
                     terrain.spacialMap.Update(e);
                     e.Draw(Camera.View, Camera.Projection, ObjectEffect);
                     drawWorldEntity += 1;
@@ -402,9 +398,9 @@ namespace TGC.MonoGame.TP
             for (int i = 0; i < 200; i++)
             {
                 // posición
-                float x = (float) rnd.NextDouble() * terrainSize - terrainSize/2;
-                float z = (float) rnd.NextDouble() * terrainSize - terrainSize/2;
-                float y = Terrain.GetPositionHeight(x,z);
+                float x = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
+                float z = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
+                float y = Terrain.GetPositionHeight(x, z);
 
                 // escala
                 float height = (float)rnd.NextDouble() * 0.4f + 0.8f;
@@ -414,7 +410,8 @@ namespace TGC.MonoGame.TP
                 float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
                 float objType = (float)rnd.NextDouble();
 
-                if (objType > 0.4f) {
+                if (objType > 0.4f)
+                {
                     Tree t = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(t);
                     terrain.spacialMap.Add(t);
@@ -427,7 +424,8 @@ namespace TGC.MonoGame.TP
                     terrain.spacialMap.Add(b);
                     bushCount += 1;
                 }
-                else {
+                else
+                {
                     Rock r = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(r);
                     terrain.spacialMap.Add(r);
