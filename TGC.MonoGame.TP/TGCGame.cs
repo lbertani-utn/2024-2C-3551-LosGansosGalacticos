@@ -175,7 +175,7 @@ namespace TGC.MonoGame.TP
             tank = new Steamroller();
             tank.Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
             tank.World = Matrix.CreateTranslation(tank.Position);
-            tank.Load(Model);
+            tank.Load(Content, Model);
 
 
             terrainSize = 512f;
