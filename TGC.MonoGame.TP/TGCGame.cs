@@ -52,6 +52,7 @@ namespace TGC.MonoGame.TP
 
         private Effect TerrainEffect;
         private Effect ObjectEffect;
+        private SkyBox Sky;
 
         private BoundingFrustum BoundingFrustum;
         private CameraType SelectedCamera;
@@ -164,8 +165,12 @@ namespace TGC.MonoGame.TP
             Tree.LoadContent(Content, ObjectEffect);
             Rock.LoadContent(Content, ObjectEffect);
             Bush.LoadContent(Content, ObjectEffect);
-
             LoadSurfaceObjects();
+
+            Model skyBox = Content.Load<Model>(ContentFolder3D + "geometries/cube");
+            TextureCube skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "skybox/day_skybox");
+            Effect skyBoxEffect = Content.Load<Effect>(ContentFolderEffects + "Skybox");
+            Sky = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1200);
 
             base.LoadContent();
             previousKeyboardState = Keyboard.GetState();
@@ -345,6 +350,8 @@ namespace TGC.MonoGame.TP
             Debug.WriteLine(drawWorldEntity);
 
             tank.Draw(tank.World, Camera.View, Camera.Projection, ObjectEffect);
+
+            Sky.Draw(Camera.View, Camera.Projection, Camera.Position);
 
             // gizmos
             if (DrawBoundingBoxes || DrawPositions)
