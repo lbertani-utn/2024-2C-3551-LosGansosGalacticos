@@ -24,6 +24,15 @@ namespace TGC.MonoGame.TP.Tank
         public float Roll = 0f;
         public Matrix World;
 
+        public float Speed
+        {
+            get => Propulsion + Downhill;
+        }
+        public float Propulsion = 0f;
+        public float Downhill = 0f;
+        public const float SpeedIncrease = 0.25f;
+        public const float SpeedLimit = 15f;
+        public const float Friction = 0.05f;
 
         private const float FrontWheelRotation = 1.6f;
         private float cannonCooldown = 0f;
@@ -154,27 +163,21 @@ namespace TGC.MonoGame.TP.Tank
 
         public void LoadDiffuseColors()
         {
-            // colores provisorios para distinguir las distintas piezas
             Vector3 hullColor = new Vector3(0.3f, 0.3f, 0.3f);
-            Vector3 engineColor = new Vector3(0.4f, 0.4f, 0.4f);
-            Vector3 steerColor = new Vector3(0.2f, 0.2f, 0.2f);
             Vector3 wheelColor = new Vector3(0.1f, 0.1f, 0.1f);
-            Vector3 turretColor = new Vector3(0.2f, 0.2f, 0.2f);
-            Vector3 cannonColor = new Vector3(0.3f, 0.3f, 0.3f);
-            Vector3 hatchColor = new Vector3(0.3f, 0.3f, 0.3f);
             DiffuseColors = new Vector3[tankModel.Meshes.Count];
             DiffuseColors[0] = hullColor;
-            DiffuseColors[1] = engineColor;
+            DiffuseColors[1] = hullColor;
             DiffuseColors[2] = wheelColor;
-            DiffuseColors[3] = steerColor;
+            DiffuseColors[3] = hullColor;
             DiffuseColors[4] = wheelColor;
-            DiffuseColors[5] = engineColor;
+            DiffuseColors[5] = hullColor;
             DiffuseColors[6] = wheelColor;
-            DiffuseColors[7] = steerColor;
+            DiffuseColors[7] = hullColor;
             DiffuseColors[8] = wheelColor;
-            DiffuseColors[9] = turretColor;
-            DiffuseColors[10] = cannonColor;
-            DiffuseColors[11] = hatchColor;
+            DiffuseColors[9] = hullColor;
+            DiffuseColors[10] = hullColor;
+            DiffuseColors[11] = hullColor;
         }
 
         public void Update(float elapsedTime)
@@ -228,14 +231,13 @@ namespace TGC.MonoGame.TP.Tank
             BoundingVolumes[7].Orientation = turretRotation * rotationMatrix;
 
             // Draw the model
-            effect.Parameters["View"].SetValue(view);
-            effect.Parameters["Projection"].SetValue(projection);
-
-            foreach (var mesh in tankModel.Meshes)
+            for (int i = 0; i < tankModel.Meshes.Count; i++)
             {
-                effect.Parameters["World"].SetValue(boneTransforms[mesh.ParentBone.Index]);
-                effect.Parameters["DiffuseColor"].SetValue(DiffuseColors[mesh.ParentBone.Index]);
-                mesh.Draw();
+                var relativeTransform = boneTransforms[tankModel.Meshes[i].ParentBone.Index];
+                effect.Parameters["World"].SetValue(relativeTransform);
+                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
+                effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
+                tankModel.Meshes[i].Draw();
             }
         }
 
