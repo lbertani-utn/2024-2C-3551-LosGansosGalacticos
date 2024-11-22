@@ -148,14 +148,22 @@ namespace TGC.MonoGame.TP
             DiffuseColor = Vector3.One;
             SpecularColor = Vector3.One;
 
-            TerrainEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
-            ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong");
+            TerrainEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhongNormalMap");
+            TerrainEffect.Parameters["lightPosition"].SetValue(LightPosition);
+            TerrainEffect.Parameters["ambientColor"].SetValue(AmbientColor);
+            TerrainEffect.Parameters["diffuseColor"].SetValue(DiffuseColor);
+            TerrainEffect.Parameters["specularColor"].SetValue(SpecularColor);
+            // TODO coeficientes que dependen del material
+            TerrainEffect.Parameters["KAmbient"].SetValue(0.1f);
+            TerrainEffect.Parameters["KDiffuse"].SetValue(1.0f);
+            TerrainEffect.Parameters["KSpecular"].SetValue(0.8f);
+            TerrainEffect.Parameters["shininess"].SetValue(16.0f);
 
+            ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong");
             ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
             ObjectEffect.Parameters["ambientColor"].SetValue(AmbientColor);
             ObjectEffect.Parameters["diffuseColor"].SetValue(DiffuseColor);
             ObjectEffect.Parameters["specularColor"].SetValue(SpecularColor);
-            
             // TODO coeficientes que dependen del material
             ObjectEffect.Parameters["KAmbient"].SetValue(0.1f);
             ObjectEffect.Parameters["KDiffuse"].SetValue(0.6f);

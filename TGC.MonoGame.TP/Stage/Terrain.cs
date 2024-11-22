@@ -15,6 +15,8 @@ namespace TGC.MonoGame.TP
         private readonly Effect effect;
         private readonly GraphicsDevice _graphicsDevice;
 
+        private static Texture2D BaseColor;
+        private static Texture2D NormalMap;
         private static Texture2D HeightData;
         private static Color[] Texels;
         public VertexBuffer vertexBuffer;
@@ -28,6 +30,9 @@ namespace TGC.MonoGame.TP
         public Terrain(Game game, Effect effect, GraphicsDevice GraphicsDevice, (float X, float Z) terrainSize, float heightScale)
         {
             HeightData = game.Content.Load<Texture2D>(ContentFolderTextures + "Rolling Hills Height Map/Rolling Hills Height Map 256");
+            BaseColor = game.Content.Load<Texture2D>(ContentFolderTextures + "Grass/Grass_005_BaseColor");
+            NormalMap = game.Content.Load<Texture2D>(ContentFolderTextures + "Grass/Grass_005_Normal");
+
             Texels = new Color[HeightData.Width * HeightData.Height];
             _defaultColor = new Vector3(42 / 255.0f, 120 / 255.0f, 49 / 255.0f);
             primitiveCount = HeightData.Width * HeightData.Height * 2;
@@ -133,10 +138,11 @@ namespace TGC.MonoGame.TP
 
         public void Draw(Matrix view, Matrix projection)
         {
-            this.effect.Parameters["View"].SetValue(view);
-            this.effect.Parameters["Projection"].SetValue(projection);
             this.effect.Parameters["World"].SetValue(_world);
-            this.effect.Parameters["DiffuseColor"].SetValue(_defaultColor);
+            this.effect.Parameters["WorldViewProjection"].SetValue(_world * view * projection);
+            this.effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(_world)));
+            this.effect.Parameters["ModelTexture"].SetValue(BaseColor);
+            this.effect.Parameters["NormalTexture"].SetValue(NormalMap);
 
             _graphicsDevice.DepthStencilState = DepthStencilState.Default;
             _graphicsDevice.SetVertexBuffer(vertexBuffer);
