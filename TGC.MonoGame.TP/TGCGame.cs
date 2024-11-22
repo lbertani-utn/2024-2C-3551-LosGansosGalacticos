@@ -176,7 +176,7 @@ namespace TGC.MonoGame.TP
 
             terrainSize = 512f;
             heightScale = 0.5f;
-            terrain = new(this, TerrainEffect, GraphicsDevice, (terrainSize, terrainSize), heightScale);
+            terrain = new(this, TerrainEffect, GraphicsDevice, terrainSize, terrainSize, heightScale);
 
 
             // TODO setear position.Y, pitch y roll del tanque en la posición inicial
@@ -285,7 +285,7 @@ namespace TGC.MonoGame.TP
             Vector3 movement = RotationMatrix.Forward * tank.Speed * elapsedTime;
             tank.WheelRotation += (tank.Speed * elapsedTime / 8f); // TODO revisar esta fórmula
             tank.Position = tank.Position + movement;
-            tank.Position.Y = Terrain.GetPositionHeight(tank.Position.X, tank.Position.Z);
+            tank.Position.Y = terrain.GetPositionHeight(tank.Position.X, tank.Position.Z);
 
             float distanceForward = 3.303362f;
             float distanceRight = 3.032239f;
@@ -294,7 +294,7 @@ namespace TGC.MonoGame.TP
 
             // pendiente hacia adelante/atrás 
             Vector3 positionForward = tank.Position + RotationMatrix.Forward * distanceForward;
-            positionForward.Y = Terrain.GetPositionHeight(positionForward.X, positionForward.Z);
+            positionForward.Y = terrain.GetPositionHeight(positionForward.X, positionForward.Z);
             float currentPitch = (tank.Position.Y - positionForward.Y) / (tank.Position - positionForward).Length();
             float deltaPitch = currentPitch - tank.Pitch;
             tank.Pitch += MathHelper.Clamp(deltaPitch, -clampPitch, clampPitch);
@@ -304,7 +304,7 @@ namespace TGC.MonoGame.TP
 
             // pendiente hacia los costados
             Vector3 positionRight = tank.Position + RotationMatrix.Right * distanceRight;
-            positionRight.Y = Terrain.GetPositionHeight(positionRight.X, positionRight.Z);
+            positionRight.Y = terrain.GetPositionHeight(positionRight.X, positionRight.Z);
             float currentRoll = (tank.Position.Y - positionRight.Y) / (tank.Position - positionRight).Length();
             float deltaRoll = currentRoll - tank.Roll;
             tank.Roll += MathHelper.Clamp(deltaRoll, -clampRoll, clampRoll);
@@ -419,7 +419,7 @@ namespace TGC.MonoGame.TP
                 // posición
                 float x = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
                 float z = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
-                float y = Terrain.GetPositionHeight(x, z);
+                float y = terrain.GetPositionHeight(x, z);
 
                 // escala
                 float height = (float)rnd.NextDouble() * 0.4f + 0.8f;
