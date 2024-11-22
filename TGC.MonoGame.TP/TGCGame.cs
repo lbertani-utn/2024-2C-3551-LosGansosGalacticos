@@ -82,7 +82,6 @@ namespace TGC.MonoGame.TP
         private Vector3 SpecularColor;
 
         // Mapeo de teclas
-        //private Dictionary<Keys, BindingAction> KeyBindings;
         private KeyboardState keyboardState;
         private KeyboardState previousKeyboardState;
         private MouseState mouseState;
@@ -100,17 +99,6 @@ namespace TGC.MonoGame.TP
 
             // deshabilito el backface culling
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-
-            //KeyBindings = new() {
-            //    {Keys.W, BindingLogic.PositiveDirection},
-            //    {Keys.Up, BindingLogic.PositiveDirection},
-            //    {Keys.A, BindingLogic.PositiveRotation},
-            //    {Keys.Left, BindingLogic.PositiveRotation},
-            //    {Keys.S, BindingLogic.NegativeDirection},
-            //    {Keys.Down, BindingLogic.NegativeDirection},
-            //    {Keys.D, BindingLogic.NegativeRotation},
-            //    {Keys.Right, BindingLogic.NegativeRotation},
-            //};
 
             FollowCamera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
             FollowCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
