@@ -66,23 +66,7 @@ namespace TGC.MonoGame.TP {
 
         public virtual void Draw(Matrix view, Matrix projection, Effect effect) {}
 
-        public void Draw(Matrix view, Matrix projection, Effect effect, Model model)
-        {
-            model.Root.Transform = _world;
-            var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
-            model.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
-
-            for (int i = 0; i < model.Meshes.Count; i++)
-            {
-                var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
-                effect.Parameters["World"].SetValue(relativeTransform);
-                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
-                effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
-                model.Meshes[i].Draw();
-            }
-        }
-
-        public void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures)
+        protected void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures)
         {
             model.Root.Transform = _world;
             var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];

@@ -277,6 +277,18 @@
 /processorParam:TextureFormat=Color
 /build:Models/tree/blatt1.jpg
 
+#begin Models/tree/leaf.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Models/tree/leaf.jpg
+
 #begin Models/tree/tree.fbx
 /importer:FbxImporter
 /processor:ModelProcessor

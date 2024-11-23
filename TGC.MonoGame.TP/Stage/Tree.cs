@@ -26,7 +26,7 @@ namespace TGC.MonoGame.TP
             Model = LoadContent(Content, "tree/tree", Effect);
             Textures = new Texture[Model.Meshes.Count];
             Texture wood = Content.Load<Texture2D>("Models/tree/bark_loo");
-            Texture leaf = Content.Load<Texture2D>("Models/tree/blatt1");
+            Texture leaf = Content.Load<Texture2D>("Models/tree/leaf");
             Textures[0] = wood;
             Textures[1] = wood;
             Textures[2] = wood;

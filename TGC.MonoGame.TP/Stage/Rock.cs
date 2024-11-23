@@ -8,6 +8,7 @@ namespace TGC.MonoGame.TP
     internal class Rock : WorldEntity
     {
         private static Model Model;
+        private static Texture[] Textures;
         private static BoundingBoxHelper ModelBoundingBox;
 
         public Rock(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
@@ -19,6 +20,9 @@ namespace TGC.MonoGame.TP
         public static void LoadContent(ContentManager Content, Effect Effect)
         {
             Model = LoadContent(Content, "rock/rock", Effect);
+
+            Textures = new Texture[Model.Meshes.Count];
+            Textures[0] = Content.Load<Texture2D>("Models/rock/initialShadingGroup_Base_Color");
 
             Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
             Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
@@ -52,7 +56,7 @@ namespace TGC.MonoGame.TP
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model);
+            base.Draw(view, projection, effect, Model, Textures);
         }
     }
 }
