@@ -32,7 +32,7 @@ namespace TGC.MonoGame.TP.Tank
         public float Propulsion = 0f;
         public float Downhill = 0f;
         public const float SpeedIncrease = 0.25f;
-        public const float SpeedLimit = 15f;
+        public const float SpeedLimit = 20f;
         public const float Friction = 0.05f;
 
         private const float FrontWheelRotation = 1.6f;

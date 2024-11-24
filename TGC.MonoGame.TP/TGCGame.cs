@@ -72,7 +72,6 @@ namespace TGC.MonoGame.TP
         // terreno
         private SimpleTerrain terrain;
         private float terrainSize;
-        private float heightScale; 
         private List<WorldEntity> Entities;
 
         // iluminación
@@ -103,8 +102,8 @@ namespace TGC.MonoGame.TP
             FollowCamera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
             FollowCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
             _camera = FollowCamera;
-
-            AerialCamera = new StaticCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.UnitY * 1000f, new Vector3(-0.001f, -1f, -0.001f), Vector3.Up);
+            
+            AerialCamera = new StaticCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.UnitY * 1000f,  -Vector3.UnitY, Vector3.UnitZ);
             AerialCamera.RightDirection = Vector3.UnitX;
             AerialCamera.BuildView();
 
@@ -171,6 +170,9 @@ namespace TGC.MonoGame.TP
             Texture2D terrainHeightMap = Content.Load<Texture2D>(ContentFolderTextures + "Rolling Hills Height Map/Rolling Hills Height Map 256");
             Texture2D terrainBaseColor = Content.Load<Texture2D>(ContentFolderTextures + "Grass/Grass_005_BaseColor");
             Texture2D terrainNormalMap = Content.Load<Texture2D>(ContentFolderTextures + "Grass/Grass_005_Normal");
+            terrainSize = 1024f;
+            float heightScale = 0.4f;
+            float terrainScale = terrainSize / terrainHeightMap.Width;
             TerrainEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhongNormalMap");
             TerrainEffect.Parameters["lightPosition"].SetValue(LightPosition);
             TerrainEffect.Parameters["ambientColor"].SetValue(AmbientColor);
@@ -181,10 +183,7 @@ namespace TGC.MonoGame.TP
             TerrainEffect.Parameters["KDiffuse"].SetValue(0.8f);
             TerrainEffect.Parameters["KSpecular"].SetValue(0.1f);
             TerrainEffect.Parameters["shininess"].SetValue(16.0f);
-            terrainSize = 100f; // 512f;
-            heightScale = 4f; // 0.5f;
-            terrain = new SimpleTerrain(GraphicsDevice, terrainHeightMap, terrainBaseColor, terrainNormalMap, TerrainEffect, terrainSize, heightScale);
-
+            terrain = new SimpleTerrain(GraphicsDevice, terrainHeightMap, terrainBaseColor, terrainNormalMap, TerrainEffect, terrainScale, heightScale);
 
 
             // TODO setear position.Y, pitch y roll del tanque en la posición inicial
@@ -192,7 +191,7 @@ namespace TGC.MonoGame.TP
             Tree.LoadContent(Content, ObjectEffect);
             Rock.LoadContent(Content, ObjectEffect);
             Bush.LoadContent(Content, ObjectEffect);
-            LoadSurfaceObjects();
+            LoadSurfaceObjects(terrainSize * 0.9f);
 
             Model skyBox = Content.Load<Model>(ContentFolder3D + "geometries/cube");
             TextureCube skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "skybox/day_skybox");
@@ -415,7 +414,7 @@ namespace TGC.MonoGame.TP
             base.UnloadContent();
         }
 
-        private void LoadSurfaceObjects()
+        private void LoadSurfaceObjects(float terrainSize)
         {
             Random rnd = new Random();
             int treeCount = 0;

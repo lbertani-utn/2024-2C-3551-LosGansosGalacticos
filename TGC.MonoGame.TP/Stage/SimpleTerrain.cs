@@ -8,26 +8,30 @@ namespace TGC.MonoGame.TP
     /// </summary>
     public class SimpleTerrain
     {
-        private readonly Texture2D colorMapTexture;
+        private readonly Texture2D modelTexture;
+        private readonly Texture2D normalTexture;
         private readonly Effect Effect;
         private float m_scaleXZ = 1;
         private float m_scaleY = 1;
-        private readonly Texture2D modelTexture;
-        private readonly Texture2D normalTexture;
         private VertexBuffer vbTerrain;
         private int primitiveCount;
         private Matrix world;
+        private Vector2 tiling;
 
         public SimpleTerrain(GraphicsDevice graphicsDevice, Texture2D heightMap, Texture2D diffuseMap, Texture2D normalMap, Effect effect, float scaleXZ, float scaleY)
         {
+            // matriz de mundo
             world = Matrix.Identity;
-            //Shader
+
+            // shader Blinn–Phong con normal map
             Effect = effect;
+
             // cargo el heightmap
-            LoadHeightmap(graphicsDevice, heightMap, 4, 0.4f, Vector3.Zero);
+            LoadHeightmap(graphicsDevice, heightMap, scaleXZ, scaleY, Vector3.Zero);
             // texturas con colores y normales
             modelTexture = diffuseMap;
             normalTexture = normalMap;
+            tiling = Vector2.One * 32;
         }
 
         /// <summary>
@@ -46,14 +50,12 @@ namespace TGC.MonoGame.TP
         public void Draw(Matrix view, Matrix projection)
         {
             var graphicsDevice = Effect.GraphicsDevice;
-
             Effect.Parameters["World"].SetValue(world);
-            Effect.Parameters["WorldViewProjection"].SetValue(world * view * projection);
             Effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(world)));
+            Effect.Parameters["WorldViewProjection"].SetValue(world * view * projection);
             Effect.Parameters["ModelTexture"].SetValue(modelTexture);
             Effect.Parameters["NormalTexture"].SetValue(normalTexture);
-            Effect.Parameters["Tiling"].SetValue(Vector2.One * 64);
-
+            Effect.Parameters["Tiling"].SetValue(tiling);
             graphicsDevice.SetVertexBuffer(vbTerrain);
 
             //Render con shader
@@ -71,8 +73,7 @@ namespace TGC.MonoGame.TP
         /// <param name="scaleXZ">Escala para los ejes X y Z</param>
         /// <param name="scaleY">Escala para el eje Y</param>
         /// <param name="center">Centro de la malla del terreno</param>
-        public void LoadHeightmap(GraphicsDevice graphicsDevice, Texture2D heightmap, float scaleXZ, float scaleY,
-            Vector3 center)
+        public void LoadHeightmap(GraphicsDevice graphicsDevice, Texture2D heightmap, float scaleXZ, float scaleY, Vector3 center)
         {
             Center = center;
 
@@ -169,7 +170,7 @@ namespace TGC.MonoGame.TP
                 {
                     //(j, i) invertido para primero barrer filas y despues columnas
                     var pixel = rawData[j * texture.Width + i];
-                    var intensity = pixel.R * 0.299f + pixel.G * 0.587f + pixel.B * 0.114f;
+                    var intensity = pixel.R;
                     heightmap[i, j] = (int) intensity;
                 }
             }
