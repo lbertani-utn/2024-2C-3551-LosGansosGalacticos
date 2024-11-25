@@ -20,7 +20,8 @@ namespace TGC.MonoGame.TP.Tank
         private Vector3 _lastPosition;
         private float _time;
         private BoundingBox _movementBox;
- 
+        private Ray _movementRay;
+
         public Bullet() : base(Vector3.Zero, Vector3.One/4, 0f, Model)
         {
             Active = false;
@@ -47,6 +48,7 @@ namespace TGC.MonoGame.TP.Tank
             _position = position;
             _boundingBox.Min = _position - Bullet.BoxSize;
             _boundingBox.Max = _position + Bullet.BoxSize;
+            _movementBox = _boundingBox;
             _direction = direction;
             _time = 0f;
             Active = true;
@@ -56,7 +58,8 @@ namespace TGC.MonoGame.TP.Tank
         {
             // actualizo posición
             _lastPosition = _position;
-            _position = _position + _direction * elapsedTime + Vector3.Down * gravity * elapsedTime * _time * _time;
+            Vector3 move = _direction * elapsedTime + Vector3.Down * gravity * elapsedTime * _time * _time;
+            _position += move;
 
             // actualizo bounding box
             _boundingBox.Min = _position - Bullet.BoxSize;
@@ -72,16 +75,17 @@ namespace TGC.MonoGame.TP.Tank
                 return;
             }
 
-            Vector3 moveMin = Vector3.Min(_lastPosition, _position) + new Vector3(-2f, -2f, -2f) * _scale;
-            Vector3 moveMax = Vector3.Max(_lastPosition, _position) + new Vector3(2f, 2f, 2f) * _scale;
+            Vector3 moveMin = Vector3.Min(_lastPosition, _position) - Bullet.BoxSize;
+            Vector3 moveMax = Vector3.Max(_lastPosition, _position) + Bullet.BoxSize;
             _movementBox = new BoundingBox(moveMin, moveMax);
+            _movementRay = new Ray(_lastPosition, move);
 
             // colisiones con objetos del escenario
             foreach (WorldEntity e in Entities)
             {
                 if (e.Status != WorldEntityStatus.Destroyed)
                 {
-                    if (_movementBox.Intersects(e.GetHitBox()))
+                    if (_movementBox.Intersects(e.GetHitBox()) && _movementRay.Intersects(e.GetHitBox()) != null)
                     {
                         // TODO explosión
                         e.Status = WorldEntityStatus.Destroyed;
@@ -105,7 +109,8 @@ namespace TGC.MonoGame.TP.Tank
         public override void DrawBoundingBox(Gizmos.Gizmos gizmos)
         {
             gizmos.DrawCube((_boundingBox.Max + _boundingBox.Min) / 2f, _boundingBox.Max - _boundingBox.Min, Color.Red);
-            gizmos.DrawCube((_movementBox.Max + _movementBox.Min) / 2f, _movementBox.Max - _movementBox.Min, Color.White);
+            gizmos.DrawCube((_movementBox.Max + _movementBox.Min) / 2f, _movementBox.Max - _movementBox.Min, Color.Yellow);
+            gizmos.DrawLine(_lastPosition, _position, Color.White);
         }
 
     }
