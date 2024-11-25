@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
+using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP.Tank
 {
@@ -9,6 +10,7 @@ namespace TGC.MonoGame.TP.Tank
     {
         protected Vector3[] DiffuseColors;
         protected static Texture[] Textures;
+        protected static Material[] Materials;
         OrientedBoundingBox[] BoundingVolumes;
         Vector3[] BoundingVolumeTraslation;
         Vector3[] BoundingVolumeScale;
@@ -138,7 +140,8 @@ namespace TGC.MonoGame.TP.Tank
             tankModel = model;
             LoadBoundingVolumes();
             LoadTextures(Content);
-            
+            LoadMaterials();
+
             // Look up shortcut references to the bones we are going to animate.
             leftBackWheelBone = tankModel.Bones["l_back_wheel_geo"];
             rightBackWheelBone = tankModel.Bones["r_back_wheel_geo"];
@@ -163,6 +166,25 @@ namespace TGC.MonoGame.TP.Tank
             boneTransforms = new Matrix[tankModel.Bones.Count];
 
 
+        }
+
+        public void LoadMaterials()
+        {
+            Materials = new Material[tankModel.Meshes.Count];
+            Material brass = new Brass();
+            Material chrome = new Chrome();
+            Materials[0] = brass;
+            Materials[1] = brass;
+            Materials[2] = chrome;
+            Materials[3] = brass;
+            Materials[4] = chrome;
+            Materials[5] = brass;
+            Materials[6] = chrome;
+            Materials[7] = brass;
+            Materials[8] = chrome;
+            Materials[9] = brass;
+            Materials[10] = brass;
+            Materials[11] = brass;
         }
 
         public void LoadTextures(ContentManager Content)
@@ -244,6 +266,13 @@ namespace TGC.MonoGame.TP.Tank
                 effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
                 effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
                 effect.Parameters["baseTexture"].SetValue(Textures[i]);
+                effect.Parameters["ambientColor"].SetValue(Materials[i].AmbientColor);
+                effect.Parameters["diffuseColor"].SetValue(Materials[i].DiffuseColor);
+                effect.Parameters["specularColor"].SetValue(Materials[i].SpecularColor);
+                effect.Parameters["KAmbient"].SetValue(Materials[i].KAmbient);
+                effect.Parameters["KDiffuse"].SetValue(Materials[i].KDiffuse);
+                effect.Parameters["KSpecular"].SetValue(Materials[i].KSpecular);
+                effect.Parameters["shininess"].SetValue(Materials[i].Shininess);
                 tankModel.Meshes[i].Draw();
             }
 

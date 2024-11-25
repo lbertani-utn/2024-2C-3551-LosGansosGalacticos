@@ -180,7 +180,6 @@ namespace TGC.MonoGame.TP
             TerrainEffect.Parameters["ambientColor"].SetValue(AmbientColor);
             TerrainEffect.Parameters["diffuseColor"].SetValue(DiffuseColor);
             TerrainEffect.Parameters["specularColor"].SetValue(SpecularColor);
-            // TODO coeficientes que dependen del material
             TerrainEffect.Parameters["KAmbient"].SetValue(0.2f);
             TerrainEffect.Parameters["KDiffuse"].SetValue(0.8f);
             TerrainEffect.Parameters["KSpecular"].SetValue(0.1f);
