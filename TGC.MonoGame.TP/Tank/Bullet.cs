@@ -2,7 +2,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP.Tank
@@ -19,7 +18,6 @@ namespace TGC.MonoGame.TP.Tank
         private Vector3 _direction;
         private Vector3 _lastPosition;
         private float _time;
-        private BoundingBox _movementBox;
         private Ray _movementRay;
 
         public Bullet() : base(Vector3.Zero, Vector3.One/4, 0f, Model)
@@ -48,7 +46,8 @@ namespace TGC.MonoGame.TP.Tank
             _position = position;
             _boundingBox.Min = _position - Bullet.BoxSize;
             _boundingBox.Max = _position + Bullet.BoxSize;
-            _movementBox = _boundingBox;
+            _movementRay.Position = _position;
+            _movementRay.Direction = _direction;
             _direction = direction;
             _time = 0f;
             Active = true;
@@ -75,9 +74,7 @@ namespace TGC.MonoGame.TP.Tank
                 return;
             }
 
-            Vector3 moveMin = Vector3.Min(_lastPosition, _position) - Bullet.BoxSize;
-            Vector3 moveMax = Vector3.Max(_lastPosition, _position) + Bullet.BoxSize;
-            _movementBox = new BoundingBox(moveMin, moveMax);
+            float distance = Vector3.Distance(_lastPosition , _position);
             _movementRay = new Ray(_lastPosition, move);
 
             // colisiones con objetos del escenario
@@ -85,7 +82,7 @@ namespace TGC.MonoGame.TP.Tank
             {
                 if (e.Status != WorldEntityStatus.Destroyed)
                 {
-                    if (_movementBox.Intersects(e.GetHitBox()) && _movementRay.Intersects(e.GetHitBox()) != null)
+                    if (_movementRay.Intersects(e.GetHitBox()) < distance)
                     {
                         // TODO explosión
                         e.Status = WorldEntityStatus.Destroyed;
@@ -109,7 +106,6 @@ namespace TGC.MonoGame.TP.Tank
         public override void DrawBoundingBox(Gizmos.Gizmos gizmos)
         {
             gizmos.DrawCube((_boundingBox.Max + _boundingBox.Min) / 2f, _boundingBox.Max - _boundingBox.Min, Color.Red);
-            gizmos.DrawCube((_movementBox.Max + _movementBox.Min) / 2f, _movementBox.Max - _movementBox.Min, Color.Yellow);
             gizmos.DrawLine(_lastPosition, _position, Color.White);
         }
 
