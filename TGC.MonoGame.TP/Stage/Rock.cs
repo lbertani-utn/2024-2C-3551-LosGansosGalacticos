@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
+using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP
 {
@@ -9,6 +10,7 @@ namespace TGC.MonoGame.TP
     {
         private static Model Model;
         private static Texture[] Textures;
+        private static Material[] Materials;
         private static BoundingBoxHelper ModelBoundingBox;
 
         public Rock(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
@@ -23,11 +25,14 @@ namespace TGC.MonoGame.TP
             Textures = new Texture[Model.Meshes.Count];
             Textures[0] = Content.Load<Texture2D>("Models/rock/initialShadingGroup_Base_Color");
 
+            Materials = new Material[Model.Meshes.Count];
+            Materials[0] = new DefaultMaterial();
+
             Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
             Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
             Vector3 optbc = new Vector3(0f, -0.0061135f, 0f);
             ModelBoundingBox = new BoundingBoxHelper(min, max, optbc);
-            
+         
         }
 
         public override void Update(float elapsedTime)
@@ -42,7 +47,7 @@ namespace TGC.MonoGame.TP
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model, Textures);
+            base.Draw(view, projection, effect, Model, Textures, Materials);
         }
     }
 }

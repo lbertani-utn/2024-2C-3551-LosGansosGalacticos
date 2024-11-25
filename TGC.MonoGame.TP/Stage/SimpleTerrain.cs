@@ -25,6 +25,13 @@ namespace TGC.MonoGame.TP
 
             // shader Blinn–Phong con normal map
             Effect = effect;
+            Effect.Parameters["ambientColor"].SetValue(Vector3.One);
+            Effect.Parameters["diffuseColor"].SetValue(new Vector3(0.1f, 0.35f, 0.1f));
+            Effect.Parameters["specularColor"].SetValue(new Vector3(0.45f, 0.55f, 0.45f));
+            Effect.Parameters["KAmbient"].SetValue(0.4f);
+            Effect.Parameters["KDiffuse"].SetValue(0.4f);
+            Effect.Parameters["KSpecular"].SetValue(0.1f);
+            Effect.Parameters["shininess"].SetValue(1.0f);
 
             // cargo el heightmap
             LoadHeightmap(graphicsDevice, heightMap, scaleXZ, scaleY, Vector3.Zero);

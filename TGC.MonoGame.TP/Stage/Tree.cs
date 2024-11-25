@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
+using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP
 {
@@ -9,6 +10,7 @@ namespace TGC.MonoGame.TP
     {
         private static Model Model;
         private static Texture[] Textures;
+        private static Material[] Materials;
         private static BoundingBoxHelper ModelBoundingBox;
         private static BoundingBoxHelper ModelDrawBox;
         private BoundingBox _drawBox;
@@ -31,6 +33,16 @@ namespace TGC.MonoGame.TP
             Textures[3] = wood;
             Textures[4] = leaf;
             Textures[5] = leaf;
+
+            Materials = new Material[Model.Meshes.Count];
+            Material bark = new Bark();
+            Material foliage = new Foliage();
+            Materials[0] = bark;
+            Materials[1] = bark;
+            Materials[2] = bark;
+            Materials[3] = bark;
+            Materials[4] = foliage;
+            Materials[5] = foliage;
 
             Vector3 min = new Vector3(-0.48368357f, -0.015338364f, -0.44941229f);
             Vector3 max = new Vector3(0.28571863f, 15.816038f, 0.31998991f);
@@ -64,7 +76,7 @@ namespace TGC.MonoGame.TP
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model, Textures);
+            base.Draw(view, projection, effect, Model, Textures, Materials);
         }
     }
 }

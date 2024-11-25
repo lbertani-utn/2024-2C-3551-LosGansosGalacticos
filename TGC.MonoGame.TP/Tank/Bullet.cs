@@ -1,8 +1,8 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
+using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP.Tank
 {
@@ -10,6 +10,7 @@ namespace TGC.MonoGame.TP.Tank
     {
         private static Model Model;
         private static Texture[] Textures;
+        private static Material[] Materials;
         private static BoundingBoxHelper ModelBoundingBox;
         public bool Active {get; set;}
         private Vector3 _direction;
@@ -26,6 +27,9 @@ namespace TGC.MonoGame.TP.Tank
 
             Textures = new Texture[Model.Meshes.Count];
             Textures[0] = Content.Load<Texture2D>("Textures/metal");
+
+            Materials = new Material[Model.Meshes.Count];
+            Materials[0] = new DefaultMaterial();
 
             Vector3 min = new Vector3(-2f, -2f, -2f);
             Vector3 max = new Vector3(2f, 2f, 2f);
@@ -52,7 +56,7 @@ namespace TGC.MonoGame.TP.Tank
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model, Textures);
+            base.Draw(view, projection, effect, Model, Textures, Materials); 
         }
     }
 

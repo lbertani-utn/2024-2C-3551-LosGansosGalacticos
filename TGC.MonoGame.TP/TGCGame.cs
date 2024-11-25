@@ -177,13 +177,6 @@ namespace TGC.MonoGame.TP
             float terrainScale = terrainSize / terrainHeightMap.Width;
             TerrainEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhongNormalMap");
             TerrainEffect.Parameters["lightPosition"].SetValue(LightPosition);
-            TerrainEffect.Parameters["ambientColor"].SetValue(AmbientColor);
-            TerrainEffect.Parameters["diffuseColor"].SetValue(DiffuseColor);
-            TerrainEffect.Parameters["specularColor"].SetValue(SpecularColor);
-            TerrainEffect.Parameters["KAmbient"].SetValue(0.2f);
-            TerrainEffect.Parameters["KDiffuse"].SetValue(0.8f);
-            TerrainEffect.Parameters["KSpecular"].SetValue(0.1f);
-            TerrainEffect.Parameters["shininess"].SetValue(16.0f);
             terrain = new SimpleTerrain(GraphicsDevice, terrainHeightMap, terrainBaseColor, terrainNormalMap, TerrainEffect, terrainScale, heightScale);
 
 

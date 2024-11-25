@@ -8,9 +8,9 @@ namespace TGC.MonoGame.TP.Tank
 {
     internal class Steamroller : Tank
     {
-        protected Vector3[] DiffuseColors;
-        protected static Texture[] Textures;
-        protected static Material[] Materials;
+        private Vector3[] DiffuseColors;
+        private static Texture[] Textures;
+        private static Material[] Materials;
         OrientedBoundingBox[] BoundingVolumes;
         Vector3[] BoundingVolumeTraslation;
         Vector3[] BoundingVolumeScale;

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
 namespace TGC.MonoGame.TP.Materials
 {
@@ -15,9 +10,9 @@ namespace TGC.MonoGame.TP.Materials
 
         public override Vector3 SpecularColor => new Vector3(0.992157f, 0.941176f, 0.807843f);
 
-        public override float KAmbient => 1.2f;
+        public override float KAmbient => 0.6f;
 
-        public override float KDiffuse => 0.4f;
+        public override float KDiffuse => 0.2f;
 
         public override float KSpecular => 0.05f;
 
