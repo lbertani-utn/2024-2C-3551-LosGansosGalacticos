@@ -68,6 +68,8 @@ namespace TGC.MonoGame.TP
         // TODO crear clase para tanque jugador
         private Model Model { get; set; }
         private Steamroller tank;
+        private Bullet[] Bullets;
+        private const int bulletCount = 10;
 
         // terreno
         private SimpleTerrain terrain;
@@ -198,6 +200,14 @@ namespace TGC.MonoGame.TP
             Effect skyBoxEffect = Content.Load<Effect>(ContentFolderEffects + "Skybox");
             Sky = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1200);
 
+            // proyectiles
+            Bullet.LoadContent(Content, ObjectEffect);
+            Bullets = new Bullet[bulletCount];
+            for (int i = 0; i < bulletCount; i++)
+            {
+                Bullets[i] = new Bullet();
+            }
+
             base.LoadContent();
             previousKeyboardState = Keyboard.GetState();
         }
@@ -260,6 +270,12 @@ namespace TGC.MonoGame.TP
                 tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Steamroller.Friction, -Steamroller.SpeedLimit, 0);
             }
 
+            // disparo
+            if (keyboardState.IsKeyDown(Keys.Space) && previousKeyboardState.IsKeyUp(Keys.Space))
+            {
+                tank.Shoot(Bullets, Bullets.Length);
+            }
+
             // dirección rotación
             if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)))
             {
@@ -318,8 +334,7 @@ namespace TGC.MonoGame.TP
 
 
             tank.World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(tank.Yaw + MathHelper.Pi, tank.Pitch, tank.Roll) * Matrix.CreateTranslation(tank.Position); // TODO definir escala tanque
-
-
+            tank.Update(elapsedTime);
 
             FollowCamera.TargetPosition = tank.Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
             FollowCamera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
@@ -346,6 +361,13 @@ namespace TGC.MonoGame.TP
                 }
             }
 
+            foreach (Bullet b in Bullets)
+            {
+                if (b.Active)
+                {
+                    b.Update(elapsedTime);
+                }
+            }
             base.Update(gameTime);
         }
 
@@ -362,6 +384,7 @@ namespace TGC.MonoGame.TP
             terrain.Draw(Camera.View, Camera.Projection);
             tank.Draw(tank.World, Camera.View, Camera.Projection, ObjectEffect);
 
+            // objetos del escenario
             int drawWorldEntity = 0;
             foreach (WorldEntity e in Entities)
             {
@@ -374,6 +397,14 @@ namespace TGC.MonoGame.TP
             }
             Debug.WriteLine(drawWorldEntity);
 
+            // proyectiles
+            foreach (Bullet b in Bullets)
+            {
+                if (b.Active)
+                {
+                    b.Draw(Camera.View, Camera.Projection, ObjectEffect);
+                }
+            }
 
             // gizmos
             if (DrawBoundingBoxes || DrawPositions)

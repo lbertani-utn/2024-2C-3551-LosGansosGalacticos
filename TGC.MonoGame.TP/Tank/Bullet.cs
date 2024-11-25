@@ -1,39 +1,49 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
 
-namespace TGC.MonoGame.TP
+namespace TGC.MonoGame.TP.Tank
 {
-    internal class Rock : WorldEntity
+    internal class Bullet : WorldEntity
     {
         private static Model Model;
         private static Texture[] Textures;
         private static BoundingBoxHelper ModelBoundingBox;
+        public bool Active {get; set;}
+        private Vector3 _direction;
 
-        public Rock(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
+        public Bullet() : base(Vector3.Zero, Vector3.One/4, 0f, Model)
         {
-            _world = Matrix.CreateTranslation(new Vector3(10.194115f, -0.923026f, -1.0564915f)) * Matrix.CreateScale(scale) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position);
+            Active = false;
+            _world = Matrix.CreateScale(_scale) * Matrix.CreateTranslation(_position);
             _defaultColors = GetDefaultColors(Model.Meshes.Count);
         }
 
         public static void LoadContent(ContentManager Content, Effect Effect)
         {
-            Model = LoadContent(Content, "rock/rock", Effect);
+            Model = LoadContent(Content, "geometries/sphere", Effect);
 
             Textures = new Texture[Model.Meshes.Count];
-            Textures[0] = Content.Load<Texture2D>("Models/rock/initialShadingGroup_Base_Color");
+            Textures[0] = Content.Load<Texture2D>("Textures/metal");
 
-            Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
-            Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
-            Vector3 optbc = new Vector3(0f, -0.0061135f, 0f);
-            ModelBoundingBox = new BoundingBoxHelper(min, max, optbc);
-            
+            Vector3 min = new Vector3(-2f, -2f, -2f);
+            Vector3 max = new Vector3(2f, 2f, 2f);
+            ModelBoundingBox = new BoundingBoxHelper(min, max);
+        }
+
+        public void ResetValues(Vector3 position, Vector3 direction)
+        {
+            _position = position;
+            _direction = direction;
+            Active = true;
         }
 
         public override void Update(float elapsedTime)
         {
-            // ¿¿??
+            _position += _direction * elapsedTime;
+            _world = Matrix.CreateScale(_scale) * Matrix.CreateTranslation(_position);
         }
 
         protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
@@ -59,4 +69,5 @@ namespace TGC.MonoGame.TP
             base.Draw(view, projection, effect, Model, Textures);
         }
     }
+
 }

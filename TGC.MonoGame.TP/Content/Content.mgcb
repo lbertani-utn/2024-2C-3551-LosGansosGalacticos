@@ -284,6 +284,18 @@
 /processorParam:TextureFormat=Color
 /build:Textures/Grass/Grass_005_Normal.jpg
 
+#begin Textures/metal.jpg
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Textures/metal.jpg
+
 #begin Textures/Rolling Hills Height Map/Rolling Hills Height Map 256.png
 /importer:TextureImporter
 /processor:TextureProcessor

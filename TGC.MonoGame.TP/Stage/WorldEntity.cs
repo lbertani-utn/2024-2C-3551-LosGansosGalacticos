@@ -62,7 +62,7 @@ namespace TGC.MonoGame.TP {
             return model;
         }
 
-
+        public virtual void Update(float elapsedTime) { }
 
         public virtual void Draw(Matrix view, Matrix projection, Effect effect) {}
 

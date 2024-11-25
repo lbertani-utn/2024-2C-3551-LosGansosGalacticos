@@ -43,7 +43,7 @@ namespace TGC.MonoGame.TP
             ModelDrawBox = new BoundingBoxHelper(drawMin, drawMax);
         }
 
-        protected void Update(GameTime gameTime)
+        public override void Update(float elapsedTime)
         {
             // ¿¿??
         }

@@ -25,6 +25,11 @@ namespace TGC.MonoGame.TP.Tank
         public float Roll = 0f;
         public Matrix World;
 
+        private const float CannonCooldown = 3f;
+        private float recharging = 0f;
+        private Matrix ShootingPosition;
+        private Matrix ShootingDirection;
+
         public float Speed
         {
             get => Propulsion + Downhill;
@@ -34,9 +39,7 @@ namespace TGC.MonoGame.TP.Tank
         public const float SpeedIncrease = 0.25f;
         public const float SpeedLimit = 20f;
         public const float Friction = 0.05f;
-
         private const float FrontWheelRotation = 1.6f;
-        private float cannonCooldown = 0f;
 
         private float _wheelRotation;
         public float WheelRotation
@@ -203,6 +206,8 @@ namespace TGC.MonoGame.TP.Tank
 
         public void Update(float elapsedTime)
         {
+            recharging = MathHelper.Clamp(recharging - elapsedTime, 0f, CannonCooldown);
+            
         }
 
         /// <summary>
@@ -261,6 +266,9 @@ namespace TGC.MonoGame.TP.Tank
                 effect.Parameters["baseTexture"].SetValue(Textures[i]);
                 tankModel.Meshes[i].Draw();
             }
+
+            ShootingPosition = Matrix.CreateTranslation(0.00851f, 0.38970f, 1.45659f) * turretRotation * Matrix.CreateTranslation(BoundingVolumeTraslation[7]) * rotationMatrix * Matrix.CreateTranslation(Position);
+            ShootingDirection = cannonRotation * turretRotation * rotationMatrix;
         }
 
         public void DrawBoundingBox(Gizmos.Gizmos gizmos)
@@ -279,8 +287,32 @@ namespace TGC.MonoGame.TP.Tank
                 {
                     return true;
                 }
-            }
+            } 
             return false;
+        }
+
+        public void Shoot(Bullet[] bullets, int bulletCount)
+        {
+            if (recharging == 0f)
+            {
+                // busco un proyectil libre
+                Bullet b = null;
+                for (int i = 0; i < bulletCount; i++)
+                {
+                    if (!bullets[i].Active)
+                    { 
+                        b = bullets[i];
+                        break;
+                    }
+
+                }
+                // si encuentro uno, seteo valores
+                if (b != null)
+                {
+                    b.ResetValues(ShootingPosition.Translation + ShootingDirection.Backward, ShootingDirection.Backward * 100);
+                    recharging = CannonCooldown;
+                }    
+            }
         }
 
     }

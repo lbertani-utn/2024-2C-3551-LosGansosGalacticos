@@ -32,7 +32,7 @@ namespace TGC.MonoGame.TP
             ModelBoundingBox = new BoundingBoxHelper(min, max);
         }
 
-        protected void Update(GameTime gameTime)
+        public override void Update(float elapsedTime)
         {
             // ¿¿??
         }
