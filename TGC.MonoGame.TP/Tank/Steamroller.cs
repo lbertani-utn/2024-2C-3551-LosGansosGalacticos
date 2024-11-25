@@ -27,7 +27,7 @@ namespace TGC.MonoGame.TP.Tank
         public float Roll = 0f;
         public Matrix World;
 
-        private const float CannonCooldown = 3f;
+        private const float CannonCooldown = 1f;
         private float recharging = 0f;
         private Matrix ShootingPosition;
         private Matrix ShootingDirection;
@@ -66,7 +66,7 @@ namespace TGC.MonoGame.TP.Tank
         public float CannonRotation
         {
             get => _cannonRotation;
-            set => _cannonRotation = MathHelper.Clamp(value, -PiOver6, 0f);
+            set => _cannonRotation = MathHelper.Clamp(value, -PiOver6, PiOver6);
         }
 
         #region Fields

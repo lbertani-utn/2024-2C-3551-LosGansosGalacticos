@@ -348,6 +348,7 @@ namespace TGC.MonoGame.TP
                 {
                     if (tank.Intersects(e.GetHitBox()))
                     {
+                        // TODO destruir objeto
                         e.Status = WorldEntityStatus.Destroyed;
                     }
                 }
@@ -357,7 +358,7 @@ namespace TGC.MonoGame.TP
             {
                 if (b.Active)
                 {
-                    b.Update(elapsedTime);
+                    b.Update(elapsedTime, terrain, Entities);
                 }
             }
             base.Update(gameTime);
@@ -418,6 +419,10 @@ namespace TGC.MonoGame.TP
 
                 if (DrawBoundingBoxes)
                 {
+                    foreach (Bullet b in Bullets)
+                    {
+                        b.DrawBoundingBox(Gizmos);
+                    }
                     tank.DrawBoundingBox(Gizmos);
                     Gizmos.DrawFrustum(FollowCamera.View * FollowCamera.Projection, Color.White);
                 }

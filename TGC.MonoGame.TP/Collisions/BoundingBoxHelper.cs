@@ -4,6 +4,9 @@ namespace TGC.MonoGame.TP.Collisions
 {
     public class BoundingBoxHelper
     {
+        public Vector3 Min { get => _min;}
+        public Vector3 Max { get => _max; }
+
         private Vector3 _center;
         private Vector3 _distance;
         private Vector3 _min;
@@ -43,6 +46,13 @@ namespace TGC.MonoGame.TP.Collisions
         public OrientedBoundingBox GetOrientedBoundingBox(Vector3 position, Vector3 scale)
         {
             return new OrientedBoundingBox(position + _objectPositionToBoxCenter * scale, _distance * scale);
+        }
+
+        public void UpdatePosition(Vector3 newPosition)
+        {
+            _center = newPosition;
+            _min = _center - _distance;
+            _max = _center + _distance;
         }
 
     }
