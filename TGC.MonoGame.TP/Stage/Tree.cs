@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
+using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP
 {
@@ -9,6 +10,7 @@ namespace TGC.MonoGame.TP
     {
         private static Model Model;
         private static Texture[] Textures;
+        private static Material[] Materials;
         private static BoundingBoxHelper ModelBoundingBox;
         private static BoundingBoxHelper ModelDrawBox;
         private BoundingBox _drawBox;
@@ -16,8 +18,6 @@ namespace TGC.MonoGame.TP
         public Tree(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
             _world = Matrix.CreateRotationX(-MathHelper.PiOver2) * Matrix.CreateScale(scale) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position);
-            _defaultColors = GetDefaultColors(Model.Meshes.Count);
-
             _drawBox = ModelDrawBox.GetBoundingBox(position, scale);
         }
 
@@ -26,13 +26,23 @@ namespace TGC.MonoGame.TP
             Model = LoadContent(Content, "tree/tree", Effect);
             Textures = new Texture[Model.Meshes.Count];
             Texture wood = Content.Load<Texture2D>("Models/tree/bark_loo");
-            Texture leaf = Content.Load<Texture2D>("Models/tree/blatt1");
+            Texture leaf = Content.Load<Texture2D>("Models/tree/leaf");
             Textures[0] = wood;
             Textures[1] = wood;
             Textures[2] = wood;
             Textures[3] = wood;
             Textures[4] = leaf;
             Textures[5] = leaf;
+
+            Materials = new Material[Model.Meshes.Count];
+            Material bark = new Bark();
+            Material foliage = new Foliage();
+            Materials[0] = bark;
+            Materials[1] = bark;
+            Materials[2] = bark;
+            Materials[3] = bark;
+            Materials[4] = foliage;
+            Materials[5] = foliage;
 
             Vector3 min = new Vector3(-0.48368357f, -0.015338364f, -0.44941229f);
             Vector3 max = new Vector3(0.28571863f, 15.816038f, 0.31998991f);
@@ -43,7 +53,7 @@ namespace TGC.MonoGame.TP
             ModelDrawBox = new BoundingBoxHelper(drawMin, drawMax);
         }
 
-        protected void Update(GameTime gameTime)
+        public override void Update(float elapsedTime)
         {
             // ¿¿??
         }
@@ -51,20 +61,6 @@ namespace TGC.MonoGame.TP
         protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
             return ModelBoundingBox.GetBoundingBox(position, scale);
-        }
-
-        protected override Vector3[] GetDefaultColors(int meshes)
-        {
-            Vector3 green = new Vector3(0.117647059f, 0.345098039f, 0.117647059f);
-            Vector3 brown = new Vector3(0.254901961f, 0.066666667f, 0.066666667f);
-            Vector3[] colors = new Vector3[meshes];
-            colors[0] = brown;
-            colors[1] = brown;
-            colors[2] = brown;
-            colors[3] = green;
-            colors[4] = green;
-            colors[5] = green;
-            return colors;
         }
 
         public override BoundingBox GetDrawBox()
@@ -80,7 +76,7 @@ namespace TGC.MonoGame.TP
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model, Textures);
+            base.Draw(view, projection, effect, Model, Textures, Materials);
         }
     }
 }

@@ -68,11 +68,12 @@ namespace TGC.MonoGame.TP
         // TODO crear clase para tanque jugador
         private Model Model { get; set; }
         private Steamroller tank;
+        private Bullet[] Bullets;
+        private const int bulletCount = 10;
 
         // terreno
-        private Terrain terrain;
+        private SimpleTerrain terrain;
         private float terrainSize;
-        private float heightScale; 
         private List<WorldEntity> Entities;
 
         // iluminación
@@ -82,7 +83,6 @@ namespace TGC.MonoGame.TP
         private Vector3 SpecularColor;
 
         // Mapeo de teclas
-        //private Dictionary<Keys, BindingAction> KeyBindings;
         private KeyboardState keyboardState;
         private KeyboardState previousKeyboardState;
         private MouseState mouseState;
@@ -101,22 +101,11 @@ namespace TGC.MonoGame.TP
             // deshabilito el backface culling
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
-            //KeyBindings = new() {
-            //    {Keys.W, BindingLogic.PositiveDirection},
-            //    {Keys.Up, BindingLogic.PositiveDirection},
-            //    {Keys.A, BindingLogic.PositiveRotation},
-            //    {Keys.Left, BindingLogic.PositiveRotation},
-            //    {Keys.S, BindingLogic.NegativeDirection},
-            //    {Keys.Down, BindingLogic.NegativeDirection},
-            //    {Keys.D, BindingLogic.NegativeRotation},
-            //    {Keys.Right, BindingLogic.NegativeRotation},
-            //};
-
             FollowCamera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
             FollowCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
             _camera = FollowCamera;
-
-            AerialCamera = new StaticCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.UnitY * 1000f, new Vector3(-0.001f, -1f, -0.001f), Vector3.Up);
+            
+            AerialCamera = new StaticCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.UnitY * 1000f,  -Vector3.UnitY, Vector3.UnitZ);
             AerialCamera.RightDirection = Vector3.UnitX;
             AerialCamera.BuildView();
 
@@ -148,14 +137,14 @@ namespace TGC.MonoGame.TP
             DiffuseColor = Vector3.One;
             SpecularColor = Vector3.One;
 
-            TerrainEffect = Content.Load<Effect>(ContentFolderEffects + "BasicShader");
-            ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong");
 
+
+
+            ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong");
             ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
             ObjectEffect.Parameters["ambientColor"].SetValue(AmbientColor);
             ObjectEffect.Parameters["diffuseColor"].SetValue(DiffuseColor);
             ObjectEffect.Parameters["specularColor"].SetValue(SpecularColor);
-            
             // TODO coeficientes que dependen del material
             ObjectEffect.Parameters["KAmbient"].SetValue(0.1f);
             ObjectEffect.Parameters["KDiffuse"].SetValue(0.6f);
@@ -178,9 +167,17 @@ namespace TGC.MonoGame.TP
             tank.Load(Content, Model);
 
 
-            terrainSize = 512f;
-            heightScale = 0.5f;
-            terrain = new(this, TerrainEffect, GraphicsDevice, (terrainSize, terrainSize), heightScale);
+
+            // Terreno
+            Texture2D terrainHeightMap = Content.Load<Texture2D>(ContentFolderTextures + "Rolling Hills Height Map/Rolling Hills Height Map 256");
+            Texture2D terrainBaseColor = Content.Load<Texture2D>(ContentFolderTextures + "Grass/Grass_005_BaseColor");
+            Texture2D terrainNormalMap = Content.Load<Texture2D>(ContentFolderTextures + "Grass/Grass_005_Normal");
+            terrainSize = 1024f;
+            float heightScale = 0.4f;
+            float terrainScale = terrainSize / terrainHeightMap.Width;
+            TerrainEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhongNormalMap");
+            TerrainEffect.Parameters["lightPosition"].SetValue(LightPosition);
+            terrain = new SimpleTerrain(GraphicsDevice, terrainHeightMap, terrainBaseColor, terrainNormalMap, TerrainEffect, terrainScale, heightScale);
 
 
             // TODO setear position.Y, pitch y roll del tanque en la posición inicial
@@ -188,12 +185,20 @@ namespace TGC.MonoGame.TP
             Tree.LoadContent(Content, ObjectEffect);
             Rock.LoadContent(Content, ObjectEffect);
             Bush.LoadContent(Content, ObjectEffect);
-            LoadSurfaceObjects();
+            LoadSurfaceObjects(terrainSize * 0.9f);
 
             Model skyBox = Content.Load<Model>(ContentFolder3D + "geometries/cube");
             TextureCube skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "skybox/day_skybox");
             Effect skyBoxEffect = Content.Load<Effect>(ContentFolderEffects + "Skybox");
             Sky = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1200);
+
+            // proyectiles
+            Bullet.LoadContent(Content, ObjectEffect);
+            Bullets = new Bullet[bulletCount];
+            for (int i = 0; i < bulletCount; i++)
+            {
+                Bullets[i] = new Bullet();
+            }
 
             base.LoadContent();
             previousKeyboardState = Keyboard.GetState();
@@ -257,6 +262,12 @@ namespace TGC.MonoGame.TP
                 tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Steamroller.Friction, -Steamroller.SpeedLimit, 0);
             }
 
+            // disparo
+            if (keyboardState.IsKeyDown(Keys.Space) && previousKeyboardState.IsKeyUp(Keys.Space))
+            {
+                tank.Shoot(Bullets, Bullets.Length);
+            }
+
             // dirección rotación
             if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)))
             {
@@ -289,7 +300,7 @@ namespace TGC.MonoGame.TP
             Vector3 movement = RotationMatrix.Forward * tank.Speed * elapsedTime;
             tank.WheelRotation += (tank.Speed * elapsedTime / 8f); // TODO revisar esta fórmula
             tank.Position = tank.Position + movement;
-            tank.Position.Y = Terrain.GetPositionHeight(tank.Position.X, tank.Position.Z);
+            tank.Position.Y = terrain.Height(tank.Position.X, tank.Position.Z);
 
             float distanceForward = 3.303362f;
             float distanceRight = 3.032239f;
@@ -298,7 +309,7 @@ namespace TGC.MonoGame.TP
 
             // pendiente hacia adelante/atrás 
             Vector3 positionForward = tank.Position + RotationMatrix.Forward * distanceForward;
-            positionForward.Y = Terrain.GetPositionHeight(positionForward.X, positionForward.Z);
+            positionForward.Y = terrain.Height(positionForward.X, positionForward.Z);
             float currentPitch = (tank.Position.Y - positionForward.Y) / (tank.Position - positionForward).Length();
             float deltaPitch = currentPitch - tank.Pitch;
             tank.Pitch += MathHelper.Clamp(deltaPitch, -clampPitch, clampPitch);
@@ -308,15 +319,14 @@ namespace TGC.MonoGame.TP
 
             // pendiente hacia los costados
             Vector3 positionRight = tank.Position + RotationMatrix.Right * distanceRight;
-            positionRight.Y = Terrain.GetPositionHeight(positionRight.X, positionRight.Z);
+            positionRight.Y = terrain.Height(positionRight.X, positionRight.Z);
             float currentRoll = (tank.Position.Y - positionRight.Y) / (tank.Position - positionRight).Length();
             float deltaRoll = currentRoll - tank.Roll;
             tank.Roll += MathHelper.Clamp(deltaRoll, -clampRoll, clampRoll);
 
 
             tank.World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(tank.Yaw + MathHelper.Pi, tank.Pitch, tank.Roll) * Matrix.CreateTranslation(tank.Position); // TODO definir escala tanque
-
-
+            tank.Update(elapsedTime);
 
             FollowCamera.TargetPosition = tank.Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
             FollowCamera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
@@ -343,6 +353,13 @@ namespace TGC.MonoGame.TP
                 }
             }
 
+            foreach (Bullet b in Bullets)
+            {
+                if (b.Active)
+                {
+                    b.Update(elapsedTime);
+                }
+            }
             base.Update(gameTime);
         }
 
@@ -353,24 +370,33 @@ namespace TGC.MonoGame.TP
         protected override void Draw(GameTime gameTime)
         {
             // Aca deberiamos poner toda la logia de renderizado del juego.
-            GraphicsDevice.Clear(new Color(23 / 255.0f, 171 / 255.0f, 237 / 255.0f));
+            GraphicsDevice.Clear(Color.Black);
 
             Sky.Draw(Camera.View, Camera.Projection, Camera.Position);
             terrain.Draw(Camera.View, Camera.Projection);
             tank.Draw(tank.World, Camera.View, Camera.Projection, ObjectEffect);
 
+            // objetos del escenario
             int drawWorldEntity = 0;
             foreach (WorldEntity e in Entities)
             {
                 if (e.Status != WorldEntityStatus.Destroyed && BoundingFrustum.Intersects(e.GetDrawBox()))
                 { 
-                    terrain.spacialMap.Update(e);
+                    //terrain.spacialMap.Update(e);
                     e.Draw(Camera.View, Camera.Projection, ObjectEffect);
                     drawWorldEntity += 1;
                 }
             }
             Debug.WriteLine(drawWorldEntity);
 
+            // proyectiles
+            foreach (Bullet b in Bullets)
+            {
+                if (b.Active)
+                {
+                    b.Draw(Camera.View, Camera.Projection, ObjectEffect);
+                }
+            }
 
             // gizmos
             if (DrawBoundingBoxes || DrawPositions)
@@ -411,7 +437,7 @@ namespace TGC.MonoGame.TP
             base.UnloadContent();
         }
 
-        private void LoadSurfaceObjects()
+        private void LoadSurfaceObjects(float terrainSize)
         {
             Random rnd = new Random();
             int treeCount = 0;
@@ -423,7 +449,7 @@ namespace TGC.MonoGame.TP
                 // posición
                 float x = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
                 float z = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
-                float y = Terrain.GetPositionHeight(x, z);
+                float y = terrain.Height(x, z);
 
                 // escala
                 float height = (float)rnd.NextDouble() * 0.4f + 0.8f;
@@ -437,21 +463,21 @@ namespace TGC.MonoGame.TP
                 {
                     Tree t = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(t);
-                    terrain.spacialMap.Add(t);
+                    //terrain.spacialMap.Add(t);
                     treeCount += 1;
                 }
                 else if (objType > 0.2f)
                 {
                     Bush b = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(b);
-                    terrain.spacialMap.Add(b);
+                    //terrain.spacialMap.Add(b);
                     bushCount += 1;
                 }
                 else
                 {
                     Rock r = new(new Vector3(x, y, z), new Vector3(width, height, width), rot);
                     Entities.Add(r);
-                    terrain.spacialMap.Add(r);
+                    //terrain.spacialMap.Add(r);
                     rockCount += 1;
                 }
 

@@ -2,13 +2,15 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
+using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP.Tank
 {
     internal class Steamroller : Tank
     {
-        protected Vector3[] DiffuseColors;
-        protected static Texture[] Textures;
+        private Vector3[] DiffuseColors;
+        private static Texture[] Textures;
+        private static Material[] Materials;
         OrientedBoundingBox[] BoundingVolumes;
         Vector3[] BoundingVolumeTraslation;
         Vector3[] BoundingVolumeScale;
@@ -25,6 +27,11 @@ namespace TGC.MonoGame.TP.Tank
         public float Roll = 0f;
         public Matrix World;
 
+        private const float CannonCooldown = 3f;
+        private float recharging = 0f;
+        private Matrix ShootingPosition;
+        private Matrix ShootingDirection;
+
         public float Speed
         {
             get => Propulsion + Downhill;
@@ -32,11 +39,9 @@ namespace TGC.MonoGame.TP.Tank
         public float Propulsion = 0f;
         public float Downhill = 0f;
         public const float SpeedIncrease = 0.25f;
-        public const float SpeedLimit = 15f;
+        public const float SpeedLimit = 20f;
         public const float Friction = 0.05f;
-
         private const float FrontWheelRotation = 1.6f;
-        private float cannonCooldown = 0f;
 
         private float _wheelRotation;
         public float WheelRotation
@@ -134,9 +139,9 @@ namespace TGC.MonoGame.TP.Tank
         {
             tankModel = model;
             LoadBoundingVolumes();
-            LoadDiffuseColors();
             LoadTextures(Content);
-            
+            LoadMaterials();
+
             // Look up shortcut references to the bones we are going to animate.
             leftBackWheelBone = tankModel.Bones["l_back_wheel_geo"];
             rightBackWheelBone = tankModel.Bones["r_back_wheel_geo"];
@@ -163,23 +168,23 @@ namespace TGC.MonoGame.TP.Tank
 
         }
 
-        public void LoadDiffuseColors()
+        public void LoadMaterials()
         {
-            Vector3 hullColor = new Vector3(0.3f, 0.3f, 0.3f);
-            Vector3 wheelColor = new Vector3(0.1f, 0.1f, 0.1f);
-            DiffuseColors = new Vector3[tankModel.Meshes.Count];
-            DiffuseColors[0] = hullColor;
-            DiffuseColors[1] = hullColor;
-            DiffuseColors[2] = wheelColor;
-            DiffuseColors[3] = hullColor;
-            DiffuseColors[4] = wheelColor;
-            DiffuseColors[5] = hullColor;
-            DiffuseColors[6] = wheelColor;
-            DiffuseColors[7] = hullColor;
-            DiffuseColors[8] = wheelColor;
-            DiffuseColors[9] = hullColor;
-            DiffuseColors[10] = hullColor;
-            DiffuseColors[11] = hullColor;
+            Materials = new Material[tankModel.Meshes.Count];
+            Material brass = new Brass();
+            Material chrome = new Chrome();
+            Materials[0] = brass;
+            Materials[1] = brass;
+            Materials[2] = chrome;
+            Materials[3] = brass;
+            Materials[4] = chrome;
+            Materials[5] = brass;
+            Materials[6] = chrome;
+            Materials[7] = brass;
+            Materials[8] = chrome;
+            Materials[9] = brass;
+            Materials[10] = brass;
+            Materials[11] = brass;
         }
 
         public void LoadTextures(ContentManager Content)
@@ -203,6 +208,8 @@ namespace TGC.MonoGame.TP.Tank
 
         public void Update(float elapsedTime)
         {
+            recharging = MathHelper.Clamp(recharging - elapsedTime, 0f, CannonCooldown);
+            
         }
 
         /// <summary>
@@ -259,8 +266,18 @@ namespace TGC.MonoGame.TP.Tank
                 effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
                 effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
                 effect.Parameters["baseTexture"].SetValue(Textures[i]);
+                effect.Parameters["ambientColor"].SetValue(Materials[i].AmbientColor);
+                effect.Parameters["diffuseColor"].SetValue(Materials[i].DiffuseColor);
+                effect.Parameters["specularColor"].SetValue(Materials[i].SpecularColor);
+                effect.Parameters["KAmbient"].SetValue(Materials[i].KAmbient);
+                effect.Parameters["KDiffuse"].SetValue(Materials[i].KDiffuse);
+                effect.Parameters["KSpecular"].SetValue(Materials[i].KSpecular);
+                effect.Parameters["shininess"].SetValue(Materials[i].Shininess);
                 tankModel.Meshes[i].Draw();
             }
+
+            ShootingPosition = Matrix.CreateTranslation(0.00851f, 0.38970f, 1.45659f) * turretRotation * Matrix.CreateTranslation(BoundingVolumeTraslation[7]) * rotationMatrix * Matrix.CreateTranslation(Position);
+            ShootingDirection = cannonRotation * turretRotation * rotationMatrix;
         }
 
         public void DrawBoundingBox(Gizmos.Gizmos gizmos)
@@ -279,8 +296,32 @@ namespace TGC.MonoGame.TP.Tank
                 {
                     return true;
                 }
-            }
+            } 
             return false;
+        }
+
+        public void Shoot(Bullet[] bullets, int bulletCount)
+        {
+            if (recharging == 0f)
+            {
+                // busco un proyectil libre
+                Bullet b = null;
+                for (int i = 0; i < bulletCount; i++)
+                {
+                    if (!bullets[i].Active)
+                    { 
+                        b = bullets[i];
+                        break;
+                    }
+
+                }
+                // si encuentro uno, seteo valores
+                if (b != null)
+                {
+                    b.ResetValues(ShootingPosition.Translation + ShootingDirection.Backward, ShootingDirection.Backward * 100);
+                    recharging = CannonCooldown;
+                }    
+            }
         }
 
     }

@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
+using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP {
 
@@ -62,27 +63,11 @@ namespace TGC.MonoGame.TP {
             return model;
         }
 
-
+        public virtual void Update(float elapsedTime) { }
 
         public virtual void Draw(Matrix view, Matrix projection, Effect effect) {}
 
-        public void Draw(Matrix view, Matrix projection, Effect effect, Model model)
-        {
-            model.Root.Transform = _world;
-            var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
-            model.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
-
-            for (int i = 0; i < model.Meshes.Count; i++)
-            {
-                var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
-                effect.Parameters["World"].SetValue(relativeTransform);
-                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
-                effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
-                model.Meshes[i].Draw();
-            }
-        }
-
-        public void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures)
+        protected void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures)
         {
             model.Root.Transform = _world;
             var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
@@ -99,6 +84,30 @@ namespace TGC.MonoGame.TP {
             }
         }
 
+        protected void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures, Material[] materials)
+        {
+            model.Root.Transform = _world;
+            var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
+            model.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
+
+            for (int i = 0; i < model.Meshes.Count; i++)
+            {
+                var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
+                effect.Parameters["World"].SetValue(relativeTransform);
+                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
+                effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
+                effect.Parameters["baseTexture"].SetValue(textures[i]);
+                effect.Parameters["ambientColor"].SetValue(materials[i].AmbientColor);
+                effect.Parameters["diffuseColor"].SetValue(materials[i].DiffuseColor);
+                effect.Parameters["specularColor"].SetValue(materials[i].SpecularColor);
+                effect.Parameters["KAmbient"].SetValue(materials[i].KAmbient);
+                effect.Parameters["KDiffuse"].SetValue(materials[i].KDiffuse);
+                effect.Parameters["KSpecular"].SetValue(materials[i].KSpecular);
+                effect.Parameters["shininess"].SetValue(materials[i].Shininess);
+                model.Meshes[i].Draw();
+            }
+        }
+
         public virtual void DrawBoundingBox(Gizmos.Gizmos gizmos)
         {
             gizmos.DrawCube((_boundingBox.Max + _boundingBox.Min) / 2f, _boundingBox.Max - _boundingBox.Min, Color.Red);
@@ -107,17 +116,6 @@ namespace TGC.MonoGame.TP {
         public void DrawPosition(Gizmos.Gizmos gizmos)
         {
             gizmos.DrawSphere(_position, Vector3.One, Color.White);
-        }
-
-
-        protected virtual Vector3[] GetDefaultColors(int meshes)
-        {
-            Vector3[] colors = new Vector3[meshes];
-            for (int i = 0; i < meshes; i++)
-            {
-                colors[i] = new Vector3((float)Random.NextDouble(), (float)Random.NextDouble(), (float)Random.NextDouble());
-            }
-            return colors;
         }
 
         public void DebugCollision(CollisionData data) {
