@@ -137,7 +137,6 @@ namespace TGC.MonoGame.TP.Tank
         {
             tankModel = model;
             LoadBoundingVolumes();
-            LoadDiffuseColors();
             LoadTextures(Content);
             
             // Look up shortcut references to the bones we are going to animate.
@@ -164,25 +163,6 @@ namespace TGC.MonoGame.TP.Tank
             boneTransforms = new Matrix[tankModel.Bones.Count];
 
 
-        }
-
-        public void LoadDiffuseColors()
-        {
-            Vector3 hullColor = new Vector3(0.3f, 0.3f, 0.3f);
-            Vector3 wheelColor = new Vector3(0.1f, 0.1f, 0.1f);
-            DiffuseColors = new Vector3[tankModel.Meshes.Count];
-            DiffuseColors[0] = hullColor;
-            DiffuseColors[1] = hullColor;
-            DiffuseColors[2] = wheelColor;
-            DiffuseColors[3] = hullColor;
-            DiffuseColors[4] = wheelColor;
-            DiffuseColors[5] = hullColor;
-            DiffuseColors[6] = wheelColor;
-            DiffuseColors[7] = hullColor;
-            DiffuseColors[8] = wheelColor;
-            DiffuseColors[9] = hullColor;
-            DiffuseColors[10] = hullColor;
-            DiffuseColors[11] = hullColor;
         }
 
         public void LoadTextures(ContentManager Content)

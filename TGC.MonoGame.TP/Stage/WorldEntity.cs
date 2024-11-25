@@ -93,17 +93,6 @@ namespace TGC.MonoGame.TP {
             gizmos.DrawSphere(_position, Vector3.One, Color.White);
         }
 
-
-        protected virtual Vector3[] GetDefaultColors(int meshes)
-        {
-            Vector3[] colors = new Vector3[meshes];
-            for (int i = 0; i < meshes; i++)
-            {
-                colors[i] = new Vector3((float)Random.NextDouble(), (float)Random.NextDouble(), (float)Random.NextDouble());
-            }
-            return colors;
-        }
-
         public void DebugCollision(CollisionData data) {
             var x = data.gridPosition.x / (float) data.gridSize.x;
             var z = data.gridPosition.z / (float) data.gridSize.z;

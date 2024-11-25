@@ -18,7 +18,6 @@ namespace TGC.MonoGame.TP.Tank
         {
             Active = false;
             _world = Matrix.CreateScale(_scale) * Matrix.CreateTranslation(_position);
-            _defaultColors = GetDefaultColors(Model.Meshes.Count);
         }
 
         public static void LoadContent(ContentManager Content, Effect Effect)
@@ -49,19 +48,6 @@ namespace TGC.MonoGame.TP.Tank
         protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
             return ModelBoundingBox.GetBoundingBox(position, scale);
-        }
-
-
-        protected override Vector3[] GetDefaultColors(int meshes)
-        {
-            var num = Random.NextDouble() * 0.3f + 0.3f;
-            float r = (float)(num + Random.NextDouble() * 0.05f);
-            float g = (float)(num + Random.NextDouble() * 0.05f);
-            float b = (float)(num + Random.NextDouble() * 0.05f);
-
-            Vector3[] colors = new Vector3[meshes];
-            colors[0] = new Vector3(r, g, b);
-            return colors;
         }
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)

@@ -16,8 +16,6 @@ namespace TGC.MonoGame.TP
         public Tree(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
             _world = Matrix.CreateRotationX(-MathHelper.PiOver2) * Matrix.CreateScale(scale) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position);
-            _defaultColors = GetDefaultColors(Model.Meshes.Count);
-
             _drawBox = ModelDrawBox.GetBoundingBox(position, scale);
         }
 
@@ -51,20 +49,6 @@ namespace TGC.MonoGame.TP
         protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
             return ModelBoundingBox.GetBoundingBox(position, scale);
-        }
-
-        protected override Vector3[] GetDefaultColors(int meshes)
-        {
-            Vector3 green = new Vector3(0.117647059f, 0.345098039f, 0.117647059f);
-            Vector3 brown = new Vector3(0.254901961f, 0.066666667f, 0.066666667f);
-            Vector3[] colors = new Vector3[meshes];
-            colors[0] = brown;
-            colors[1] = brown;
-            colors[2] = brown;
-            colors[3] = green;
-            colors[4] = green;
-            colors[5] = green;
-            return colors;
         }
 
         public override BoundingBox GetDrawBox()
