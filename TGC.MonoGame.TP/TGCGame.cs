@@ -183,21 +183,6 @@ namespace TGC.MonoGame.TP
             ObjectEffect.Parameters["shininess"].SetValue(16.0f);
 
 
-            // Cargo el tanque
-            // TODO mover esto a su clase
-            Stopwatch sw = Stopwatch.StartNew();
-            Model = Content.Load<Model>(ContentFolder3D + "tank/tank");
-            sw.Stop();
-            Debug.WriteLine("Load model tank/tank: {0} milliseconds", sw.ElapsedMilliseconds);
-
-
-            ApplyEffect(Model, ObjectEffect);
-            tank = new Tank();
-            tank.Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
-            tank.World = Matrix.CreateTranslation(tank.Position);
-            tank.Load(Content, Model);
-            Tank.DefaultEffect = ObjectEffect;
-
 
 
             // Terreno
@@ -225,9 +210,21 @@ namespace TGC.MonoGame.TP
             SkyEffect = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1200);
 
 
-            // tanques enemigos
-            Enemies = new Tank[enemyCount];
+            // Cargo el tanque
+            // TODO mover esto a su clase
+            Stopwatch sw = Stopwatch.StartNew();
+            Model = Content.Load<Model>(ContentFolder3D + "tank/tank");
+            sw.Stop();
+            Debug.WriteLine("Load model tank/tank: {0} milliseconds", sw.ElapsedMilliseconds);
 
+
+            ApplyEffect(Model, ObjectEffect);
+            tank = new Tank(new Vector3(0f, terrain.Height(0f, 0f),0f), new Vector3(0.1f, 0.1f, 0.1f), MathHelper.PiOver2, 0f, 0f);
+            tank.Load(Content, Model);
+            Tank.DefaultEffect = ObjectEffect;
+
+            // tanques enemigos
+            LoadTanks(terrainSize * 0.7f);
 
             // proyectiles
             Bullet.LoadContent(Content, ObjectEffect);
@@ -400,6 +397,16 @@ namespace TGC.MonoGame.TP
                 }
             }
 
+            // tanques enemigos
+            foreach (Tank t in Enemies)
+            {
+                if (t.Status != WorldEntityStatus.Destroyed)
+                {
+                    t.Update(elapsedTime);
+                }
+            }
+            
+            // proyectiles
             foreach (Bullet b in Bullets)
             {
                 if (b.Active)
@@ -443,6 +450,15 @@ namespace TGC.MonoGame.TP
             }
             Debug.WriteLine(drawWorldEntity);
 
+            // tanques enemigos
+            foreach (Tank t in Enemies)
+            {
+                if (t.Status != WorldEntityStatus.Destroyed) //  TODO frustum culling && BoundingFrustum.Intersects(t.GetDrawBox())
+                {
+                    t.Draw(Camera.View, Camera.Projection);
+                }
+            }
+
             // proyectiles
             foreach (Bullet b in Bullets)
             {
@@ -476,6 +492,10 @@ namespace TGC.MonoGame.TP
                     {
                         b.DrawBoundingBox(Gizmos);
                     }
+                    foreach (Tank t in Enemies)
+                    {
+                        t.DrawBoundingBox(Gizmos);
+                    }
                     tank.DrawBoundingBox(Gizmos);
                     Gizmos.DrawFrustum(FollowCamera.View * FollowCamera.Projection, Color.White);
                 }
@@ -494,6 +514,25 @@ namespace TGC.MonoGame.TP
             FullScreenQuad.Dispose();
             ShadowMapRenderTarget.Dispose();
             base.UnloadContent();
+        }
+
+        private void LoadTanks(float terrainSize)
+        {
+            Random rnd = new Random();
+            Enemies = new Tank[enemyCount];
+
+            for (int i = 0; i < enemyCount; i++)
+            {
+                // posición
+                float x = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
+                float z = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
+                float y = terrain.Height(x, z);
+                // rotación
+                float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
+                Tank t = new Tank(new Vector3(x, y, z), new Vector3(0.01f, 0.01f, 0.01f), rot, 0f, 0f);
+                t.Load(Content, Model);
+                Enemies[i] = t;
+            }
         }
 
         private void LoadSurfaceObjects(float terrainSize)

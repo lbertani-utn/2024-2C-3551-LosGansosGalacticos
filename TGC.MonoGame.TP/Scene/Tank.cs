@@ -23,7 +23,7 @@ namespace TGC.MonoGame.TP
 
         public Vector3 Position;
         public Vector3 Scale;
-        public Quaternion Rotation;
+        //public Quaternion Rotation;
         public float Pitch = 0f;
         public float Yaw = 0f;
         public float Roll = 0f;
@@ -33,6 +33,7 @@ namespace TGC.MonoGame.TP
         private float recharging = 0f;
         private Matrix ShootingPosition;
         private Matrix ShootingDirection;
+        public WorldEntityStatus Status;
 
         public float Speed
         {
@@ -102,6 +103,17 @@ namespace TGC.MonoGame.TP
         // We could just allocate this locally inside the Draw method, but it is more efficient to reuse a single array, as this avoids creating unnecessary garbage.
         private Matrix[] boneTransforms;
         #endregion Fields
+
+        public Tank(Vector3 position, Vector3 scale, float yaw, float pitch, float roll)
+        {
+            this.Position = position;
+            this.Scale = scale;
+            this.Yaw = yaw;
+            this.Pitch = pitch;
+            this.Roll = roll;
+            this.World = Matrix.CreateScale(scale) * Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(position);
+            this.Status = WorldEntityStatus.Intact;
+        }
 
         public void LoadBoundingVolumes()
         {
