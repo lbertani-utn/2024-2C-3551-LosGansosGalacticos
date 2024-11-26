@@ -316,11 +316,14 @@ namespace TGC.MonoGame.TP
             {
                 tank.Yaw -= elapsedTime;
                 tank.SteerRotation -= elapsedTime;
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, -Tank.SpeedLimit, Tank.SpeedLimit);
+
             }
             else if (keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A))
             {
                 tank.Yaw += elapsedTime;
                 tank.SteerRotation += elapsedTime;
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, -Tank.SpeedLimit, Tank.SpeedLimit);
             }
 
             // avance/retroceso
@@ -331,6 +334,12 @@ namespace TGC.MonoGame.TP
             else if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S))
             {
                 tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease, -Tank.SpeedLimit, Tank.SpeedLimit);
+            }
+
+            if (tank.Speed > 0f && tank.SteerRotation != 0f)
+            {
+                float sign = tank.SteerRotation > 0 ? 1 : -1;
+                tank.SteerRotation -= (elapsedTime * 0.5f * sign);
             }
 
             // torreta y cañon
@@ -402,6 +411,11 @@ namespace TGC.MonoGame.TP
             {
                 if (t.Status != WorldEntityStatus.Destroyed)
                 {
+                    if (tank.Intersects(t))
+                    {
+                        // TODO destruir objeto
+                        t.Status = WorldEntityStatus.Destroyed;
+                    }
                     t.Update(elapsedTime);
                 }
             }
@@ -411,7 +425,7 @@ namespace TGC.MonoGame.TP
             {
                 if (b.Active)
                 {
-                    b.Update(elapsedTime, terrain, Entities);
+                    b.Update(elapsedTime, terrain, Entities, Enemies);
                 }
             }
             base.Update(gameTime);
@@ -453,7 +467,7 @@ namespace TGC.MonoGame.TP
             // tanques enemigos
             foreach (Tank t in Enemies)
             {
-                if (t.Status != WorldEntityStatus.Destroyed) //  TODO frustum culling && BoundingFrustum.Intersects(t.GetDrawBox())
+                if (t.Status != WorldEntityStatus.Destroyed && t.Intersects(BoundingFrustum))
                 {
                     t.Draw(Camera.View, Camera.Projection);
                 }
@@ -494,7 +508,10 @@ namespace TGC.MonoGame.TP
                     }
                     foreach (Tank t in Enemies)
                     {
-                        t.DrawBoundingBox(Gizmos);
+                        if (t.Status != WorldEntityStatus.Destroyed)
+                        {
+                            t.DrawBoundingBox(Gizmos);
+                        }
                     }
                     tank.DrawBoundingBox(Gizmos);
                     Gizmos.DrawFrustum(FollowCamera.View * FollowCamera.Projection, Color.White);

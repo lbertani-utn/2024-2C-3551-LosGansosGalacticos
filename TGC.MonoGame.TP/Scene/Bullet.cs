@@ -53,7 +53,7 @@ namespace TGC.MonoGame.TP
             Active = true;
         }
 
-        public void Update(float elapsedTime, SimpleTerrain terrain, List<WorldEntity> Entities)
+        public void Update(float elapsedTime, SimpleTerrain terrain, List<WorldEntity> Entities, Tank[] Enemies)
         {
             // actualizo posición
             _lastPosition = _position;
@@ -78,6 +78,7 @@ namespace TGC.MonoGame.TP
             _movementRay = new Ray(_lastPosition, move);
 
             // colisiones con objetos del escenario
+            // TODO destruir objetos
             foreach (WorldEntity e in Entities)
             {
                 if (e.Status != WorldEntityStatus.Destroyed)
@@ -91,6 +92,24 @@ namespace TGC.MonoGame.TP
                     }
                 }
             }
+
+            // colisiones con tanques enemigos
+            // TODO deformar tanques
+            foreach (Tank t in Enemies)
+            {
+                if (t.Status != WorldEntityStatus.Destroyed)
+                {
+                    float? intersect = t.Intersects(_movementRay);
+                    if (intersect != null && intersect.Value < distance)
+                    {
+                        // TODO explosión
+                        t.Status = WorldEntityStatus.Destroyed;
+                        Active = false;
+                        return;
+                    }
+                }
+            }
+
         }
 
         protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)

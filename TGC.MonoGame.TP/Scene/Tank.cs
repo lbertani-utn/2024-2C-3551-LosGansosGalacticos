@@ -336,6 +336,53 @@ namespace TGC.MonoGame.TP
             }
             return false;
         }
+        public bool Intersects(OrientedBoundingBox obb)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (BoundingVolumes[i].Intersects(obb))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public float? Intersects(Ray ray)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                float? distance;
+                if (BoundingVolumes[i].Intersects(ray, out distance))
+                {
+                    return distance;
+                }
+            }
+            return null;
+        }
+
+        public bool Intersects(BoundingFrustum frustum)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (BoundingVolumes[i].Intersects(frustum))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool Intersects(Tank tank)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (tank.Intersects(BoundingVolumes[i]))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public void Shoot(Bullet[] bullets, int bulletCount)
         {
