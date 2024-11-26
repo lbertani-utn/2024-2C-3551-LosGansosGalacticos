@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
+using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Tank;
 
 namespace TGC.MonoGame.TP
@@ -82,6 +83,15 @@ namespace TGC.MonoGame.TP
         private Vector3 DiffuseColor;
         private Vector3 SpecularColor;
 
+        // shadowmap
+        private const int ShadowmapSize = 2048;
+        private const float LightCameraFarPlaneDistance = 3000f;
+        private const float LightCameraNearPlaneDistance = 5f;
+        private FullScreenQuad FullScreenQuad;
+        private RenderTarget2D ShadowMapRenderTarget;
+        private TargetCamera LightCamera;
+
+
         // Mapeo de teclas
         private KeyboardState keyboardState;
         private KeyboardState previousKeyboardState;
@@ -101,17 +111,27 @@ namespace TGC.MonoGame.TP
             // deshabilito el backface culling
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
+            // cámara detrás del tanque
             FollowCamera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
             FollowCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
             _camera = FollowCamera;
-            
+            // bounding frustum de la cámara que sigue al tanque
+            BoundingFrustum = new BoundingFrustum(FollowCamera.View * FollowCamera.Projection);
+
+            // cámara aérea
             AerialCamera = new StaticCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.UnitY * 1000f,  -Vector3.UnitY, Vector3.UnitZ);
             AerialCamera.RightDirection = Vector3.UnitX;
             AerialCamera.BuildView();
 
-            // Create a bounding frustum to check bounding volumes against it
-            BoundingFrustum = new BoundingFrustum(FollowCamera.View * FollowCamera.Projection);
-            
+            // cámara en fuente de luz
+            LightPosition = new Vector3(-1000f, 550f, 600f);
+            LightCamera = new TargetCamera(1f, LightPosition, Vector3.Zero);
+            LightCamera.BuildProjection(1f, LightCameraNearPlaneDistance, LightCameraFarPlaneDistance,MathHelper.PiOver2);
+            LightCamera.BuildView();
+
+
+
+
             Entities = new List<WorldEntity>();
             base.Initialize();
         }
@@ -125,19 +145,18 @@ namespace TGC.MonoGame.TP
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            
+
+            // Create a full screen quad to post-process
+            FullScreenQuad = new FullScreenQuad(GraphicsDevice);
+
             Gizmos = new Gizmos.Gizmos();
             Gizmos.LoadContent(GraphicsDevice, new ContentManager(Content.ServiceProvider, ContentFolder));
             Gizmos.Enabled = true;
 
-            // Cargo un efecto basico propio declarado en el Content pipeline.
-            // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
-            LightPosition = new Vector3(-1000f, 550f, 600f);
+
             AmbientColor = Vector3.One;
             DiffuseColor = Vector3.One;
             SpecularColor = Vector3.One;
-
-
 
 
             ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong");
@@ -246,6 +265,11 @@ namespace TGC.MonoGame.TP
                     _camera = AerialCamera;
                 }
                 else if (SelectedCamera == CameraType.Aerial)
+                {
+                    SelectedCamera = CameraType.Light;
+                    _camera = LightCamera;
+                }
+                else if (SelectedCamera == CameraType.Light)
                 {
                     SelectedCamera = CameraType.Follow;
                     _camera = FollowCamera;
@@ -438,7 +462,8 @@ namespace TGC.MonoGame.TP
         {
             // Libero los recursos.
             Content.Unload();
-
+            FullScreenQuad.Dispose();
+            //ShadowMapRenderTarget.Dispose();
             base.UnloadContent();
         }
 
