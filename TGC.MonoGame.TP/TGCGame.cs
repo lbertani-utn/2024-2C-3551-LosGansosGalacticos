@@ -263,18 +263,18 @@ namespace TGC.MonoGame.TP
             }
 
             // disparo
-            if (keyboardState.IsKeyDown(Keys.Space) && previousKeyboardState.IsKeyUp(Keys.Space))
+            if ((keyboardState.IsKeyDown(Keys.Space) && previousKeyboardState.IsKeyUp(Keys.Space)) || (mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released))
             {
                 tank.Shoot(Bullets, Bullets.Length);
             }
 
             // dirección rotación
-            if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)))
+            if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D))
             {
                 tank.Yaw -= elapsedTime;
                 tank.SteerRotation -= elapsedTime;
             }
-            else if ((keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A)))
+            else if (keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A))
             {
                 tank.Yaw += elapsedTime;
                 tank.SteerRotation += elapsedTime;
