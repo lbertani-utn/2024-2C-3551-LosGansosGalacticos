@@ -289,6 +289,21 @@ namespace TGC.MonoGame.TP
                 tankModel.Meshes[i].Draw();
             }
         }
+        public void Draw(Matrix view, Matrix projection, Effect effect)
+        {
+            // Draw the model
+            for (int i = 0; i < tankModel.Meshes.Count; i++)
+            {
+                foreach (var part in tankModel.Meshes[i].MeshParts)
+                {
+                    part.Effect = effect;
+                }
+
+                Matrix relativeTransform = boneTransforms[tankModel.Meshes[i].ParentBone.Index];
+                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
+                tankModel.Meshes[i].Draw();
+            }
+        }
 
         public void DrawBoundingBox(Gizmos.Gizmos gizmos)
         {

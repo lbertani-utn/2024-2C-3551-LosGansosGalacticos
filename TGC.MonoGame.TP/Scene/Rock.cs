@@ -49,5 +49,11 @@ namespace TGC.MonoGame.TP
         {
             base.Draw(view, projection, effect, Model, Textures, Materials);
         }
+
+        public override void DrawShadowMap(Matrix view, Matrix projection, Effect effect)
+        {
+            base.DrawShadowMap(view, projection, effect, Model);
+        }
+
     }
 }

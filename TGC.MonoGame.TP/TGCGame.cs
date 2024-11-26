@@ -73,6 +73,8 @@ namespace TGC.MonoGame.TP
         private Tank tank;
         private Bullet[] Bullets;
         private const int bulletCount = 10;
+        private Tank[] Enemies;
+        private const int enemyCount = 5;
 
         // terreno
         private SimpleTerrain terrain;
@@ -87,8 +89,8 @@ namespace TGC.MonoGame.TP
 
         // shadowmap
         private const int ShadowmapSize = 2048;
-        private const float LightCameraFarPlaneDistance = 3000f;
-        private const float LightCameraNearPlaneDistance = 5f;
+        private float LightCameraFarPlaneDistance = 2000f;
+        private float LightCameraNearPlaneDistance = 500f;
         private FullScreenQuad FullScreenQuad;
         private RenderTarget2D ShadowMapRenderTarget;
         private TargetCamera LightCamera;
@@ -126,7 +128,10 @@ namespace TGC.MonoGame.TP
             AerialCamera.BuildView();
 
             // cámara en fuente de luz
-            LightPosition = new Vector3(-1000f, 550f, 600f);
+            LightPosition = new Vector3(-1000f, 550f, 600f); // posición de la luz para que tenga sentido con el skyboxc
+            LightPosition *= 0.5f; // acerco un poco la luz para hacer debug
+            LightCameraFarPlaneDistance = 1350; //Vector3.Distance(LightPosition, new Vector3(512, 0, -512));
+            LightCameraNearPlaneDistance = 200; // Vector3.Distance(LightPosition, new Vector3(-512, 0, 512));
             LightCamera = new TargetCamera(1f, LightPosition, Vector3.Zero);
             LightCamera.BuildProjection(1f, LightCameraNearPlaneDistance, LightCameraFarPlaneDistance,MathHelper.PiOver2);
             LightCamera.BuildView();
@@ -218,6 +223,11 @@ namespace TGC.MonoGame.TP
             TextureCube skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "skybox/day_skybox");
             Effect skyBoxEffect = Content.Load<Effect>(ContentFolderEffects + "Skybox");
             SkyEffect = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1200);
+
+
+            // tanques enemigos
+            Enemies = new Tank[enemyCount];
+
 
             // proyectiles
             Bullet.LoadContent(Content, ObjectEffect);
@@ -562,57 +572,19 @@ namespace TGC.MonoGame.TP
 
             ShadowMapEffect.CurrentTechnique = ShadowMapEffect.Techniques["DepthPass"];
 
-            // We get the base transform for each mesh
-            var modelMeshesBaseTransforms = new Matrix[Model.Bones.Count];
-            Model.CopyAbsoluteBoneTransformsTo(modelMeshesBaseTransforms);
-            foreach (var modelMesh in Model.Meshes)
+            tank.Draw(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
+            foreach (Bullet b in Bullets)
             {
-                foreach (var part in modelMesh.MeshParts)
-                    part.Effect = ShadowMapEffect;
-
-                // We set the main matrices for each mesh to draw
-                var worldMatrix = modelMeshesBaseTransforms[modelMesh.ParentBone.Index];
-
-                // WorldViewProjection is used to transform from model space to clip space
-                ShadowMapEffect.Parameters["WorldViewProjection"].SetValue(worldMatrix * LightCamera.View * LightCamera.Projection);
-
-                // Once we set these matrices we draw
-                modelMesh.Draw();
+                b.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
             }
-
+            foreach (WorldEntity e in Entities)
+            {
+                e.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
+            }
+            terrain.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
             #endregion
 
-            return;
-            #region Pass 2
 
-            // Set the render target as null, we are drawing on the screen!
-            GraphicsDevice.SetRenderTarget(null);
-            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
-
-            ShadowMapEffect.CurrentTechnique = ShadowMapEffect.Techniques["DrawShadowedPCF"];
-            //ShadowMapEffect.Parameters["baseTexture"].SetValue(BasicEffect.Texture);
-            ShadowMapEffect.Parameters["shadowMap"].SetValue(ShadowMapRenderTarget);
-            ShadowMapEffect.Parameters["lightPosition"].SetValue(LightPosition);
-            ShadowMapEffect.Parameters["shadowMapSize"].SetValue(Vector2.One * ShadowmapSize);
-            ShadowMapEffect.Parameters["LightViewProjection"].SetValue(LightCamera.View * LightCamera.Projection);
-            foreach (var modelMesh in Model.Meshes)
-            {
-                foreach (var part in modelMesh.MeshParts)
-                    part.Effect = ShadowMapEffect;
-
-                // We set the main matrices for each mesh to draw
-                var worldMatrix = modelMeshesBaseTransforms[modelMesh.ParentBone.Index];
-
-                // WorldViewProjection is used to transform from model space to clip space
-                ShadowMapEffect.Parameters["WorldViewProjection"].SetValue(worldMatrix * Camera.View * Camera.Projection);
-                ShadowMapEffect.Parameters["World"].SetValue(worldMatrix);
-                ShadowMapEffect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(worldMatrix)));
-
-                // Once we set these matrices we draw
-                modelMesh.Draw();
-            }
-
-            #endregion
         }
 
     }
