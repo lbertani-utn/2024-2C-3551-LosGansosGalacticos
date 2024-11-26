@@ -15,6 +15,8 @@ namespace TGC.MonoGame.TP.Tank
         Vector3[] BoundingVolumeTraslation;
         Vector3[] BoundingVolumeScale;
 
+
+        private const float PiOver3 =  1.04720f;
         private const float PiOver6 =  0.52356f;
         private const float PiOver12 = 0.26180f;
 
@@ -60,7 +62,7 @@ namespace TGC.MonoGame.TP.Tank
         public float TurretRotation
         {
             get => _turretRotation;
-            set => _turretRotation = MathHelper.Clamp(value, -MathHelper.PiOver4, MathHelper.PiOver4);
+            set => _turretRotation = MathHelper.Clamp(value, -PiOver3, PiOver3);
         }
         private float _cannonRotation = -PiOver12;
         public float CannonRotation
