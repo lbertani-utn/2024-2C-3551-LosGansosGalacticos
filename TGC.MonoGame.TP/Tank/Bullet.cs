@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Materials;
 
-namespace TGC.MonoGame.TP.Tank
+namespace TGC.MonoGame.TP
 {
     internal class Bullet : WorldEntity
     {

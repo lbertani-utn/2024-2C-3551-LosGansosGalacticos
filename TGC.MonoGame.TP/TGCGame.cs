@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
-using TGC.MonoGame.TP.Tank;
 
 namespace TGC.MonoGame.TP
 {
@@ -71,7 +70,7 @@ namespace TGC.MonoGame.TP
 
         // TODO crear clase para tanque jugador
         private Model Model { get; set; }
-        private Steamroller tank;
+        private Tank tank;
         private Bullet[] Bullets;
         private const int bulletCount = 10;
 
@@ -188,11 +187,11 @@ namespace TGC.MonoGame.TP
 
 
             ApplyEffect(Model, ObjectEffect);
-            tank = new Steamroller();
+            tank = new Tank();
             tank.Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
             tank.World = Matrix.CreateTranslation(tank.Position);
             tank.Load(Content, Model);
-            Steamroller.DefaultEffect = ObjectEffect;
+            Tank.DefaultEffect = ObjectEffect;
 
 
 
@@ -292,11 +291,11 @@ namespace TGC.MonoGame.TP
             // rozamiento
             if (tank.Propulsion > 0)
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Steamroller.Friction, 0, Steamroller.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.Friction, 0, Tank.SpeedLimit);
             }
             else if (tank.Propulsion < 0)
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Steamroller.Friction, -Steamroller.SpeedLimit, 0);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.Friction, -Tank.SpeedLimit, 0);
             }
 
             // disparo
@@ -320,11 +319,11 @@ namespace TGC.MonoGame.TP
             // avance/retroceso
             if (keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W))
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Steamroller.SpeedIncrease, -Steamroller.SpeedLimit, Steamroller.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease, -Tank.SpeedLimit, Tank.SpeedLimit);
             }
             else if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S))
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Steamroller.SpeedIncrease, -Steamroller.SpeedLimit, Steamroller.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease, -Tank.SpeedLimit, Tank.SpeedLimit);
             }
 
             // torreta y cañon
