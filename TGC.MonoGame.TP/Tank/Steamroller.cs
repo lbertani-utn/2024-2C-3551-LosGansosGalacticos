@@ -8,7 +8,7 @@ namespace TGC.MonoGame.TP.Tank
 {
     internal class Steamroller : Tank
     {
-        private Vector3[] DiffuseColors;
+        public static Effect DefaultEffect;
         private static Texture[] Textures;
         private static Material[] Materials;
         OrientedBoundingBox[] BoundingVolumes;
@@ -211,16 +211,10 @@ namespace TGC.MonoGame.TP.Tank
         public void Update(float elapsedTime)
         {
             recharging = MathHelper.Clamp(recharging - elapsedTime, 0f, CannonCooldown);
-            
-        }
 
-        /// <summary>
-        ///     Draws the tank model, using the current animation settings.
-        /// </summary>
-        public void Draw(Matrix world, Matrix view, Matrix projection, Effect effect)
-        {
+            // Transformaciones
             // Set the world matrix as the root transform of the model.
-            tankModel.Root.Transform = world;
+            tankModel.Root.Transform = World;
 
             // Calculate matrices based on the current animation position.
             Matrix leftBackWheelRotation = Matrix.CreateRotationX(WheelRotation);
@@ -248,7 +242,7 @@ namespace TGC.MonoGame.TP.Tank
             Matrix rotationMatrix = Matrix.CreateFromYawPitchRoll(Yaw + MathHelper.Pi, Pitch, Roll);
             for (int i = 0; i < 8; i++)
             {
-                Matrix worldMatrix =  Matrix.CreateTranslation(BoundingVolumeTraslation[i]) * rotationMatrix * Matrix.CreateTranslation(Position);
+                Matrix worldMatrix = Matrix.CreateTranslation(BoundingVolumeTraslation[i]) * rotationMatrix * Matrix.CreateTranslation(Position);
                 BoundingVolumes[i].Center = worldMatrix.Translation;
             }
             BoundingVolumes[0].Orientation = rotationMatrix;
@@ -260,26 +254,40 @@ namespace TGC.MonoGame.TP.Tank
             BoundingVolumes[6].Orientation = leftFrontWheelRotation * steerRotation * rotationMatrix;
             BoundingVolumes[7].Orientation = turretRotation * rotationMatrix;
 
+
+            // Trasformaciones para proyectiles
+            ShootingPosition = Matrix.CreateTranslation(0.00851f, 0.38970f, 1.45659f) * turretRotation * Matrix.CreateTranslation(BoundingVolumeTraslation[7]) * rotationMatrix * Matrix.CreateTranslation(Position);
+            ShootingDirection = cannonRotation * turretRotation * rotationMatrix;
+
+        }
+
+        /// <summary>
+        ///     Draws the tank model, using the current animation settings.
+        /// </summary>
+        public void Draw(Matrix view, Matrix projection)
+        {
             // Draw the model
             for (int i = 0; i < tankModel.Meshes.Count; i++)
             {
-                var relativeTransform = boneTransforms[tankModel.Meshes[i].ParentBone.Index];
-                effect.Parameters["World"].SetValue(relativeTransform);
-                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
-                effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
-                effect.Parameters["baseTexture"].SetValue(Textures[i]);
-                effect.Parameters["ambientColor"].SetValue(Materials[i].AmbientColor);
-                effect.Parameters["diffuseColor"].SetValue(Materials[i].DiffuseColor);
-                effect.Parameters["specularColor"].SetValue(Materials[i].SpecularColor);
-                effect.Parameters["KAmbient"].SetValue(Materials[i].KAmbient);
-                effect.Parameters["KDiffuse"].SetValue(Materials[i].KDiffuse);
-                effect.Parameters["KSpecular"].SetValue(Materials[i].KSpecular);
-                effect.Parameters["shininess"].SetValue(Materials[i].Shininess);
+                foreach (var part in tankModel.Meshes[i].MeshParts)
+                {
+                    part.Effect = DefaultEffect;
+                }
+
+                Matrix relativeTransform = boneTransforms[tankModel.Meshes[i].ParentBone.Index];
+                DefaultEffect.Parameters["World"].SetValue(relativeTransform);
+                DefaultEffect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
+                DefaultEffect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
+                DefaultEffect.Parameters["baseTexture"].SetValue(Textures[i]);
+                DefaultEffect.Parameters["ambientColor"].SetValue(Materials[i].AmbientColor);
+                DefaultEffect.Parameters["diffuseColor"].SetValue(Materials[i].DiffuseColor);
+                DefaultEffect.Parameters["specularColor"].SetValue(Materials[i].SpecularColor);
+                DefaultEffect.Parameters["KAmbient"].SetValue(Materials[i].KAmbient);
+                DefaultEffect.Parameters["KDiffuse"].SetValue(Materials[i].KDiffuse);
+                DefaultEffect.Parameters["KSpecular"].SetValue(Materials[i].KSpecular);
+                DefaultEffect.Parameters["shininess"].SetValue(Materials[i].Shininess);
                 tankModel.Meshes[i].Draw();
             }
-
-            ShootingPosition = Matrix.CreateTranslation(0.00851f, 0.38970f, 1.45659f) * turretRotation * Matrix.CreateTranslation(BoundingVolumeTraslation[7]) * rotationMatrix * Matrix.CreateTranslation(Position);
-            ShootingDirection = cannonRotation * turretRotation * rotationMatrix;
         }
 
         public void DrawBoundingBox(Gizmos.Gizmos gizmos)
