@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
-using TGC.MonoGame.TP.Tank;
+using TGC.MonoGame.TP.Geometries;
 
 namespace TGC.MonoGame.TP
 {
@@ -33,8 +33,9 @@ namespace TGC.MonoGame.TP
             // Maneja la configuracion y la administracion del dispositivo grafico.
             Graphics = new GraphicsDeviceManager(this);
             
-            Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width - 100;
-            Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height - 100;
+            Graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+            Graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            Graphics.IsFullScreen = true;
             
             // Para que el juego sea pantalla completa se puede usar Graphics IsFullScreen.
             // Carpeta raiz donde va a estar toda la Media.
@@ -49,10 +50,13 @@ namespace TGC.MonoGame.TP
         private Gizmos.Gizmos Gizmos;
         private bool DrawBoundingBoxes = false;
         private bool DrawPositions = false;
+        private bool DrawShadowMap = false;
 
+
+        private Effect ShadowMapEffect;
         private Effect TerrainEffect;
         private Effect ObjectEffect;
-        private SkyBox Sky;
+        private SkyBox SkyEffect;
 
         private BoundingFrustum BoundingFrustum;
         private CameraType SelectedCamera;
@@ -67,9 +71,11 @@ namespace TGC.MonoGame.TP
 
         // TODO crear clase para tanque jugador
         private Model Model { get; set; }
-        private Steamroller tank;
+        private Tank tank;
         private Bullet[] Bullets;
         private const int bulletCount = 10;
+        private Tank[] Enemies;
+        private const int enemyCount = 5;
 
         // terreno
         private SimpleTerrain terrain;
@@ -81,6 +87,15 @@ namespace TGC.MonoGame.TP
         private Vector3 AmbientColor;
         private Vector3 DiffuseColor;
         private Vector3 SpecularColor;
+
+        // shadowmap
+        private const int ShadowmapSize = 2048;
+        private float LightCameraFarPlaneDistance = 2000f;
+        private float LightCameraNearPlaneDistance = 500f;
+        private FullScreenQuad FullScreenQuad;
+        private RenderTarget2D ShadowMapRenderTarget;
+        private TargetCamera LightCamera;
+
 
         // Mapeo de teclas
         private KeyboardState keyboardState;
@@ -101,17 +116,30 @@ namespace TGC.MonoGame.TP
             // deshabilito el backface culling
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
+            // cámara detrás del tanque
             FollowCamera = new TargetCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
             FollowCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
             _camera = FollowCamera;
-            
+            // bounding frustum de la cámara que sigue al tanque
+            BoundingFrustum = new BoundingFrustum(FollowCamera.View * FollowCamera.Projection);
+
+            // cámara aérea
             AerialCamera = new StaticCamera(GraphicsDevice.Viewport.AspectRatio, Vector3.UnitY * 1000f,  -Vector3.UnitY, Vector3.UnitZ);
             AerialCamera.RightDirection = Vector3.UnitX;
             AerialCamera.BuildView();
 
-            // Create a bounding frustum to check bounding volumes against it
-            BoundingFrustum = new BoundingFrustum(FollowCamera.View * FollowCamera.Projection);
-            
+            // cámara en fuente de luz
+            LightPosition = new Vector3(-1000f, 550f, 600f); // posición de la luz para que tenga sentido con el skyboxc
+            LightPosition *= 0.5f; // acerco un poco la luz para hacer debug
+            LightCameraFarPlaneDistance = 1350; //Vector3.Distance(LightPosition, new Vector3(512, 0, -512));
+            LightCameraNearPlaneDistance = 200; // Vector3.Distance(LightPosition, new Vector3(-512, 0, 512));
+            LightCamera = new TargetCamera(1f, LightPosition, Vector3.Zero);
+            LightCamera.BuildProjection(1f, LightCameraNearPlaneDistance, LightCameraFarPlaneDistance,MathHelper.PiOver2);
+            LightCamera.BuildView();
+
+
+
+
             Entities = new List<WorldEntity>();
             base.Initialize();
         }
@@ -125,20 +153,24 @@ namespace TGC.MonoGame.TP
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            
+
+            // Create a full screen quad to post-process
+            FullScreenQuad = new FullScreenQuad(GraphicsDevice);
+            // Create a shadow map. It stores depth from the light position
+            ShadowMapRenderTarget = new RenderTarget2D(GraphicsDevice, ShadowmapSize, ShadowmapSize, false, SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents);
+
+
             Gizmos = new Gizmos.Gizmos();
             Gizmos.LoadContent(GraphicsDevice, new ContentManager(Content.ServiceProvider, ContentFolder));
             Gizmos.Enabled = true;
 
-            // Cargo un efecto basico propio declarado en el Content pipeline.
-            // En el juego no pueden usar BasicEffect de MG, deben usar siempre efectos propios.
-            LightPosition = new Vector3(-1000f, 550f, 600f);
+            // Load the shadowmap effect
+            ShadowMapEffect = Content.Load<Effect>(ContentFolderEffects + "ShadowMap");
+
+
             AmbientColor = Vector3.One;
             DiffuseColor = Vector3.One;
             SpecularColor = Vector3.One;
-
-
-
 
             ObjectEffect = Content.Load<Effect>(ContentFolderEffects + "BlinnPhong");
             ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
@@ -151,20 +183,6 @@ namespace TGC.MonoGame.TP
             ObjectEffect.Parameters["KSpecular"].SetValue(0.2f);
             ObjectEffect.Parameters["shininess"].SetValue(16.0f);
 
-
-            // Cargo el tanque
-            // TODO mover esto a su clase
-            Stopwatch sw = Stopwatch.StartNew();
-            Model = Content.Load<Model>(ContentFolder3D + "tank/tank");
-            sw.Stop();
-            Debug.WriteLine("Load model tank/tank: {0} milliseconds", sw.ElapsedMilliseconds);
-
-
-            ApplyEffect(Model, ObjectEffect);
-            tank = new Steamroller();
-            tank.Position = new Vector3(0f, 2f, 0f); // TODO posición inicial tanque
-            tank.World = Matrix.CreateTranslation(tank.Position);
-            tank.Load(Content, Model);
 
 
 
@@ -190,7 +208,24 @@ namespace TGC.MonoGame.TP
             Model skyBox = Content.Load<Model>(ContentFolder3D + "geometries/cube");
             TextureCube skyBoxTexture = Content.Load<TextureCube>(ContentFolderTextures + "skybox/day_skybox");
             Effect skyBoxEffect = Content.Load<Effect>(ContentFolderEffects + "Skybox");
-            Sky = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1200);
+            SkyEffect = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1200);
+
+
+            // Cargo el tanque
+            // TODO mover esto a su clase
+            Stopwatch sw = Stopwatch.StartNew();
+            Model = Content.Load<Model>(ContentFolder3D + "tank/tank");
+            sw.Stop();
+            Debug.WriteLine("Load model tank/tank: {0} milliseconds", sw.ElapsedMilliseconds);
+
+
+            ApplyEffect(Model, ObjectEffect);
+            tank = new Tank(new Vector3(0f, terrain.Height(0f, 0f),0f), new Vector3(0.1f, 0.1f, 0.1f), MathHelper.PiOver2, 0f, 0f);
+            tank.Load(Content, Model);
+            Tank.DefaultEffect = ObjectEffect;
+
+            // tanques enemigos
+            LoadTanks(terrainSize * 0.7f);
 
             // proyectiles
             Bullet.LoadContent(Content, ObjectEffect);
@@ -229,7 +264,11 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
 
-            // gizmos
+            // gizmos y otras opciones para debug
+            if (keyboardState.IsKeyDown(Keys.M) && previousKeyboardState.IsKeyUp(Keys.M))
+            {
+                DrawShadowMap = !DrawShadowMap;
+            }
             if (keyboardState.IsKeyDown(Keys.B) && previousKeyboardState.IsKeyUp(Keys.B))
             {
                 DrawBoundingBoxes = !DrawBoundingBoxes;
@@ -247,6 +286,11 @@ namespace TGC.MonoGame.TP
                 }
                 else if (SelectedCamera == CameraType.Aerial)
                 {
+                    SelectedCamera = CameraType.Light;
+                    _camera = LightCamera;
+                }
+                else if (SelectedCamera == CameraType.Light)
+                {
                     SelectedCamera = CameraType.Follow;
                     _camera = FollowCamera;
                 }
@@ -255,39 +299,48 @@ namespace TGC.MonoGame.TP
             // rozamiento
             if (tank.Propulsion > 0)
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Steamroller.Friction, 0, Steamroller.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.Friction, 0, Tank.SpeedLimit);
             }
             else if (tank.Propulsion < 0)
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Steamroller.Friction, -Steamroller.SpeedLimit, 0);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.Friction, -Tank.SpeedLimit, 0);
             }
 
             // disparo
-            if (keyboardState.IsKeyDown(Keys.Space) && previousKeyboardState.IsKeyUp(Keys.Space))
+            if ((keyboardState.IsKeyDown(Keys.Space) && previousKeyboardState.IsKeyUp(Keys.Space)) || (mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released))
             {
                 tank.Shoot(Bullets, Bullets.Length);
             }
 
             // dirección rotación
-            if ((keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D)))
+            if (keyboardState.IsKeyDown(Keys.Right) || keyboardState.IsKeyDown(Keys.D))
             {
                 tank.Yaw -= elapsedTime;
                 tank.SteerRotation -= elapsedTime;
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, -Tank.SpeedLimit, Tank.SpeedLimit);
+
             }
-            else if ((keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A)))
+            else if (keyboardState.IsKeyDown(Keys.Left) || keyboardState.IsKeyDown(Keys.A))
             {
                 tank.Yaw += elapsedTime;
                 tank.SteerRotation += elapsedTime;
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, -Tank.SpeedLimit, Tank.SpeedLimit);
             }
 
             // avance/retroceso
             if (keyboardState.IsKeyDown(Keys.Up) || keyboardState.IsKeyDown(Keys.W))
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Steamroller.SpeedIncrease, -Steamroller.SpeedLimit, Steamroller.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease, -Tank.SpeedLimit, Tank.SpeedLimit);
             }
             else if (keyboardState.IsKeyDown(Keys.Down) || keyboardState.IsKeyDown(Keys.S))
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Steamroller.SpeedIncrease, -Steamroller.SpeedLimit, Steamroller.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease, -Tank.SpeedLimit, Tank.SpeedLimit);
+            }
+
+            if (tank.Speed > 0f && tank.SteerRotation != 0f)
+            {
+                float sign = tank.SteerRotation > 0 ? 1 : -1;
+                tank.SteerRotation -= (elapsedTime * 0.5f * sign);
             }
 
             // torreta y cañon
@@ -348,16 +401,32 @@ namespace TGC.MonoGame.TP
                 {
                     if (tank.Intersects(e.GetHitBox()))
                     {
+                        // TODO destruir objeto
                         e.Status = WorldEntityStatus.Destroyed;
                     }
                 }
             }
 
+            // tanques enemigos
+            foreach (Tank t in Enemies)
+            {
+                if (t.Status != WorldEntityStatus.Destroyed)
+                {
+                    if (tank.Intersects(t))
+                    {
+                        // TODO destruir objeto
+                        t.Status = WorldEntityStatus.Destroyed;
+                    }
+                    t.Update(elapsedTime);
+                }
+            }
+            
+            // proyectiles
             foreach (Bullet b in Bullets)
             {
                 if (b.Active)
                 {
-                    b.Update(elapsedTime);
+                    b.Update(elapsedTime, terrain, Entities, Enemies);
                 }
             }
             base.Update(gameTime);
@@ -372,9 +441,16 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
 
-            Sky.Draw(Camera.View, Camera.Projection, Camera.Position);
+            if (DrawShadowMap)
+            {
+                // ShadowMapRenderTarget
+                DrawShadows(null);
+                return;
+            }
+
+            SkyEffect.Draw(Camera.View, Camera.Projection, Camera.Position);
             terrain.Draw(Camera.View, Camera.Projection);
-            tank.Draw(tank.World, Camera.View, Camera.Projection, ObjectEffect);
+            tank.Draw(Camera.View, Camera.Projection);
 
             // objetos del escenario
             int drawWorldEntity = 0;
@@ -388,6 +464,15 @@ namespace TGC.MonoGame.TP
                 }
             }
             Debug.WriteLine(drawWorldEntity);
+
+            // tanques enemigos
+            foreach (Tank t in Enemies)
+            {
+                if (t.Status != WorldEntityStatus.Destroyed && t.Intersects(BoundingFrustum))
+                {
+                    t.Draw(Camera.View, Camera.Projection);
+                }
+            }
 
             // proyectiles
             foreach (Bullet b in Bullets)
@@ -418,6 +503,17 @@ namespace TGC.MonoGame.TP
 
                 if (DrawBoundingBoxes)
                 {
+                    foreach (Bullet b in Bullets)
+                    {
+                        b.DrawBoundingBox(Gizmos);
+                    }
+                    foreach (Tank t in Enemies)
+                    {
+                        if (t.Status != WorldEntityStatus.Destroyed)
+                        {
+                            t.DrawBoundingBox(Gizmos);
+                        }
+                    }
                     tank.DrawBoundingBox(Gizmos);
                     Gizmos.DrawFrustum(FollowCamera.View * FollowCamera.Projection, Color.White);
                 }
@@ -433,8 +529,28 @@ namespace TGC.MonoGame.TP
         {
             // Libero los recursos.
             Content.Unload();
-
+            FullScreenQuad.Dispose();
+            ShadowMapRenderTarget.Dispose();
             base.UnloadContent();
+        }
+
+        private void LoadTanks(float terrainSize)
+        {
+            Random rnd = new Random();
+            Enemies = new Tank[enemyCount];
+
+            for (int i = 0; i < enemyCount; i++)
+            {
+                // posición
+                float x = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
+                float z = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
+                float y = terrain.Height(x, z);
+                // rotación
+                float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
+                Tank t = new Tank(new Vector3(x, y, z), new Vector3(0.01f, 0.01f, 0.01f), rot, 0f, 0f);
+                t.Load(Content, Model);
+                Enemies[i] = t;
+            }
         }
 
         private void LoadSurfaceObjects(float terrainSize)
@@ -500,6 +616,32 @@ namespace TGC.MonoGame.TP
                     meshPart.Effect = effect;
                 }
             }
+        }
+
+        private void DrawShadows(RenderTarget2D renderTarget)
+        {
+            #region Pass 1
+
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            // Set the render target as our shadow map, we are drawing the depth into this texture
+            GraphicsDevice.SetRenderTarget(renderTarget);
+            GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1f, 0);
+
+            ShadowMapEffect.CurrentTechnique = ShadowMapEffect.Techniques["DepthPass"];
+
+            tank.Draw(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
+            foreach (Bullet b in Bullets)
+            {
+                b.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
+            }
+            foreach (WorldEntity e in Entities)
+            {
+                e.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
+            }
+            terrain.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
+            #endregion
+
+
         }
 
     }

@@ -66,8 +66,9 @@ namespace TGC.MonoGame.TP {
         public virtual void Update(float elapsedTime) { }
 
         public virtual void Draw(Matrix view, Matrix projection, Effect effect) {}
+        public virtual void DrawShadowMap(Matrix view, Matrix projection, Effect effect) { }
 
-        protected void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures)
+        protected void DrawShadowMap(Matrix view, Matrix projection, Effect effect, Model model)
         {
             model.Root.Transform = _world;
             var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
@@ -75,11 +76,13 @@ namespace TGC.MonoGame.TP {
 
             for (int i = 0; i < model.Meshes.Count; i++)
             {
+                foreach (var part in model.Meshes[i].MeshParts)
+                {
+                    part.Effect = effect;
+                }
+
                 var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
-                effect.Parameters["World"].SetValue(relativeTransform);
                 effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
-                effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
-                effect.Parameters["baseTexture"].SetValue(textures[i]);
                 model.Meshes[i].Draw();
             }
         }
@@ -92,6 +95,11 @@ namespace TGC.MonoGame.TP {
 
             for (int i = 0; i < model.Meshes.Count; i++)
             {
+                foreach (var part in model.Meshes[i].MeshParts)
+                {
+                    part.Effect = effect;
+                }
+
                 var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
                 effect.Parameters["World"].SetValue(relativeTransform);
                 effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
@@ -160,5 +168,8 @@ namespace TGC.MonoGame.TP {
             SetGridMinIndex(gridMinX, gridMinZ);
             SetGridMaxIndex(gridMaxX, gridMaxZ);
         }
+
+
+
     }
 }

@@ -4,33 +4,36 @@ using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
 
-namespace TGC.MonoGame.TP.Tank
+namespace TGC.MonoGame.TP
 {
-    internal class Steamroller : Tank
+    internal class Tank
     {
-        private Vector3[] DiffuseColors;
+        public static Effect DefaultEffect;
         private static Texture[] Textures;
         private static Material[] Materials;
         OrientedBoundingBox[] BoundingVolumes;
         Vector3[] BoundingVolumeTraslation;
         Vector3[] BoundingVolumeScale;
 
-        private const float PiOver6 =  0.52356f;
+
+        private const float PiOver3 = 1.04720f;
+        private const float PiOver6 = 0.52356f;
         private const float PiOver12 = 0.26180f;
 
 
         public Vector3 Position;
         public Vector3 Scale;
-        public Quaternion Rotation;
+        //public Quaternion Rotation;
         public float Pitch = 0f;
         public float Yaw = 0f;
         public float Roll = 0f;
         public Matrix World;
 
-        private const float CannonCooldown = 3f;
+        private const float CannonCooldown = 1f;
         private float recharging = 0f;
         private Matrix ShootingPosition;
         private Matrix ShootingDirection;
+        public WorldEntityStatus Status;
 
         public float Speed
         {
@@ -60,13 +63,13 @@ namespace TGC.MonoGame.TP.Tank
         public float TurretRotation
         {
             get => _turretRotation;
-            set => _turretRotation = MathHelper.Clamp(value, -MathHelper.PiOver4, MathHelper.PiOver4);
+            set => _turretRotation = MathHelper.Clamp(value, -PiOver3, PiOver3);
         }
         private float _cannonRotation = -PiOver12;
         public float CannonRotation
         {
             get => _cannonRotation;
-            set => _cannonRotation = MathHelper.Clamp(value, -PiOver6, 0f);
+            set => _cannonRotation = MathHelper.Clamp(value, -PiOver6, PiOver6);
         }
 
         #region Fields
@@ -100,6 +103,17 @@ namespace TGC.MonoGame.TP.Tank
         // We could just allocate this locally inside the Draw method, but it is more efficient to reuse a single array, as this avoids creating unnecessary garbage.
         private Matrix[] boneTransforms;
         #endregion Fields
+
+        public Tank(Vector3 position, Vector3 scale, float yaw, float pitch, float roll)
+        {
+            this.Position = position;
+            this.Scale = scale;
+            this.Yaw = yaw;
+            this.Pitch = pitch;
+            this.Roll = roll;
+            this.World = Matrix.CreateScale(scale) * Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(position);
+            this.Status = WorldEntityStatus.Intact;
+        }
 
         public void LoadBoundingVolumes()
         {
@@ -209,16 +223,10 @@ namespace TGC.MonoGame.TP.Tank
         public void Update(float elapsedTime)
         {
             recharging = MathHelper.Clamp(recharging - elapsedTime, 0f, CannonCooldown);
-            
-        }
 
-        /// <summary>
-        ///     Draws the tank model, using the current animation settings.
-        /// </summary>
-        public void Draw(Matrix world, Matrix view, Matrix projection, Effect effect)
-        {
+            // Transformaciones
             // Set the world matrix as the root transform of the model.
-            tankModel.Root.Transform = world;
+            tankModel.Root.Transform = World;
 
             // Calculate matrices based on the current animation position.
             Matrix leftBackWheelRotation = Matrix.CreateRotationX(WheelRotation);
@@ -246,7 +254,7 @@ namespace TGC.MonoGame.TP.Tank
             Matrix rotationMatrix = Matrix.CreateFromYawPitchRoll(Yaw + MathHelper.Pi, Pitch, Roll);
             for (int i = 0; i < 8; i++)
             {
-                Matrix worldMatrix =  Matrix.CreateTranslation(BoundingVolumeTraslation[i]) * rotationMatrix * Matrix.CreateTranslation(Position);
+                Matrix worldMatrix = Matrix.CreateTranslation(BoundingVolumeTraslation[i]) * rotationMatrix * Matrix.CreateTranslation(Position);
                 BoundingVolumes[i].Center = worldMatrix.Translation;
             }
             BoundingVolumes[0].Orientation = rotationMatrix;
@@ -258,26 +266,55 @@ namespace TGC.MonoGame.TP.Tank
             BoundingVolumes[6].Orientation = leftFrontWheelRotation * steerRotation * rotationMatrix;
             BoundingVolumes[7].Orientation = turretRotation * rotationMatrix;
 
+
+            // Trasformaciones para proyectiles
+            ShootingPosition = Matrix.CreateTranslation(0.00851f, 0.38970f, 1.45659f) * turretRotation * Matrix.CreateTranslation(BoundingVolumeTraslation[7]) * rotationMatrix * Matrix.CreateTranslation(Position);
+            ShootingDirection = cannonRotation * turretRotation * rotationMatrix;
+
+        }
+
+        /// <summary>
+        ///     Draws the tank model, using the current animation settings.
+        /// </summary>
+        public void Draw(Matrix view, Matrix projection)
+        {
             // Draw the model
             for (int i = 0; i < tankModel.Meshes.Count; i++)
             {
-                var relativeTransform = boneTransforms[tankModel.Meshes[i].ParentBone.Index];
-                effect.Parameters["World"].SetValue(relativeTransform);
-                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
-                effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
-                effect.Parameters["baseTexture"].SetValue(Textures[i]);
-                effect.Parameters["ambientColor"].SetValue(Materials[i].AmbientColor);
-                effect.Parameters["diffuseColor"].SetValue(Materials[i].DiffuseColor);
-                effect.Parameters["specularColor"].SetValue(Materials[i].SpecularColor);
-                effect.Parameters["KAmbient"].SetValue(Materials[i].KAmbient);
-                effect.Parameters["KDiffuse"].SetValue(Materials[i].KDiffuse);
-                effect.Parameters["KSpecular"].SetValue(Materials[i].KSpecular);
-                effect.Parameters["shininess"].SetValue(Materials[i].Shininess);
+                foreach (var part in tankModel.Meshes[i].MeshParts)
+                {
+                    part.Effect = DefaultEffect;
+                }
+
+                Matrix relativeTransform = boneTransforms[tankModel.Meshes[i].ParentBone.Index];
+                DefaultEffect.Parameters["World"].SetValue(relativeTransform);
+                DefaultEffect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
+                DefaultEffect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
+                DefaultEffect.Parameters["baseTexture"].SetValue(Textures[i]);
+                DefaultEffect.Parameters["ambientColor"].SetValue(Materials[i].AmbientColor);
+                DefaultEffect.Parameters["diffuseColor"].SetValue(Materials[i].DiffuseColor);
+                DefaultEffect.Parameters["specularColor"].SetValue(Materials[i].SpecularColor);
+                DefaultEffect.Parameters["KAmbient"].SetValue(Materials[i].KAmbient);
+                DefaultEffect.Parameters["KDiffuse"].SetValue(Materials[i].KDiffuse);
+                DefaultEffect.Parameters["KSpecular"].SetValue(Materials[i].KSpecular);
+                DefaultEffect.Parameters["shininess"].SetValue(Materials[i].Shininess);
                 tankModel.Meshes[i].Draw();
             }
+        }
+        public void Draw(Matrix view, Matrix projection, Effect effect)
+        {
+            // Draw the model
+            for (int i = 0; i < tankModel.Meshes.Count; i++)
+            {
+                foreach (var part in tankModel.Meshes[i].MeshParts)
+                {
+                    part.Effect = effect;
+                }
 
-            ShootingPosition = Matrix.CreateTranslation(0.00851f, 0.38970f, 1.45659f) * turretRotation * Matrix.CreateTranslation(BoundingVolumeTraslation[7]) * rotationMatrix * Matrix.CreateTranslation(Position);
-            ShootingDirection = cannonRotation * turretRotation * rotationMatrix;
+                Matrix relativeTransform = boneTransforms[tankModel.Meshes[i].ParentBone.Index];
+                effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
+                tankModel.Meshes[i].Draw();
+            }
         }
 
         public void DrawBoundingBox(Gizmos.Gizmos gizmos)
@@ -296,7 +333,54 @@ namespace TGC.MonoGame.TP.Tank
                 {
                     return true;
                 }
-            } 
+            }
+            return false;
+        }
+        public bool Intersects(OrientedBoundingBox obb)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (BoundingVolumes[i].Intersects(obb))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public float? Intersects(Ray ray)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                float? distance;
+                if (BoundingVolumes[i].Intersects(ray, out distance))
+                {
+                    return distance;
+                }
+            }
+            return null;
+        }
+
+        public bool Intersects(BoundingFrustum frustum)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (BoundingVolumes[i].Intersects(frustum))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public bool Intersects(Tank tank)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (tank.Intersects(BoundingVolumes[i]))
+                {
+                    return true;
+                }
+            }
             return false;
         }
 
@@ -309,7 +393,7 @@ namespace TGC.MonoGame.TP.Tank
                 for (int i = 0; i < bulletCount; i++)
                 {
                     if (!bullets[i].Active)
-                    { 
+                    {
                         b = bullets[i];
                         break;
                     }
@@ -320,7 +404,7 @@ namespace TGC.MonoGame.TP.Tank
                 {
                     b.ResetValues(ShootingPosition.Translation + ShootingDirection.Backward, ShootingDirection.Backward * 100);
                     recharging = CannonCooldown;
-                }    
+                }
             }
         }
 

@@ -26,11 +26,11 @@ namespace TGC.MonoGame.TP
             // shader Blinn–Phong con normal map
             Effect = effect;
             Effect.Parameters["ambientColor"].SetValue(Vector3.One);
-            Effect.Parameters["diffuseColor"].SetValue(new Vector3(0.1f, 0.35f, 0.1f));
-            Effect.Parameters["specularColor"].SetValue(new Vector3(0.45f, 0.55f, 0.45f));
-            Effect.Parameters["KAmbient"].SetValue(0.4f);
-            Effect.Parameters["KDiffuse"].SetValue(0.4f);
-            Effect.Parameters["KSpecular"].SetValue(0.1f);
+            Effect.Parameters["diffuseColor"].SetValue(new Vector3(0.6f, 1f, 0.6f));
+            Effect.Parameters["specularColor"].SetValue(Vector3.One);
+            Effect.Parameters["KAmbient"].SetValue(0.3f);
+            Effect.Parameters["KDiffuse"].SetValue(0.6f);
+            Effect.Parameters["KSpecular"].SetValue(0f);
             Effect.Parameters["shininess"].SetValue(1.0f);
 
             // cargo el heightmap
@@ -67,6 +67,20 @@ namespace TGC.MonoGame.TP
 
             //Render con shader
             foreach (var pass in Effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, primitiveCount);
+            }
+        }
+
+        public void DrawShadowMap(Matrix view, Matrix projection, Effect effect)
+        {
+            var graphicsDevice = effect.GraphicsDevice;
+            effect.Parameters["WorldViewProjection"].SetValue(world * view * projection);
+            graphicsDevice.SetVertexBuffer(vbTerrain);
+
+            //Render con shader
+            foreach (var pass in effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
                 graphicsDevice.DrawPrimitives(PrimitiveType.TriangleList, 0, primitiveCount);
