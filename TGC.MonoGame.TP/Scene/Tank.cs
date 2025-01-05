@@ -63,7 +63,7 @@ namespace TGC.MonoGame.TP
         public float TurretRotation
         {
             get => _turretRotation;
-            set => _turretRotation = MathHelper.Clamp(value, -PiOver3, PiOver3);
+            set => _turretRotation = MathHelper.Clamp(value, -MathHelper.PiOver2, MathHelper.PiOver2    );
         }
         private float _cannonRotation = -PiOver12;
         public float CannonRotation
