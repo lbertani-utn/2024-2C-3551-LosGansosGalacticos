@@ -266,6 +266,26 @@
 /processorParam:TextureFormat=Compressed
 /build:Models/tree/tree.fbx
 
+#begin SpriteFonts/CascadiaCode/CascadiaCodePL.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:SpriteFonts/CascadiaCode/CascadiaCodePL.spritefont
+
+#begin SpriteFonts/CascadiaCode/CascadiaCodePL.ttf
+/copy:SpriteFonts/CascadiaCode/CascadiaCodePL.ttf
+
+#begin SpriteFonts/CascadiaCode/CascadiaMonoPL.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:SpriteFonts/CascadiaCode/CascadiaMonoPL.spritefont
+
+#begin SpriteFonts/CascadiaCode/CascadiaMonoPL.ttf
+/copy:SpriteFonts/CascadiaCode/CascadiaMonoPL.ttf
+
 #begin Textures/Grass/Grass_005_BaseColor.jpg
 /importer:TextureImporter
 /processor:TextureProcessor
