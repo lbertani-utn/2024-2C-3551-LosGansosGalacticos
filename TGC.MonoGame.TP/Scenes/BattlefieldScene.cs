@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TGC.MonoGame.TP.Scenes
 {
-    class Battlefield : Scene
+    class BattlefieldScene : Scene
     {
     }
 }
