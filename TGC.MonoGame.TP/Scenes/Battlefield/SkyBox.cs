@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace TGC.MonoGame.TP
+namespace TGC.MonoGame.TP.Scenes.Battlefield
 {
     /// <summary>
     ///     Handles all of the aspects of working with a SkyBox.

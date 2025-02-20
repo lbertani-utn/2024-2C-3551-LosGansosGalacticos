@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Materials;
 
-namespace TGC.MonoGame.TP
+namespace TGC.MonoGame.TP.Scenes.Battlefield
 {
     internal class Bullet : WorldEntity
     {
@@ -44,8 +44,8 @@ namespace TGC.MonoGame.TP
         {
             _lastPosition = position;
             _position = position;
-            _boundingBox.Min = _position - Bullet.BoxSize;
-            _boundingBox.Max = _position + Bullet.BoxSize;
+            _boundingBox.Min = _position - BoxSize;
+            _boundingBox.Max = _position + BoxSize;
             _movementRay.Position = _position;
             _movementRay.Direction = _direction;
             _direction = direction;
@@ -61,8 +61,8 @@ namespace TGC.MonoGame.TP
             _position += move;
 
             // actualizo bounding box
-            _boundingBox.Min = _position - Bullet.BoxSize;
-            _boundingBox.Max = _position + Bullet.BoxSize;
+            _boundingBox.Min = _position - BoxSize;
+            _boundingBox.Max = _position + BoxSize;
 
             _world = Matrix.CreateScale(_scale) * Matrix.CreateTranslation(_position);
             _time += elapsedTime;
@@ -119,12 +119,12 @@ namespace TGC.MonoGame.TP
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model, Textures, Materials); 
+            Draw(view, projection, effect, Model, Textures, Materials); 
         }
 
         public override void DrawShadowMap(Matrix view, Matrix projection, Effect effect)
         {
-            base.DrawShadowMap(view, projection, effect, Model);
+            DrawShadowMap(view, projection, effect, Model);
         }
 
         public override void DrawBoundingBox(Gizmos.Gizmos gizmos)

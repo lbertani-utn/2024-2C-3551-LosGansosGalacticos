@@ -6,7 +6,8 @@ using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
 
-namespace TGC.MonoGame.TP {
+namespace TGC.MonoGame.TP.Scenes.Battlefield
+{
 
     public class WorldEntity {
         private const string ContentFolder3D = "Models/";

@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace TGC.MonoGame.TP
+namespace TGC.MonoGame.TP.Scenes.Battlefield
 {
     /// <summary>
     ///     Permite crear la malla de un terreno en base a una textura de Heightmap.

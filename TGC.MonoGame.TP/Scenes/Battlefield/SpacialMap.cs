@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 
-namespace TGC.MonoGame.TP {
+namespace TGC.MonoGame.TP.Scenes.Battlefield
+{
     public class CollisionData {
         public CollisionData((int x, int z) gridPosition, (int x, int z) gridSize, WorldEntity entity) {
             this.gridPosition = gridPosition;

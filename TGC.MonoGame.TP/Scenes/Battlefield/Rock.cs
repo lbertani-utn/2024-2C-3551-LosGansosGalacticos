@@ -4,38 +4,35 @@ using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
 
-namespace TGC.MonoGame.TP
+namespace TGC.MonoGame.TP.Scenes.Battlefield
 {
-    internal class Bush : WorldEntity
+    internal class Rock : WorldEntity
     {
         private static Model Model;
         private static Texture[] Textures;
         private static Material[] Materials;
         private static BoundingBoxHelper ModelBoundingBox;
 
-        public Bush(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
+        public Rock(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
-            _world = Matrix.CreateScale(0.01f) * Matrix.CreateTranslation(0,-0.909759561f, 0) * Matrix.CreateScale(scale) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position);
+            _world = Matrix.CreateTranslation(new Vector3(10.194115f, -0.923026f, -1.0564915f)) * Matrix.CreateScale(scale) * Matrix.CreateRotationY(yaw) * Matrix.CreateTranslation(position);
         }
 
         public static void LoadContent(ContentManager Content, Effect Effect)
         {
-            Model = LoadContent(Content, "bush/bush1", Effect);
+            Model = LoadContent(Content, "rock/rock", Effect);
+
             Textures = new Texture[Model.Meshes.Count];
-            Texture branch = Content.Load<Texture2D>("Models/bush/branch1 2");
-            Texture leaf = Content.Load<Texture2D>("Models/bush/leaf2");
-            Textures[0] = leaf;
-            Textures[1] = branch;
+            Textures[0] = Content.Load<Texture2D>("Models/rock/initialShadingGroup_Base_Color");
 
             Materials = new Material[Model.Meshes.Count];
-            Material bark = new Bark();
-            Material foliage = new Foliage();
-            Materials[0] = foliage;
-            Materials[1] = bark;
+            Materials[0] = new DefaultMaterial();
 
-            Vector3 min = new Vector3(-1.55790175f, -0.743808021f, -1.55288585f);
-            Vector3 max = new Vector3(1.76620225f, 2.097365639f, 1.77121815f);
-            ModelBoundingBox = new BoundingBoxHelper(min, max);
+            Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
+            Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
+            Vector3 optbc = new Vector3(0f, -0.0061135f, 0f);
+            ModelBoundingBox = new BoundingBoxHelper(min, max, optbc);
+         
         }
 
         public override void Update(float elapsedTime)
@@ -50,7 +47,7 @@ namespace TGC.MonoGame.TP
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model, Textures, Materials); 
+            base.Draw(view, projection, effect, Model, Textures, Materials);
         }
 
         public override void DrawShadowMap(Matrix view, Matrix projection, Effect effect)
