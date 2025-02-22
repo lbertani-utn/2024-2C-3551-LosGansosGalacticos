@@ -5,8 +5,9 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
+using TGC.MonoGame.TP.Scenes.Battlefield;
 
-namespace TGC.MonoGame.TP.Scenes.Battlefield
+namespace TGC.MonoGame.TP.Scenes
 {
 
     public class WorldEntity {
@@ -115,6 +116,11 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
                 effect.Parameters["shininess"].SetValue(materials[i].Shininess);
                 model.Meshes[i].Draw();
             }
+        }
+
+        protected void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures, Texture[] normals,  Material[] materials)
+        {
+            throw new NotImplementedException(); // TODO Implementar Draw con normal map
         }
 
         public virtual void DrawBoundingBox(Gizmos.Gizmos gizmos)

@@ -8,5 +8,11 @@ namespace TGC.MonoGame.TP.Scenes
 {
     class HeadquartersScene : Scene
     {
+        public HeadquartersScene()
+        {
+           
+
+
+        }
     }
 }
