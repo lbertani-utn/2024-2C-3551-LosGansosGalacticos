@@ -6,7 +6,7 @@ using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP.Scenes.Headquarters
 {
-    internal class Box : WorldEntity
+    internal class Table : WorldEntity
     {
         private static Model Model;
         private static Texture[] Textures;
@@ -20,7 +20,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
         private float _time;
         private Ray _movementRay;
 
-        public Box() : base(Vector3.Zero, Vector3.One, 0f, Model)
+        public Table() : base(Vector3.Zero, Vector3.One, 0f, Model)
         {
             Active = false;
             _world = Matrix.CreateScale(_scale) * Matrix.CreateTranslation(_position);
@@ -32,10 +32,10 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
             Model = LoadContent(Content, "geometries/cube", Effect);
 
             Textures = new Texture[Model.Meshes.Count];
-            Textures[0] = Content.Load<Texture2D>("Textures/Wood Crate/Wood_Crate_001_basecolor");
+            Textures[0] = Content.Load<Texture2D>("Textures/Wood/Wood_027_basecolor");
 
             Normals = new Texture[Model.Meshes.Count];
-            Normals[0] = Content.Load<Texture2D>("Textures/Wood Crate/Wood_Crate_001_normal");
+            Normals[0] = Content.Load<Texture2D>("Textures/Wood/Wood_027_normal");
 
             Materials = new Material[Model.Meshes.Count];
             Materials[0] = new Bark();

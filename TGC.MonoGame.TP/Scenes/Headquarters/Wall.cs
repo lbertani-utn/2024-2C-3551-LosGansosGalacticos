@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Materials;
 
-namespace TGC.MonoGame.TP.Scenes.Battlefield
+namespace TGC.MonoGame.TP.Scenes.Headquarters
 {
     internal class Wall : WorldEntity
     {
@@ -38,13 +38,9 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             Normals[0] = Content.Load<Texture2D>("Textures/Brick Wall/brick_wall2-nor-512");
 
             Materials = new Material[Model.Meshes.Count];
-            Materials[0] = new Bark();
+            Materials[0] = new DefaultMaterial();
 
             BoxSize = new Vector3(1f, 1f, 1f);
-        }
-
-        public void Update(float elapsedTime, SimpleTerrain terrain, List<WorldEntity> Entities, Tank[] Enemies)
-        {
         }
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
