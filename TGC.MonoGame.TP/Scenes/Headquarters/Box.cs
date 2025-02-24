@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
 
 namespace TGC.MonoGame.TP.Scenes.Headquarters
@@ -12,7 +13,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
         private static Texture[] Textures;
         private static Texture[] Normals;
         private static Material[] Materials;
-        private static Vector3 BoxSize;
+        private static BoundingBoxHelper ModelBoundingBox;
 
         public bool Active {get; set;}
         private Vector3 _direction;
@@ -23,7 +24,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
         public Box(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
             Active = false;
-            _world = Matrix.CreateScale(_scale) * Matrix.CreateTranslation(_position);
+            _world = Matrix.CreateScale(_scale * 0.5f) * Matrix.CreateTranslation(_position);
             _time = 0f;
         }
 
@@ -40,7 +41,12 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
             Materials = new Material[Model.Meshes.Count];
             Materials[0] = new Bark();
 
-            BoxSize = new Vector3(1f, 1f, 1f);
+            ModelBoundingBox = new BoundingBoxHelper(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0.5f, 0.5f, 0.5f));
+        }
+
+        protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
+        {
+            return ModelBoundingBox.GetBoundingBox(position, scale);
         }
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)

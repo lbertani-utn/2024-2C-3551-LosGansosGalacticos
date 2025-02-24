@@ -212,6 +212,13 @@ namespace TGC.MonoGame.TP
             Tree.LoadContent(Content, ObjectEffect);
             Rock.LoadContent(Content, ObjectEffect);
             Bush.LoadContent(Content, ObjectEffect);
+
+
+            Floor.LoadContent(Content, ObjectEffect);
+            Wall.LoadContent(Content, ObjectEffect);
+            Box.LoadContent(Content, ObjectEffect);
+            Table.LoadContent(Content, ObjectEffect);
+
             LoadSurfaceObjects(terrainSize * 0.9f);
 
             Model skyBox = Content.Load<Model>(ContentFolder3D + "geometries/cube");
@@ -569,61 +576,54 @@ namespace TGC.MonoGame.TP
         private void LoadSurfaceObjects(float terrainSize)
         {
 
-            Entities.Add(new Wall(new Vector3(4.85f, 1.5f, 0f), new Vector3(0.3f, 3f, 10f), 0f));
-            Entities.Add(new Wall(new Vector3(0f, 1.5f, 4.85f), new Vector3(10f, 3f, 0.3f), 0f));
-            Entities.Add(new Floor(new Vector3(0f, -0.01f, 0f), new Vector3(10f, 0.02f, 10f), 0f));
-            Entities.Add(new Table(new Vector3(-3f, 0.4f, -3f), new Vector3(2f, 0.8f, 2f), 0f));
-            Entities.Add(new Box(new Vector3(4.35f, 0.5f, 4.35f), new Vector3(1f, 1f, 1f), 0f));
-            Entities.Add(new Box(new Vector3(4.35f, 0.5f, 3.35f), new Vector3(1f, 1f, 1f), 0f));
-            Entities.Add(new Box(new Vector3(4.35f, 0.5f, 2.35f), new Vector3(1f, 1f, 1f), 0f));
 
-            //Random rnd = new Random();
-            //int treeCount = 0;
-            //int bushCount = 0;
-            //int rockCount = 0;
+            Random rnd = new Random();
+            int treeCount = 0;
+            int bushCount = 0;
+            int rockCount = 0;
 
-            //for (int i = 0; i < 200; i++)
-            //{
-            //    // posición
-            //    float x = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
-            //    float z = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
-            //    float y = terrain.Height(x, z);
+            for (int i = 0; i < 200; i++)
+            {
+                // posición
+                float x = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
+                float z = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
+                float y = terrain.Height(x, z);
 
-            //    // escala
-            //    float height = (float)rnd.NextDouble() * 0.4f + 0.8f;
-            //    float width = (float)rnd.NextDouble() * 0.4f + 0.8f;
+                // escala
+                float height = (float)rnd.NextDouble() * 0.4f + 0.8f;
+                float width = (float)rnd.NextDouble() * 0.4f + 0.8f;
 
-            //    // rotación
-            //    float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
-            //    float objType = (float)rnd.NextDouble();
+                // rotación
+                float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
+                float objType = (float)rnd.NextDouble();
 
-            //    if (objType > 0.4f)
-            //    {
-            //        Tree t = new Tree(new Vector3(x, y, z), new Vector3(width, height, width), rot);
-            //        Entities.Add(t);
-            //        //terrain.spacialMap.Add(t);
-            //        treeCount += 1;
-            //    }
-            //    else if (objType > 0.2f)
-            //    {
-            //        Bush b = new Bush(new Vector3(x, y, z), new Vector3(width, height, width), rot);
-            //        Entities.Add(b);
-            //        //terrain.spacialMap.Add(b);
-            //        bushCount += 1;
-            //    }
-            //    else
-            //    {
-            //        Rock r = new Rock(new Vector3(x, y, z), new Vector3(width, height, width), rot);
-            //        Entities.Add(r);
-            //        //terrain.spacialMap.Add(r);
-            //        rockCount += 1;
-            //    }
+                if (objType > 0.4f)
+                {
+                    Tree t = new Tree(new Vector3(x, y, z), new Vector3(width, height, width), rot);
+                    Entities.Add(t);
+                    //terrain.spacialMap.Add(t);
+                    treeCount += 1;
+                }
+                else if (objType > 0.2f)
+                {
+                    Bush b = new Bush(new Vector3(x, y, z), new Vector3(width, height, width), rot);
+                    Entities.Add(b);
+                    //terrain.spacialMap.Add(b);
+                    bushCount += 1;
+                }
+                else
+                {
+                    Rock r = new Rock(new Vector3(x, y, z), new Vector3(width, height, width), rot);
+                    Entities.Add(r);
+                    //terrain.spacialMap.Add(r);
+                    rockCount += 1;
+                }
 
-            //}
+            }
 
-            //Debug.WriteLine("Trees: {0}", treeCount);
-            //Debug.WriteLine("Bushes: {0}", bushCount);
-            //Debug.WriteLine("Rocks: {0}", rockCount);
+            Debug.WriteLine("Trees: {0}", treeCount);
+            Debug.WriteLine("Bushes: {0}", bushCount);
+            Debug.WriteLine("Rocks: {0}", rockCount);
         }
 
         private void ApplyEffect(Model model, Effect effect)

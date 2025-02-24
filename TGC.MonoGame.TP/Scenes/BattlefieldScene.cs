@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using TGC.MonoGame.TP.Scenes.Battlefield;
 
@@ -9,6 +10,11 @@ namespace TGC.MonoGame.TP.Scenes
         SimpleTerrain Terrain;
         SkyBox Sky;
 
+        public BattlefieldScene()
+        {
+            StaticObjects = new List<WorldEntity>();
+            DynamicObjects = new List<WorldEntity>();
+        }
 
         public override void Dispose()
         {
@@ -26,6 +32,11 @@ namespace TGC.MonoGame.TP.Scenes
         }
 
         public override void LoadContent()
+        {
+            //throw new NotImplementedException();
+        }
+
+        public override void LoadObjects()
         {
             throw new NotImplementedException();
         }
