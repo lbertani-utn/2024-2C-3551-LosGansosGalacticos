@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using TGC.MonoGame.TP.Scenes.Battlefield;
 
 namespace TGC.MonoGame.TP.Scenes
@@ -11,5 +8,32 @@ namespace TGC.MonoGame.TP.Scenes
     {
         SimpleTerrain Terrain;
         SkyBox Sky;
+
+
+        public override void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Draw()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void LoadContent()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Update()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

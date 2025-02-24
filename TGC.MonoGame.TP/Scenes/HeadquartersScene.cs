@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using TGC.MonoGame.TP.Scenes.Headquarters;
 
 namespace TGC.MonoGame.TP.Scenes
@@ -20,5 +21,31 @@ namespace TGC.MonoGame.TP.Scenes
             // Tanques 1 jugador + 5 enemigos
 
         }
+
+        public override void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Draw()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void LoadContent()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Update()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

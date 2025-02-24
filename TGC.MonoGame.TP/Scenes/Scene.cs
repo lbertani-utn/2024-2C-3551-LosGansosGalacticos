@@ -5,7 +5,7 @@ using TGC.MonoGame.TP.Cameras;
 
 namespace TGC.MonoGame.TP.Scenes
 {
-    class Scene : BasicObject
+    abstract class Scene : BasicObject
     {
         protected List<BasicObject> StaticObjects;
         protected List<BasicObject> DynamicObjects;
@@ -14,29 +14,6 @@ namespace TGC.MonoGame.TP.Scenes
         protected Camera DebugCamera;
         protected Vector3 LightPosition;
 
-        public override void Dispose()
-        {
-            throw new NotImplementedException();
-        }
 
-        public override void Draw()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Initialize()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void LoadContent()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Update()
-        {
-            throw new NotImplementedException();
-        }
     }
 }
