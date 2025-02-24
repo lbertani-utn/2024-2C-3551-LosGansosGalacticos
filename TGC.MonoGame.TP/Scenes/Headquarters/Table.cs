@@ -20,7 +20,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
         private float _time;
         private Ray _movementRay;
 
-        public Table() : base(Vector3.Zero, Vector3.One, 0f, Model)
+        public Table(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
             Active = false;
             _world = Matrix.CreateScale(_scale) * Matrix.CreateTranslation(_position);
