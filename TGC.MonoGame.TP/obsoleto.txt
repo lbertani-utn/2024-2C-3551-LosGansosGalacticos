@@ -1,0 +1,27 @@
+TGCGame
+
+
+
+
+// User input
+
+public bool DrawGizmos { get { return DrawBoundingBoxes || DrawPositions; } }
+
+
+
+
+// iluminación
+
+private Vector3 DiffuseColor;
+private Vector3 SpecularColor;
+
+
+
+private CameraType SelectedCamera;
+private TargetCamera FollowCamera;
+private StaticCamera AerialCamera;
+
+
+
+
+

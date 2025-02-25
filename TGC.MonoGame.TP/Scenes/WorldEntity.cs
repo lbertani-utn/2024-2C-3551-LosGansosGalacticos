@@ -45,7 +45,7 @@ namespace TGC.MonoGame.TP.Scenes
         {
             // Cargo el modelo
             Stopwatch sw = Stopwatch.StartNew();
-            Model model = Content.Load<Model>(ContentFolder3D + modelRelativePath);
+            Model model = Content.Load<Model>(ContentFolder.Models + modelRelativePath);
             sw.Stop();
             Debug.WriteLine("Load model {0}: {1} milliseconds", modelRelativePath, sw.ElapsedMilliseconds);
 

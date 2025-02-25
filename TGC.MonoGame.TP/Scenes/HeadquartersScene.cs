@@ -1,20 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Scenes.Headquarters;
 
 namespace TGC.MonoGame.TP.Scenes
 {
     class HeadquartersScene : Scene
     {
-        public HeadquartersScene()
+        private Effect ObjectEffect;
+
+        public HeadquartersScene(GraphicsDeviceManager graphics, ContentManager content) : base(graphics, content)
         {
             StaticObjects = new List<WorldEntity>();
             DynamicObjects = new List<WorldEntity>();
 
         }
 
-        public override void LoadObjects()
+        public override void Initialize()
+        {
+            throw new NotImplementedException();
+        }
+
+        #region Load
+        public override void LoadContent()
+        {
+            Floor.LoadContent(content, ObjectEffect);
+            Wall.LoadContent(content, ObjectEffect);
+            Box.LoadContent(content, ObjectEffect);
+            Table.LoadContent(content, ObjectEffect);
+
+            LoadGizmos();
+            LoadSceneObjects();
+        }
+
+        protected override void LoadSceneObjects()
         {
             // Vector3 position, Vector3 scale, float yaw
             StaticObjects.Add(new Wall(new Vector3(4.85f, 1.5f, 0f), new Vector3(0.3f, 3f, 10f), 0f));
@@ -28,32 +49,28 @@ namespace TGC.MonoGame.TP.Scenes
             // Mapa
             // Tanques 1 jugador + 5 enemigos
         }
+        #endregion
 
+        public override void Update(float elapsedTime, UserInput input)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Draw(bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override void DrawGizmos(bool drawBoundingBoxes, bool drawPositions)
+        {
+            throw new NotImplementedException();
+        }
 
         public override void Dispose()
         {
             throw new NotImplementedException();
         }
 
-        public override void Draw()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Initialize()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void LoadContent()
-        {
-            //throw new NotImplementedException();
-        }
-
-        public override void Update()
-        {
-            throw new NotImplementedException();
-        }
 
     }
 }
