@@ -20,7 +20,6 @@ namespace TGC.MonoGame.TP.Scenes
         protected Vector3 _scale;
         protected float _yaw;
         protected WorldEntityStatus _status;
-        protected ((int gridX, int gridZ) Min, (int gridX, int gridZ) Max) gridIndices = new();
 
         public WorldEntityStatus Status
         {
@@ -134,16 +133,6 @@ namespace TGC.MonoGame.TP.Scenes
             gizmos.DrawSphere(_position, Vector3.One, Color.White);
         }
 
-        public void DebugCollision(CollisionData data) {
-            var x = data.gridPosition.x / (float) data.gridSize.x;
-            var z = data.gridPosition.z / (float) data.gridSize.z;
-
-            for (int i = 0; i < _defaultColors.Length; i++)
-            {
-                _defaultColors[i] = new Vector3(x, 0, z);
-            }
-        }
-
         public BoundingBox GetHitBox() {
             return _boundingBox;
         }
@@ -157,27 +146,6 @@ namespace TGC.MonoGame.TP.Scenes
             BoundingBoxHelper boxHelper =new BoundingBoxHelper(model.Meshes[0].BoundingSphere.Center, model.Meshes[0].BoundingSphere.Radius);
             return boxHelper.GetBoundingBox(position, scale);
         }
-
-        public ((int gridX, int gridZ) Min, (int gridX, int gridZ) Max) GetGridIndices() {
-            return gridIndices;
-        }
-
-        public void SetGridMinIndex(int gridMinX, int gridMinZ) {
-            gridIndices.Min.gridX = gridMinX;
-            gridIndices.Min.gridZ = gridMinZ;
-        }
-
-        public void SetGridMaxIndex(int gridMaxX, int gridMaxZ) {
-            gridIndices.Max.gridX = gridMaxX;
-            gridIndices.Max.gridZ = gridMaxZ;
-        }
-
-        public void SetGridIndices(int gridMinX, int gridMinZ, int gridMaxX, int gridMaxZ) {
-            SetGridMinIndex(gridMinX, gridMinZ);
-            SetGridMaxIndex(gridMaxX, gridMaxZ);
-        }
-
-
 
     }
 }
