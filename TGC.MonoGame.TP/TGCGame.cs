@@ -62,9 +62,12 @@ namespace TGC.MonoGame.TP
             contentFolder = new ContentFolder();
             // escenas
             HQScene = new HeadquartersScene(Graphics, Content);
-            HQScene.Initialize();
             BattleScene = new BattlefieldScene(Graphics, Content);
+            HQScene.Initialize();
+            HQScene.SetNextScene(BattleScene);
             BattleScene.Initialize();
+            BattleScene.SetNextScene(HQScene);
+
             currentScene = BattleScene;
 
             input = new UserInput();
@@ -111,8 +114,10 @@ namespace TGC.MonoGame.TP
 
             currentScene.Update(elapsedTime, input);
 
-
-
+            if (currentScene.ChangeScene)
+            {
+                currentScene = currentScene.NextScene;
+            }
             base.Update(gameTime);
         }
 

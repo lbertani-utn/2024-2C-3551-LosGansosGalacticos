@@ -15,18 +15,26 @@ namespace TGC.MonoGame.TP.Scenes
         protected ContentFolder contentFolder;
         protected Gizmos.Gizmos gizmos;
 
+        protected Camera Camera { get => camera; }
+        protected Camera camera;
         protected TargetCamera MainCamera;
         protected StaticCamera DebugCamera;
         protected TargetCamera LightCamera;
         protected BoundingFrustum Frustum;
-        protected Camera _camera;
-        public Camera Camera { get => _camera; }
 
         protected Vector3 LightPosition;
         protected Vector3 AmbientColor;
 
         protected List<WorldEntity> StaticObjects;
         protected List<WorldEntity> DynamicObjects;
+
+
+        public bool ChangeScene { get => changeScene; }
+        protected bool changeScene = false;
+
+        public Scene NextScene { get => nextScene; }
+        protected Scene nextScene;
+
 
 
         public Scene(GraphicsDeviceManager graphics, ContentManager content)
@@ -54,24 +62,29 @@ namespace TGC.MonoGame.TP.Scenes
         {
             if (SelectedCamera == CameraType.Main)
             {
-                _camera = MainCamera;
+                camera = MainCamera;
             }
             else if(SelectedCamera == CameraType.Debug )
             {
-                _camera = DebugCamera;
+                camera = DebugCamera;
             }
             else if(SelectedCamera == CameraType.Light)
             {
-                _camera = LightCamera;
+                camera = LightCamera;
             }
             else
             {
-                _camera = MainCamera;
+                camera = MainCamera;
             }
         }
 
         protected abstract void DrawGizmos(bool drawBoundingBoxes, bool drawPositions);
         public abstract void Dispose();
+        
+        public void SetNextScene(Scene nextScene)
+        {
+            this.nextScene = nextScene;
+        }
 
     }
 }

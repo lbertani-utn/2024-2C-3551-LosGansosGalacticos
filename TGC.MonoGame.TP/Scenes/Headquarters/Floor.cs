@@ -39,7 +39,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
             Normals[0] = Content.Load<Texture2D>("Textures/Floor/floor-normal");
 
             Materials = new Material[Model.Meshes.Count];
-            Materials[0] = new Chrome();
+            Materials[0] = new DefaultMaterial(); // Chrome();
 
             ModelBoundingBox = new BoundingBoxHelper(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0.5f, 0.5f, 0.5f));
         }

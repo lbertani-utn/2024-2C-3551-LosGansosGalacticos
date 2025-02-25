@@ -59,7 +59,7 @@ namespace TGC.MonoGame.TP.Scenes
             // cámara principal - detrás del tanque
             MainCamera = new TargetCamera(graphics.GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
             MainCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphics.GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
-            _camera = MainCamera;
+            camera = MainCamera;
 
             // bounding frustum de la cámara que sigue al tanque
             Frustum = new BoundingFrustum(MainCamera.View * MainCamera.Projection);
@@ -69,7 +69,7 @@ namespace TGC.MonoGame.TP.Scenes
             DebugCamera.RightDirection = Vector3.UnitX;
             DebugCamera.BuildView();
 
-            // cámara en fuente de luz
+            // cámara en fuente de luz - sol
             LightPosition = new Vector3(-1000f, 550f, 600f); // posición de la luz para que tenga sentido con el skyboxc
             LightPosition *= 0.5f; // acerco un poco la luz para hacer debug
             LightCameraFarPlaneDistance = 1350; //Vector3.Distance(LightPosition, new Vector3(512, 0, -512));
@@ -248,6 +248,13 @@ namespace TGC.MonoGame.TP.Scenes
         #region Update
         public override void Update(float elapsedTime, UserInput input)
         {
+            changeScene = false;
+
+            if (input.keyboardState.IsKeyDown(Keys.Z) && input.previousKeyboardState.IsKeyUp(Keys.Z))
+            {
+                changeScene = true;
+            }
+
             // rozamiento
             if (tank.Propulsion > 0)
             {

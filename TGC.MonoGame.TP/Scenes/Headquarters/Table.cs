@@ -39,7 +39,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
             Normals[0] = Content.Load<Texture2D>("Textures/Wood/Wood_027_normal");
 
             Materials = new Material[Model.Meshes.Count];
-            Materials[0] = new Bark();
+            Materials[0] = new DefaultMaterial(); // Bark();
 
             ModelBoundingBox = new BoundingBoxHelper(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0.5f, 0.5f, 0.5f));
         }
