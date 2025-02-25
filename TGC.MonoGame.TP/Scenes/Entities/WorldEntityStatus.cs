@@ -1,4 +1,4 @@
-﻿namespace TGC.MonoGame.TP.Scenes
+﻿namespace TGC.MonoGame.TP.Scenes.Entities
 {
     public enum WorldEntityStatus
     {

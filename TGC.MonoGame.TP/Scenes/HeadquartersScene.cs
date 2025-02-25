@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
-using TGC.MonoGame.TP.Scenes.Battlefield;
+using TGC.MonoGame.TP.Scenes.Entities;
 using TGC.MonoGame.TP.Scenes.Headquarters;
 
 namespace TGC.MonoGame.TP.Scenes

@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Scenes.Battlefield;
+using TGC.MonoGame.TP.Scenes.Entities;
 
 namespace TGC.MonoGame.TP.Scenes
 {

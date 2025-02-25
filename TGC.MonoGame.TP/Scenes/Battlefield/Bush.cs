@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
+using TGC.MonoGame.TP.Scenes.Entities;
 
 namespace TGC.MonoGame.TP.Scenes.Battlefield
 {

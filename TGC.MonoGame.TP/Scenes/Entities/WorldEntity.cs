@@ -5,13 +5,12 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
-using TGC.MonoGame.TP.Scenes.Battlefield;
 
-namespace TGC.MonoGame.TP.Scenes
+namespace TGC.MonoGame.TP.Scenes.Entities
 {
 
-    public class WorldEntity {
-        private const string ContentFolder3D = "Models/";
+    public abstract class WorldEntity
+    {
         protected static Random Random;
         protected Vector3 _position;
         protected BoundingBox _boundingBox;
