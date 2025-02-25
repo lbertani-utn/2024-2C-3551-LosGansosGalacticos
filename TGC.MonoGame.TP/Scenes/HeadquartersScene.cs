@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Scenes.Headquarters;
 
 namespace TGC.MonoGame.TP.Scenes
@@ -13,14 +14,12 @@ namespace TGC.MonoGame.TP.Scenes
 
         public HeadquartersScene(GraphicsDeviceManager graphics, ContentManager content) : base(graphics, content)
         {
-            StaticObjects = new List<WorldEntity>();
-            DynamicObjects = new List<WorldEntity>();
 
         }
 
         public override void Initialize()
         {
-            throw new NotImplementedException();
+            StaticObjects = new List<WorldEntity>();
         }
 
         #region Load
@@ -56,8 +55,10 @@ namespace TGC.MonoGame.TP.Scenes
             throw new NotImplementedException();
         }
 
-        public override void Draw(bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap)
+        public override void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap)
         {
+            SelectCamera(SelectedCamera);
+
             throw new NotImplementedException();
         }
 

@@ -18,7 +18,7 @@ namespace TGC.MonoGame.TP.Scenes
         public bool DrawBoundingBoxes = false;
         public bool DrawPositions = false;
         public bool DrawGizmos = false;
-        private CameraType SelectedCamera = CameraType.Main;
+        public CameraType SelectedCamera = CameraType.Main;
         private CameraType[] CameraRotation;
 
         public void Initialize(Point screenCenter)

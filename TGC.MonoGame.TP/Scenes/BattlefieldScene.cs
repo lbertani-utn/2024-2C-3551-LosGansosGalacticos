@@ -36,7 +36,6 @@ namespace TGC.MonoGame.TP.Scenes
         // terreno
         private SimpleTerrain terrain;
         private float terrainSize;
-        private List<WorldEntity> Entities;
 
         // shadowmap
         private const int ShadowmapSize = 2048;
@@ -49,17 +48,18 @@ namespace TGC.MonoGame.TP.Scenes
 
         public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content) : base(graphics, content)
         {
-            StaticObjects = new List<WorldEntity>();
-            DynamicObjects = new List<WorldEntity>();
-        }
 
+        }
 
         public override void Initialize()
         {
-             
+            StaticObjects = new List<WorldEntity>();
+            DynamicObjects = new List<WorldEntity>();
+
             // cámara principal - detrás del tanque
             MainCamera = new TargetCamera(graphics.GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
             MainCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphics.GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
+            _camera = MainCamera;
 
             // bounding frustum de la cámara que sigue al tanque
             Frustum = new BoundingFrustum(MainCamera.View * MainCamera.Projection);
@@ -185,21 +185,21 @@ namespace TGC.MonoGame.TP.Scenes
                 if (objType > 0.4f)
                 {
                     Tree t = new Tree(new Vector3(x, y, z), new Vector3(width, height, width), rot);
-                    Entities.Add(t);
+                    StaticObjects.Add(t);
                     //terrain.spacialMap.Add(t);
                     treeCount += 1;
                 }
                 else if (objType > 0.2f)
                 {
                     Bush b = new Bush(new Vector3(x, y, z), new Vector3(width, height, width), rot);
-                    Entities.Add(b);
+                    StaticObjects.Add(b);
                     //terrain.spacialMap.Add(b);
                     bushCount += 1;
                 }
                 else
                 {
                     Rock r = new Rock(new Vector3(x, y, z), new Vector3(width, height, width), rot);
-                    Entities.Add(r);
+                    StaticObjects.Add(r);
                     //terrain.spacialMap.Add(r);
                     rockCount += 1;
                 }
@@ -347,7 +347,7 @@ namespace TGC.MonoGame.TP.Scenes
 
 
             //// colisiones entre tanque y objetos del escenario
-            foreach (WorldEntity e in Entities)
+            foreach (WorldEntity e in StaticObjects)
             {
                 if (e.Status != WorldEntityStatus.Destroyed)
                 {
@@ -378,7 +378,7 @@ namespace TGC.MonoGame.TP.Scenes
             {
                 if (b.Active)
                 {
-                    b.Update(elapsedTime, terrain, Entities, Enemies);
+                    b.Update(elapsedTime, terrain, StaticObjects, Enemies);
                 }
             }
 
@@ -386,8 +386,10 @@ namespace TGC.MonoGame.TP.Scenes
         #endregion
 
         #region Draw
-        public override void Draw(bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap)
+        public override void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap)
         {
+            SelectCamera(SelectedCamera);
+
             if (drawShadowMap)
             {
                 // ShadowMapRenderTarget
@@ -401,7 +403,7 @@ namespace TGC.MonoGame.TP.Scenes
 
             // objetos del escenario
             int drawWorldEntity = 0;
-            foreach (WorldEntity e in Entities)
+            foreach (WorldEntity e in StaticObjects)
             {
                 if (e.Status != WorldEntityStatus.Destroyed && Frustum.Intersects(e.GetDrawBox()))
                 {
@@ -437,7 +439,7 @@ namespace TGC.MonoGame.TP.Scenes
             // gizmos
             if (drawBoundingBoxes || drawPositions)
             {
-                foreach (WorldEntity e in Entities)
+                foreach (WorldEntity e in StaticObjects)
                 {
                     if (e.Status != WorldEntityStatus.Destroyed && Frustum.Intersects(e.GetDrawBox()))
                     {
@@ -488,7 +490,7 @@ namespace TGC.MonoGame.TP.Scenes
             {
                 b.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
             }
-            foreach (WorldEntity e in Entities)
+            foreach (WorldEntity e in StaticObjects)
             {
                 e.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
             }

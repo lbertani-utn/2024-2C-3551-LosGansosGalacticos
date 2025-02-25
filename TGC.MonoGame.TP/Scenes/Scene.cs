@@ -16,8 +16,8 @@ namespace TGC.MonoGame.TP.Scenes
         protected Gizmos.Gizmos gizmos;
 
         protected TargetCamera MainCamera;
-        protected TargetCamera LightCamera;
         protected StaticCamera DebugCamera;
+        protected TargetCamera LightCamera;
         protected BoundingFrustum Frustum;
         protected Camera _camera;
         public Camera Camera { get => _camera; }
@@ -48,7 +48,28 @@ namespace TGC.MonoGame.TP.Scenes
 
         protected abstract void LoadSceneObjects();
         public abstract void Update(float elapsedTime, UserInput input);
-        public abstract void Draw(bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap);
+        public abstract void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap);
+
+        public void SelectCamera(CameraType SelectedCamera)
+        {
+            if (SelectedCamera == CameraType.Main)
+            {
+                _camera = MainCamera;
+            }
+            else if(SelectedCamera == CameraType.Debug )
+            {
+                _camera = DebugCamera;
+            }
+            else if(SelectedCamera == CameraType.Light)
+            {
+                _camera = LightCamera;
+            }
+            else
+            {
+                _camera = MainCamera;
+            }
+        }
+
         protected abstract void DrawGizmos(bool drawBoundingBoxes, bool drawPositions);
         public abstract void Dispose();
 
