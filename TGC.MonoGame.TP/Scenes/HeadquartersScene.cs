@@ -85,8 +85,7 @@ namespace TGC.MonoGame.TP.Scenes
             StaticObjects.Add(new Floor(new Vector3(0f, -0.01f, 0f), new Vector3(10f, 0.02f, 10f), 0f));
             StaticObjects.Add(new Table(new Vector3(-1f, 0.4f, -1f), new Vector3(2f, 0.8f, 2f), 0f));
             StaticObjects.Add(new Box(new Vector3(4.20f, 0.5f, 4.20f), new Vector3(1f, 1f, 1f), 0f));
-            StaticObjects.Add(new Box(new Vector3(4.20f, 0.5f, 3.20f), new Vector3(1f, 1f, 1f), 0f));
-            StaticObjects.Add(new Box(new Vector3(4.20f, 0.5f, 2.20f), new Vector3(1f, 1f, 1f), 0f));
+
 
             // Mapa
             // Tanques 1 jugador + 5 enemigos

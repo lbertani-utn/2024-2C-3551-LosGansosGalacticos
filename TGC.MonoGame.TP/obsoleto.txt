@@ -1,6 +1,9 @@
 TGCGame
 
 
+//hq scene
+StaticObjects.Add(new Box(new Vector3(4.20f, 0.5f, 3.20f), new Vector3(1f, 1f, 1f), 0f));
+StaticObjects.Add(new Box(new Vector3(4.20f, 0.5f, 2.20f), new Vector3(1f, 1f, 1f), 0f));
 
 
 // User input
