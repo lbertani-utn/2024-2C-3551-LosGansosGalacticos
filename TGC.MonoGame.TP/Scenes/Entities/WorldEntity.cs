@@ -122,7 +122,7 @@ namespace TGC.MonoGame.TP.Scenes.Entities
             }
         }
         
-        protected void DrawShadowed(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures, Texture[] normals, Material[] materials)
+        protected void DrawWithNormalMap(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures, Texture[] normals, Material[] materials)
         {
             model.Root.Transform = _world;
             var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];

@@ -63,7 +63,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
 
         public override void DrawShadowed(Matrix view, Matrix projection, Effect effect)
         {
-            base.DrawShadowed(view, projection, effect, Model, Textures, Normals, Materials);
+            base.DrawWithNormalMap(view, projection, effect, Model, Textures, Normals, Materials);
         }
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
