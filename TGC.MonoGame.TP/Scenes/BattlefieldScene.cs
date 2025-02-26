@@ -19,7 +19,6 @@ namespace TGC.MonoGame.TP.Scenes
         private Effect ObjectEffect;
 
         // cámara
-
         private const float camX = 0.2f;
         private const float camY = -0.1f;
 
@@ -34,6 +33,7 @@ namespace TGC.MonoGame.TP.Scenes
         // terreno
         private SimpleTerrain terrain;
         private float terrainSize;
+        Random rnd;
 
         public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content) : base(graphics, content)
         {
@@ -44,6 +44,7 @@ namespace TGC.MonoGame.TP.Scenes
         {
             StaticObjects = new List<WorldEntity>();
             DynamicObjects = new List<WorldEntity>();
+            rnd = new Random();
 
             // cámara principal - detrás del tanque
             MainCamera = new TargetCamera(graphics.GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
@@ -141,14 +142,25 @@ namespace TGC.MonoGame.TP.Scenes
 
         protected override void LoadSceneObjects()
         {
-            LoadTerrainObjects(0.1f, 0.95f);
-            LoadTanks(0.7f, 0.9f);
+            LoadTerrainObjects(terrainSize, 0.1f, 0.9f);
+            LoadTanks(terrainSize, 0.5f, 0.8f);
         }
 
-        private void LoadTerrainObjects(float innerMargin, float outerMargin)
-        {
 
-            Random rnd = new Random();
+        private Vector3 GetRandomTerrainPosition(float terrainSize, float minRadius, float maxRadius)
+        {
+            float angle = (float)(rnd.NextDouble() * Math.PI * 2);
+            float radius = ((float)rnd.NextDouble() * (maxRadius - minRadius) + minRadius) * terrainSize / 2;
+
+            float x = (float)Math.Sin(angle) * radius;
+            float z = (float)Math.Cos(angle) * radius;
+            float y = terrain.Height(x, z);
+
+            return new Vector3(x, y, z);
+        }
+
+        private void LoadTerrainObjects(float terrainSize, float minRadius, float maxRadius)
+        {
             int treeCount = 0;
             int bushCount = 0;
             int rockCount = 0;
@@ -156,9 +168,7 @@ namespace TGC.MonoGame.TP.Scenes
             for (int i = 0; i < 200; i++)
             {
                 // posición
-                float x = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
-                float z = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
-                float y = terrain.Height(x, z);
+                Vector3 pos = GetRandomTerrainPosition(terrainSize, minRadius, maxRadius);
 
                 // escala
                 float height = (float)rnd.NextDouble() * 0.4f + 0.8f;
@@ -170,21 +180,21 @@ namespace TGC.MonoGame.TP.Scenes
 
                 if (objType > 0.4f)
                 {
-                    Tree t = new Tree(new Vector3(x, y, z), new Vector3(width, height, width), rot);
+                    Tree t = new Tree(pos, new Vector3(width, height, width), rot);
                     StaticObjects.Add(t);
                     //terrain.spacialMap.Add(t);
                     treeCount += 1;
                 }
                 else if (objType > 0.2f)
                 {
-                    Bush b = new Bush(new Vector3(x, y, z), new Vector3(width, height, width), rot);
+                    Bush b = new Bush(pos, new Vector3(width, height, width), rot);
                     StaticObjects.Add(b);
                     //terrain.spacialMap.Add(b);
                     bushCount += 1;
                 }
                 else
                 {
-                    Rock r = new Rock(new Vector3(x, y, z), new Vector3(width, height, width), rot);
+                    Rock r = new Rock(pos, new Vector3(width, height, width), rot);
                     StaticObjects.Add(r);
                     //terrain.spacialMap.Add(r);
                     rockCount += 1;
@@ -197,7 +207,7 @@ namespace TGC.MonoGame.TP.Scenes
             Debug.WriteLine("Rocks: {0}", rockCount);
         }
 
-        private void LoadTanks(float innerMargin, float outerMargin)
+        private void LoadTanks(float terrainSize, float minRadius, float maxRadius)
         {
             Random rnd = new Random();
             Enemies = new Tank[enemyCount];
@@ -205,12 +215,11 @@ namespace TGC.MonoGame.TP.Scenes
             for (int i = 0; i < enemyCount; i++)
             {
                 // posición
-                float x = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
-                float z = (float)rnd.NextDouble() * terrainSize - terrainSize / 2;
-                float y = terrain.Height(x, z);
+                Vector3 pos = GetRandomTerrainPosition(terrainSize, minRadius, maxRadius);
+
                 // rotación
                 float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
-                Tank t = new Tank(new Vector3(x, y, z), new Vector3(0.01f, 0.01f, 0.01f), rot, 0f, 0f);
+                Tank t = new Tank(pos, new Vector3(0.01f, 0.01f, 0.01f), rot, 0f, 0f);
                 t.Load(content, Model);
                 Enemies[i] = t;
             }
