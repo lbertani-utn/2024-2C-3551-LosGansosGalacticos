@@ -16,13 +16,10 @@ namespace TGC.MonoGame.TP.Scenes
     {
         // shaders
         private SkyBox SkyEffect;
-        private Effect ShadowMapEffect;
-        private Effect TerrainEffect;
         private Effect ObjectEffect;
 
         // cámara
-        private static float CameraNearPlaneDistance = 1f;
-        private static float CameraFarPlaneDistance = 2000f;
+
         private const float camX = 0.2f;
         private const float camY = -0.1f;
 
@@ -38,15 +35,6 @@ namespace TGC.MonoGame.TP.Scenes
         private SimpleTerrain terrain;
         private float terrainSize;
 
-        // shadowmap
-        private const int ShadowmapSize = 2048;
-        private float LightCameraFarPlaneDistance = 2000f;
-        private float LightCameraNearPlaneDistance = 500f;
-        private FullScreenQuad ScreenQuad;
-        private RenderTarget2D ShadowMapRenderTarget;
-
-
-
         public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content) : base(graphics, content)
         {
 
@@ -59,6 +47,8 @@ namespace TGC.MonoGame.TP.Scenes
 
             // cámara principal - detrás del tanque
             MainCamera = new TargetCamera(graphics.GraphicsDevice.Viewport.AspectRatio, Vector3.One * 100f, Vector3.Zero);
+            float CameraNearPlaneDistance = 1f;
+            float CameraFarPlaneDistance = 2000f;
             MainCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphics.GraphicsDevice.Viewport.AspectRatio, CameraNearPlaneDistance, CameraFarPlaneDistance);
             camera = MainCamera;
 
@@ -72,9 +62,8 @@ namespace TGC.MonoGame.TP.Scenes
 
             // cámara en fuente de luz - sol
             LightPosition = new Vector3(-1000f, 550f, 600f); // posición de la luz para que tenga sentido con el skyboxc
-            LightPosition *= 0.5f; // acerco un poco la luz para hacer debug
-            LightCameraFarPlaneDistance = 1350; //Vector3.Distance(LightPosition, new Vector3(512, 0, -512));
-            LightCameraNearPlaneDistance = 200; // Vector3.Distance(LightPosition, new Vector3(-512, 0, 512));
+            float LightCameraFarPlaneDistance = 5000f; //Vector3.Distance(LightPosition, new Vector3(512, 0, -512)); // 1350;
+            float LightCameraNearPlaneDistance = 1f; //Vector3.Distance(LightPosition, new Vector3(-512, 0, 512)); // 200;
             LightCamera = new TargetCamera(1f, LightPosition, Vector3.Zero);
             LightCamera.BuildProjection(1f, LightCameraNearPlaneDistance, LightCameraFarPlaneDistance, MathHelper.PiOver2);
             LightCamera.BuildView();
@@ -87,26 +76,23 @@ namespace TGC.MonoGame.TP.Scenes
             // Create a full screen quad to post-process
             ScreenQuad = new FullScreenQuad(graphics.GraphicsDevice);
             // Create a shadow map. It stores depth from the light position
+            int ShadowmapSize = 2048;
             ShadowMapRenderTarget = new RenderTarget2D(graphics.GraphicsDevice, ShadowmapSize, ShadowmapSize, false, SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents);
-            // Load the shadowmap effect
-            ShadowMapEffect = content.Load<Effect>(ContentFolder.Effects + "ShadowMap");
 
-
+            // ObjectEffect
             AmbientColor = Vector3.One;
-            Vector3 DiffuseColor = Vector3.One;
-            Vector3 SpecularColor = Vector3.One;
-
-            ObjectEffect = content.Load<Effect>(ContentFolder.Effects + "BlinnPhong");
-            //ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
+            ObjectEffect = content.Load<Effect>(ContentFolder.Effects + "ObjectShader");
+            ObjectEffect.Parameters["LightViewProjection"].SetValue(LightCamera.View * LightCamera.Projection);
+            ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
             ObjectEffect.Parameters["ambientColor"].SetValue(AmbientColor);
-            ObjectEffect.Parameters["diffuseColor"].SetValue(DiffuseColor);
-            ObjectEffect.Parameters["specularColor"].SetValue(SpecularColor);
-            // TODO coeficientes que dependen del material
-            ObjectEffect.Parameters["KAmbient"].SetValue(0.1f);
-            ObjectEffect.Parameters["KDiffuse"].SetValue(0.6f);
-            ObjectEffect.Parameters["KSpecular"].SetValue(0.2f);
+            ObjectEffect.Parameters["diffuseColor"].SetValue(Vector3.One * 0.7f);
+            ObjectEffect.Parameters["specularColor"].SetValue(Vector3.One);
+            ObjectEffect.Parameters["KAmbient"].SetValue(0.3f);
+            ObjectEffect.Parameters["KDiffuse"].SetValue(0.4f);
+            ObjectEffect.Parameters["KSpecular"].SetValue(0.1f);
             ObjectEffect.Parameters["shininess"].SetValue(16.0f);
-
+            ObjectEffect.Parameters["eyePosition"].SetValue(MainCamera.Position);
+            ObjectEffect.Parameters["Tiling"].SetValue(Vector2.One);
 
             // Terreno
             Texture2D terrainHeightMap = content.Load<Texture2D>(ContentFolder.Textures + "Rolling Hills Height Map/Rolling Hills Height Map 256");
@@ -115,16 +101,15 @@ namespace TGC.MonoGame.TP.Scenes
             terrainSize = 1024f;
             float heightScale = 0.4f;
             float terrainScale = terrainSize / terrainHeightMap.Width;
-            TerrainEffect = content.Load<Effect>(ContentFolder.Effects + "BlinnPhongNormalMap");
-            TerrainEffect.Parameters["lightPosition"].SetValue(LightPosition);
-            terrain = new SimpleTerrain(graphics.GraphicsDevice, terrainHeightMap, terrainBaseColor, terrainNormalMap, TerrainEffect, terrainScale, heightScale);
+            terrain = new SimpleTerrain(graphics.GraphicsDevice, terrainHeightMap, terrainBaseColor, terrainNormalMap, ObjectEffect, terrainScale, heightScale);
 
             // TODO setear position.Y, pitch y roll del tanque en la posición inicial
             Tree.LoadContent(content, ObjectEffect);
             Rock.LoadContent(content, ObjectEffect);
             Bush.LoadContent(content, ObjectEffect);
 
-            Model skyBox = content.Load<Model>(ContentFolder.Models + "geometries/cube");
+            // skyBox
+            Model skyBox = content.Load<Model>(ContentFolder.Models + "geometries/skyBox");
             TextureCube skyBoxTexture = content.Load<TextureCube>(ContentFolder.Textures + "skybox/day_skybox");
             Effect skyBoxEffect = content.Load<Effect>(ContentFolder.Effects + "Skybox");
             SkyEffect = new SkyBox(skyBox, skyBoxTexture, skyBoxEffect, 1200);
@@ -398,31 +383,86 @@ namespace TGC.MonoGame.TP.Scenes
         {
             SelectCamera(SelectedCamera);
 
+
+            #region Pass 1
+
+            graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+
+            if (!drawShadowMap)
+            { 
+                // Set the render target as our shadow map, we are drawing the depth into this texture
+                graphics.GraphicsDevice.SetRenderTarget(ShadowMapRenderTarget);
+            }
+            else
+            {
+                graphics.GraphicsDevice.SetRenderTarget(null);
+            }
+
+            graphics.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1f, 0);
+            ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DepthPass"];
+
+            terrain.Draw(LightCamera.View, LightCamera.Projection);
+            foreach (WorldEntity e in StaticObjects)
+            {
+                if (e.Status != WorldEntityStatus.Destroyed)
+                {
+                    e.DrawDepthPass(ObjectEffect, LightCamera);
+                }
+            }
+            foreach (WorldEntity e in DynamicObjects)
+            {
+                if (e.Status != WorldEntityStatus.Destroyed)
+                {
+                    e.DrawDepthPass(ObjectEffect, LightCamera);
+                }
+            }
+
+            #endregion
+
             if (drawShadowMap)
             {
-                // ShadowMapRenderTarget
-                DrawShadows(null);
                 return;
             }
 
+            #region Pass 2
+
+            // Set the render target as null, we are drawing on the screen!
+            graphics.GraphicsDevice.SetRenderTarget(null);
+            graphics.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
+            ObjectEffect.Parameters["shadowMap"].SetValue(ShadowMapRenderTarget);
+
+
+
+            // skybox no se ve afectado por las sombras
             SkyEffect.Draw(Camera.View, Camera.Projection, Camera.Position);
+
+            // TODO agregar sombras al terreno
+            ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DrawNormalMap"];
             terrain.Draw(Camera.View, Camera.Projection);
+
+
+            ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DrawObject"];
+            // TODO agregar sombras al tanque
             tank.Draw(Camera.View, Camera.Projection);
 
-            // objetos del escenario
-            int drawWorldEntity = 0;
+
             foreach (WorldEntity e in StaticObjects)
             {
                 if (e.Status != WorldEntityStatus.Destroyed && Frustum.Intersects(e.GetDrawBox()))
                 {
-                    //terrain.spacialMap.Update(e);
-                    e.Draw(Camera.View, Camera.Projection, ObjectEffect);
-                    drawWorldEntity += 1;
+                    e.DrawShadowed(Camera.View, Camera.Projection, ObjectEffect);
                 }
             }
-            Debug.WriteLine(drawWorldEntity);
+            foreach (WorldEntity e in DynamicObjects)
+            {
+                if (e.Status != WorldEntityStatus.Destroyed && Frustum.Intersects(e.GetDrawBox()))
+                {
+                    e.DrawShadowed(Camera.View, Camera.Projection, ObjectEffect);
+                }
+            }
 
-            // tanques enemigos
+
+            // TODO agregar sombras a tanques enemigos
             foreach (Tank t in Enemies)
             {
                 if (t.Status != WorldEntityStatus.Destroyed && t.Intersects(Frustum))
@@ -430,8 +470,7 @@ namespace TGC.MonoGame.TP.Scenes
                     t.Draw(Camera.View, Camera.Projection);
                 }
             }
-
-            // proyectiles
+            // TODO agregar sombras a proyectiles
             foreach (Bullet b in Bullets)
             {
                 if (b.Active)
@@ -439,9 +478,12 @@ namespace TGC.MonoGame.TP.Scenes
                     b.Draw(Camera.View, Camera.Projection, ObjectEffect);
                 }
             }
+            #endregion
 
             DrawGizmos(drawBoundingBoxes, drawPositions);
+
         }
+
         protected override void DrawGizmos(bool drawBoundingBoxes, bool drawPositions)
         {
             // gizmos
@@ -482,28 +524,7 @@ namespace TGC.MonoGame.TP.Scenes
                 gizmos.Draw();
             }
         }
-        private void DrawShadows(RenderTarget2D renderTarget)
-        {
-            // Pass 1
 
-            graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-            // Set the render target as our shadow map, we are drawing the depth into this texture
-            graphics.GraphicsDevice.SetRenderTarget(renderTarget);
-            graphics.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1f, 0);
-
-            ShadowMapEffect.CurrentTechnique = ShadowMapEffect.Techniques["DepthPass"];
-
-            tank.Draw(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
-            foreach (Bullet b in Bullets)
-            {
-                b.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
-            }
-            foreach (WorldEntity e in StaticObjects)
-            {
-                e.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
-            }
-            terrain.DrawShadowMap(LightCamera.View, LightCamera.Projection, ShadowMapEffect);
-        }
 
         #endregion
 

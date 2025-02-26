@@ -25,13 +25,6 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
 
             // shader Blinn–Phong con normal map
             Effect = effect;
-            Effect.Parameters["ambientColor"].SetValue(Vector3.One);
-            Effect.Parameters["diffuseColor"].SetValue(new Vector3(0.6f, 1f, 0.6f));
-            Effect.Parameters["specularColor"].SetValue(Vector3.One);
-            Effect.Parameters["KAmbient"].SetValue(0.3f);
-            Effect.Parameters["KDiffuse"].SetValue(0.6f);
-            Effect.Parameters["KSpecular"].SetValue(0f);
-            Effect.Parameters["shininess"].SetValue(1.0f);
 
             // cargo el heightmap
             LoadHeightmap(graphicsDevice, heightMap, scaleXZ, scaleY, Vector3.Zero);
@@ -60,9 +53,17 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             Effect.Parameters["World"].SetValue(world);
             Effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(world)));
             Effect.Parameters["WorldViewProjection"].SetValue(world * view * projection);
-            Effect.Parameters["ModelTexture"].SetValue(modelTexture);
+            Effect.Parameters["WrapTexture"].SetValue(modelTexture);
             Effect.Parameters["NormalTexture"].SetValue(normalTexture);
             Effect.Parameters["Tiling"].SetValue(tiling);
+            Effect.Parameters["ambientColor"].SetValue(Vector3.One);
+            Effect.Parameters["diffuseColor"].SetValue(new Vector3(0.6f, 1f, 0.6f));
+            Effect.Parameters["specularColor"].SetValue(Vector3.One);
+            Effect.Parameters["KAmbient"].SetValue(0.3f);
+            Effect.Parameters["KDiffuse"].SetValue(0.6f);
+            Effect.Parameters["KSpecular"].SetValue(0f);
+            Effect.Parameters["shininess"].SetValue(1.0f);
+
             graphicsDevice.SetVertexBuffer(vbTerrain);
 
             //Render con shader

@@ -15,7 +15,6 @@ float4x4 World;
 float4x4 InverseTransposeWorld;
 float4x4 LightViewProjection;
 
-float2 shadowMapSize;
 static const float modulatedEpsilon = 0.000041200182749889791011810302734375;
 static const float maxEpsilon = 0.000023200045689009130001068115234375;
 
@@ -36,10 +35,22 @@ sampler2D textureSampler = sampler_state
     Texture = (ModelTexture);
     MagFilter = Linear;
     MinFilter = Linear;
+    AddressU = Clamp;
+    AddressV = Clamp;
+    MIPFILTER = LINEAR;
+};
+
+texture WrapTexture;
+sampler2D wrapSampler = sampler_state
+{
+    Texture = (WrapTexture);
+    MagFilter = Linear;
+    MinFilter = Linear;
     AddressU = Wrap;
     AddressV = Wrap;
     MIPFILTER = LINEAR;
 };
+
 
 texture NormalTexture;
 sampler2D normalSampler = sampler_state
@@ -125,14 +136,14 @@ ShadowedVertexShaderOutput MainVS(in ShadowedVertexShaderInput input)
 {
     ShadowedVertexShaderOutput output;
     output.Position = mul(input.Position, WorldViewProjection);
-    output.TextureCoordinates = input.TextureCoordinates;
+    output.TextureCoordinates = input.TextureCoordinates * Tiling;
     output.WorldSpacePosition = mul(input.Position, World);
     output.LightSpacePosition = mul(output.WorldSpacePosition, LightViewProjection);
     output.Normal = mul(float4(input.Normal, 1), InverseTransposeWorld);
     return output;
 }
 
-float4 MainPS(ShadowedVertexShaderOutput input) : COLOR
+float4 DrawNormalMapPS(ShadowedVertexShaderOutput input) : COLOR
 {
     // Base vectors
     float3 lightDirection = normalize(lightPosition - input.WorldSpacePosition.xyz);
@@ -141,7 +152,7 @@ float4 MainPS(ShadowedVertexShaderOutput input) : COLOR
     float3 normal = getNormalFromMap(input.TextureCoordinates, input.WorldSpacePosition.xyz, normalize(input.Normal.xyz));
 
 	// Get the texture texel
-    float4 texelColor = tex2D(textureSampler, input.TextureCoordinates);
+    float4 texelColor = tex2D(wrapSampler, input.TextureCoordinates);
     
 	// Calculate the diffuse light
     float NdotL = saturate(dot(normal, lightDirection));
@@ -172,6 +183,44 @@ float4 MainPS(ShadowedVertexShaderOutput input) : COLOR
 
 }
 
+float4 DrawObjectPS(ShadowedVertexShaderOutput input) : COLOR
+{
+    // Base vectors
+    float3 lightDirection = normalize(lightPosition - input.WorldSpacePosition.xyz);
+    float3 viewDirection = normalize(eyePosition - input.WorldSpacePosition.xyz);
+    float3 halfVector = normalize(lightDirection + viewDirection);
+
+	// Get the texture texel
+    float4 texelColor = tex2D(textureSampler, input.TextureCoordinates);
+    
+	// Calculate the diffuse light
+    float NdotL = saturate(dot(input.Normal.xyz, lightDirection));
+    float3 diffuseLight = KDiffuse * diffuseColor * NdotL;
+
+	// Calculate the specular light
+    float NdotH = dot(input.Normal.xyz, halfVector);
+    float3 specularLight = sign(NdotL) * KSpecular * specularColor * pow(saturate(NdotH), shininess);
+    
+    // Final calculation
+    float4 baseColor = float4(saturate(ambientColor * KAmbient + diffuseLight) * texelColor.rgb + specularLight, texelColor.a);
+     
+    // Shadows
+    float3 lightSpacePosition = input.LightSpacePosition.xyz / input.LightSpacePosition.w;
+    float2 shadowMapTextureCoordinates = 0.5 * lightSpacePosition.xy + float2(0.5, 0.5);
+    shadowMapTextureCoordinates.y = 1.0f - shadowMapTextureCoordinates.y;
+    
+    float inclinationBias = max(modulatedEpsilon * (1.0 - dot(input.Normal.xyz, lightDirection)), maxEpsilon);
+    float shadowMapDepth = tex2D(shadowMapSampler, shadowMapTextureCoordinates).r + inclinationBias;
+	
+	// Compare the shadowmap with the REAL depth of this fragment
+	// in light space
+    float notInShadow = step(lightSpacePosition.z, shadowMapDepth);
+        
+    float4 finalColor = baseColor * 0.5 + 0.5 * notInShadow;
+    return finalColor;
+
+}
+
 technique DepthPass
 {
     pass Pass0
@@ -181,11 +230,20 @@ technique DepthPass
     }
 };
 
-technique DrawShadowed
+technique DrawNormalMap
 {
     pass Pass0
     {
         VertexShader = compile VS_SHADERMODEL MainVS();
-        PixelShader = compile PS_SHADERMODEL MainPS();
+        PixelShader = compile PS_SHADERMODEL DrawNormalMapPS();
+    }
+};
+
+technique DrawObject
+{
+    pass Pass0
+    {
+        VertexShader = compile VS_SHADERMODEL MainVS();
+        PixelShader = compile PS_SHADERMODEL DrawObjectPS();
     }
 };

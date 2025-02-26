@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
 using TGC.MonoGame.TP.Scenes.Entities;
@@ -11,6 +12,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
     {
         private static Model Model;
         private static Texture[] Textures;
+        //private static Texture[] Normals;
         private static Material[] Materials;
         private static BoundingBoxHelper ModelBoundingBox;
 
@@ -27,6 +29,10 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             Texture leaf = Content.Load<Texture2D>("Models/bush/leaf2");
             Textures[0] = leaf;
             Textures[1] = branch;
+
+            //Normals = new Texture[Model.Meshes.Count];
+            //Normals[0] = Content.Load<Texture2D>("Models/bush/branch1 2_normal");
+            //Normals[1] = Content.Load<Texture2D>("Models/bush/leaf2_normal");
 
             Materials = new Material[Model.Meshes.Count];
             Material bark = new Bark();
@@ -52,6 +58,17 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
             base.Draw(view, projection, effect, Model, Textures, Materials); 
+        }
+
+        public override void DrawDepthPass(Effect effect, TargetCamera lightCamera)
+        {
+            base.DrawDepthPass(effect, lightCamera, Model);
+        }
+
+        public override void DrawShadowed(Matrix view, Matrix projection, Effect effect)
+        {
+            //base.DrawShadowed(view, projection, effect, Model, Textures, Normals, Materials);
+            base.Draw(view, projection, effect, Model, Textures, Materials);
         }
 
         public override void DrawShadowMap(Matrix view, Matrix projection, Effect effect)

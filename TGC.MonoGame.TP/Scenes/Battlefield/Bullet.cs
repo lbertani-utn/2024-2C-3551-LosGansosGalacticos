@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Materials;
 using TGC.MonoGame.TP.Scenes.Entities;
 
@@ -11,6 +12,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
     {
         private static Model Model;
         private static Texture[] Textures;
+        //private static Texture[] Normals;
         private static Material[] Materials;
         private static Vector3 BoxSize;
         private const float gravity = 9.8f;
@@ -35,6 +37,9 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             Textures = new Texture[Model.Meshes.Count];
             Textures[0] = Content.Load<Texture2D>("Textures/metal");
 
+            //Normals = new Texture[Model.Meshes.Count];
+            //Normals[0] = Content.Load<Texture2D>("Textures/default_normal");
+
             Materials = new Material[Model.Meshes.Count];
             Materials[0] = new DefaultMaterial();
 
@@ -52,6 +57,10 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             _direction = direction;
             _time = 0f;
             Active = true;
+        }
+
+        public override void Update(float elapsedTime)
+        {
         }
 
         public void Update(float elapsedTime, SimpleTerrain terrain, List<WorldEntity> Entities, Tank[] Enemies)
@@ -121,6 +130,17 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
             Draw(view, projection, effect, Model, Textures, Materials); 
+        }
+
+        public override void DrawDepthPass(Effect effect, TargetCamera lightCamera)
+        {
+            base.DrawDepthPass(effect, lightCamera, Model);
+        }
+
+        public override void DrawShadowed(Matrix view, Matrix projection, Effect effect)
+        {
+            //base.DrawShadowed(view, projection, effect, Model, Textures, Normals, Materials);
+            base.Draw(view, projection, effect, Model, Textures, Materials);
         }
 
         public override void DrawShadowMap(Matrix view, Matrix projection, Effect effect)

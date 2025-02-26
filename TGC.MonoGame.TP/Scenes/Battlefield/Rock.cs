@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
 using TGC.MonoGame.TP.Scenes.Entities;
@@ -11,6 +12,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
     {
         private static Model Model;
         private static Texture[] Textures;
+        //private static Texture[] Normals;
         private static Material[] Materials;
         private static BoundingBoxHelper ModelBoundingBox;
 
@@ -26,8 +28,11 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             Textures = new Texture[Model.Meshes.Count];
             Textures[0] = Content.Load<Texture2D>("Models/rock/initialShadingGroup_Base_Color");
 
+            //Normals = new Texture[Model.Meshes.Count];
+            //Normals[0] = Content.Load<Texture2D>("Models/rock/rock_normals");
+
             Materials = new Material[Model.Meshes.Count];
-            Materials[0] = new DefaultMaterial();
+            Materials[0] = new Chrome();
 
             Vector3 min = new Vector3(-11.78202851f, 0.034491f, -0.53142201f);
             Vector3 max = new Vector3(-8.60620149f, 1.799334f, 2.64440501f);
@@ -48,6 +53,16 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
+            base.Draw(view, projection, effect, Model, Textures, Materials);
+        }
+        public override void DrawDepthPass(Effect effect, TargetCamera lightCamera)
+        {
+            base.DrawDepthPass(effect, lightCamera, Model);
+        }
+
+        public override void DrawShadowed(Matrix view, Matrix projection, Effect effect)
+        {
+            //base.DrawShadowed(view, projection, effect, Model, Textures, Normals, Materials);
             base.Draw(view, projection, effect, Model, Textures, Materials);
         }
 

@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
 using TGC.MonoGame.TP.Scenes.Entities;
@@ -45,15 +46,34 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
             ModelBoundingBox = new BoundingBoxHelper(new Vector3(-0.5f, -0.5f, -0.5f), new Vector3(0.5f, 0.5f, 0.5f));
         }
 
+        public override void Update(float elapsedTime)
+        {
+            // ¿¿??
+        }
+
         protected override BoundingBox CreateBoundingBox(Model model, Vector3 position, Vector3 scale)
         {
             return ModelBoundingBox.GetBoundingBox(position, scale);
         }
 
+        public override void DrawDepthPass(Effect effect, TargetCamera lightCamera)
+        {
+            base.DrawDepthPass(effect, lightCamera, Model);
+        }
+
+        public override void DrawShadowed(Matrix view, Matrix projection, Effect effect)
+        {
+            base.DrawShadowed(view, projection, effect, Model, Textures, Normals, Materials);
+        }
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            Draw(view, projection, effect, Model, Textures, Materials); 
+            base.Draw(view, projection, effect, Model, Textures, Materials);
+        }
+
+        public override void DrawShadowMap(Matrix view, Matrix projection, Effect effect)
+        {
+            base.DrawShadowMap(view, projection, effect, Model);
         }
     }
 }

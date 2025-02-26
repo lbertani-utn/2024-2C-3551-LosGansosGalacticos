@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Cameras;
+using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Scenes.Entities;
 
 namespace TGC.MonoGame.TP.Scenes
@@ -14,6 +15,7 @@ namespace TGC.MonoGame.TP.Scenes
         protected ContentFolder contentFolder;
         protected Gizmos.Gizmos gizmos;
 
+        // Camera
         protected Camera Camera { get => camera; }
         protected Camera camera;
         protected TargetCamera MainCamera;
@@ -21,9 +23,15 @@ namespace TGC.MonoGame.TP.Scenes
         protected TargetCamera LightCamera;
         protected BoundingFrustum Frustum;
 
+        // Light
         protected Vector3 LightPosition;
         protected Vector3 AmbientColor;
 
+        // Shadow
+        protected RenderTarget2D ShadowMapRenderTarget;
+        protected FullScreenQuad ScreenQuad;
+
+        // World objects
         protected List<WorldEntity> StaticObjects;
         protected List<WorldEntity> DynamicObjects;
 

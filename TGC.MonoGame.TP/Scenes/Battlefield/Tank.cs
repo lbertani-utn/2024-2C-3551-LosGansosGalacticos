@@ -11,6 +11,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
     {
         public static Effect DefaultEffect;
         private static Texture[] Textures;
+        //private static Texture[] Normals;
         private static Material[] Materials;
         OrientedBoundingBox[] BoundingVolumes;
         Vector3[] BoundingVolumeTraslation;
@@ -155,6 +156,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             tankModel = model;
             LoadBoundingVolumes();
             LoadTextures(Content);
+            //LoadNormalMaps(Content);
             LoadMaterials();
 
             // Look up shortcut references to the bones we are going to animate.
@@ -220,6 +222,25 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             Textures[10] = turret;
             Textures[11] = turret;
         }
+
+        //public void LoadNormalMaps(ContentManager Content)
+        //{
+        //    Texture engine = Content.Load<Texture2D>("Models/tank/engine_diff_tex_normal");
+        //    Texture turret = Content.Load<Texture2D>("Models/tank/turret_alt_diff_tex_normal");
+        //    Normals = new Texture[tankModel.Meshes.Count];
+        //    Normals[0] = turret;
+        //    Normals[1] = engine;
+        //    Normals[2] = engine;
+        //    Normals[3] = engine;
+        //    Normals[4] = engine;
+        //    Normals[5] = engine;
+        //    Normals[6] = engine;
+        //    Normals[7] = engine;
+        //    Normals[8] = engine;
+        //    Normals[9] = turret;
+        //    Normals[10] = turret;
+        //    Normals[11] = turret;
+        //}
 
         public void Update(float elapsedTime)
         {
@@ -291,7 +312,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
                 DefaultEffect.Parameters["World"].SetValue(relativeTransform);
                 DefaultEffect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
                 DefaultEffect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
-                DefaultEffect.Parameters["baseTexture"].SetValue(Textures[i]);
+                DefaultEffect.Parameters["ModelTexture"].SetValue(Textures[i]);
                 DefaultEffect.Parameters["ambientColor"].SetValue(Materials[i].AmbientColor);
                 DefaultEffect.Parameters["diffuseColor"].SetValue(Materials[i].DiffuseColor);
                 DefaultEffect.Parameters["specularColor"].SetValue(Materials[i].SpecularColor);

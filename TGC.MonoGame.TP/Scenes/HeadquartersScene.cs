@@ -25,7 +25,8 @@ namespace TGC.MonoGame.TP.Scenes
 
             // cámara principal - apuntando a la messa
             Vector3 targetPosition = new Vector3(-1f, 0.8f, -1f);
-            MainCamera = new TargetCamera(graphics.GraphicsDevice.Viewport.AspectRatio, targetPosition + new Vector3(-0.2f, 0.1f, -0.2f), targetPosition);
+            Vector3 cameraDistance = new Vector3(-0.5f, 0.15f, -0.25f);
+            MainCamera = new TargetCamera(graphics.GraphicsDevice.Viewport.AspectRatio, targetPosition + cameraDistance, targetPosition);
             MainCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphics.GraphicsDevice.Viewport.AspectRatio, 0.01f, 25f);
             camera = MainCamera;
 
@@ -42,6 +43,7 @@ namespace TGC.MonoGame.TP.Scenes
             LightCamera = new TargetCamera(1f, LightPosition, Vector3.Zero);
             LightCamera.BuildProjection(1f, 0.01f, 25f, MathHelper.PiOver2);
             LightCamera.BuildView();
+
         }
 
         #region Load
@@ -51,22 +53,20 @@ namespace TGC.MonoGame.TP.Scenes
             AmbientColor = new Vector3(1f, 0.482352941f, 0.098039216f);
 
             // object effect
-            Vector3 DiffuseColor = Vector3.One;
-            Vector3 SpecularColor = Vector3.One;
-            ObjectEffect = content.Load<Effect>(ContentFolder.Effects + "BlinnPhong");
-            //ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
+            // ObjectEffect
+            AmbientColor = Vector3.One;
+            ObjectEffect = content.Load<Effect>(ContentFolder.Effects + "ObjectShader");
+            ObjectEffect.Parameters["LightViewProjection"].SetValue(LightCamera.View * LightCamera.Projection);
+            ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
             ObjectEffect.Parameters["ambientColor"].SetValue(AmbientColor);
-            ObjectEffect.Parameters["diffuseColor"].SetValue(DiffuseColor);
-            ObjectEffect.Parameters["specularColor"].SetValue(SpecularColor);
-            // TODO coeficientes que dependen del material
+            ObjectEffect.Parameters["diffuseColor"].SetValue(Vector3.One);
+            ObjectEffect.Parameters["specularColor"].SetValue(Vector3.One);
             ObjectEffect.Parameters["KAmbient"].SetValue(0.1f);
             ObjectEffect.Parameters["KDiffuse"].SetValue(0.6f);
-            ObjectEffect.Parameters["KSpecular"].SetValue(0.2f);
+            ObjectEffect.Parameters["KSpecular"].SetValue(0.1f);
             ObjectEffect.Parameters["shininess"].SetValue(16.0f);
-            //
-
             ObjectEffect.Parameters["eyePosition"].SetValue(MainCamera.Position);
-
+            ObjectEffect.Parameters["Tiling"].SetValue(Vector2.One);
 
             Floor.LoadContent(content, ObjectEffect);
             Wall.LoadContent(content, ObjectEffect);
