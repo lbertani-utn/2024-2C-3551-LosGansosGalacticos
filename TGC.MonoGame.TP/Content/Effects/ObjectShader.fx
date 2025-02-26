@@ -178,7 +178,7 @@ float4 DrawNormalMapPS(ShadowedVertexShaderOutput input) : COLOR
 	// in light space
     float notInShadow = step(lightSpacePosition.z, shadowMapDepth);
         
-    float4 finalColor = baseColor * 0.5 + 0.5 * notInShadow;
+    float4 finalColor = baseColor * (0.5 + 0.5 * notInShadow);
     return finalColor;
 
 }
@@ -216,7 +216,7 @@ float4 DrawObjectPS(ShadowedVertexShaderOutput input) : COLOR
 	// in light space
     float notInShadow = step(lightSpacePosition.z, shadowMapDepth);
         
-    float4 finalColor = baseColor * 0.5 + 0.5 * notInShadow;
+    float4 finalColor = baseColor * (0.5 + 0.5 * notInShadow);
     return finalColor;
 
 }
