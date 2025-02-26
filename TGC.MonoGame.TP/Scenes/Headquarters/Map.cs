@@ -9,11 +9,10 @@ using TGC.MonoGame.TP.Scenes.Entities;
 
 namespace TGC.MonoGame.TP.Scenes.Headquarters
 {
-    internal class Table : WorldEntity
+    internal class Map : WorldEntity
     {
         private static Model Model;
         private static Texture[] Textures;
-        private static Texture[] Normals;
         private static Material[] Materials;
         private static BoundingBoxHelper ModelBoundingBox;
 
@@ -23,7 +22,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
         private float _time;
         private Ray _movementRay;
 
-        public Table(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
+        public Map(Vector3 position, Vector3 scale, float yaw) : base(position, scale, yaw, Model)
         {
             Active = false;
             _world = Matrix.CreateScale(_scale * 0.5f) * Matrix.CreateTranslation(_position);
@@ -35,10 +34,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
             Model = LoadContent(Content, "geometries/cube", Effect);
 
             Textures = new Texture[Model.Meshes.Count];
-            Textures[0] = Content.Load<Texture2D>("Textures/Wood/Wood_027_basecolor");
-
-            Normals = new Texture[Model.Meshes.Count];
-            Normals[0] = Content.Load<Texture2D>("Textures/Wood/Wood_027_normal");
+            Textures[0] = Content.Load<Texture2D>("Textures/map");
 
             Materials = new Material[Model.Meshes.Count];
             Materials[0] = new DefaultMaterial(); // Bark();
@@ -63,7 +59,7 @@ namespace TGC.MonoGame.TP.Scenes.Headquarters
 
         public override void DrawShadowed(Matrix view, Matrix projection, Effect effect)
         {
-            base.DrawWithNormalMap(view, projection, effect, Model, Textures, Normals, Materials, 2f);
+            base.Draw(view, projection, effect, Model, Textures, Materials, 1f);
         }
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)

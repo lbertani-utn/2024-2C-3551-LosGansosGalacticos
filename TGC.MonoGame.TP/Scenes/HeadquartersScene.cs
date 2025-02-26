@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
+using TGC.MonoGame.TP.Scenes.Battlefield;
 using TGC.MonoGame.TP.Scenes.Entities;
 using TGC.MonoGame.TP.Scenes.Headquarters;
 
@@ -13,6 +15,8 @@ namespace TGC.MonoGame.TP.Scenes
     class HeadquartersScene : Scene
     {
         private Effect ObjectEffect;
+        Vector3 mainCameraPosition;
+
 
         public HeadquartersScene(GraphicsDeviceManager graphics, ContentManager content) : base(graphics, content)
         {
@@ -25,9 +29,9 @@ namespace TGC.MonoGame.TP.Scenes
 
             // cámara principal - apuntando a la messa
             Vector3 targetPosition = new Vector3(-1f, 0.8f, -1f);
-            Vector3 cameraDistance = new Vector3(-0.5f, 0.15f, -0.25f);
-            MainCamera = new TargetCamera(graphics.GraphicsDevice.Viewport.AspectRatio, targetPosition + cameraDistance, targetPosition);
-            MainCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphics.GraphicsDevice.Viewport.AspectRatio, 0.01f, 25f);
+            mainCameraPosition = new Vector3(-2.57f, 1.24f, -1.88f);
+            MainCamera = new TargetCamera(graphics.GraphicsDevice.Viewport.AspectRatio, mainCameraPosition, targetPosition);
+            MainCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphics.GraphicsDevice.Viewport.AspectRatio, 0.001f, 25f);
             camera = MainCamera;
 
             // bounding frustum de la cámara que sigue al tanque
@@ -72,6 +76,7 @@ namespace TGC.MonoGame.TP.Scenes
             Wall.LoadContent(content, ObjectEffect);
             Box.LoadContent(content, ObjectEffect);
             Table.LoadContent(content, ObjectEffect);
+            Map.LoadContent(content, ObjectEffect);
 
             LoadGizmos();
             LoadSceneObjects();
@@ -80,15 +85,17 @@ namespace TGC.MonoGame.TP.Scenes
         protected override void LoadSceneObjects()
         {
             // Vector3 position, Vector3 scale, float yaw
-            StaticObjects.Add(new Wall(new Vector3(4.85f, 1.5f, 0f), new Vector3(0.3f, 3f, 10f), 0f));
-            StaticObjects.Add(new Wall(new Vector3(-0.15f, 1.5f, 4.85f), new Vector3(9.7f, 3f, 0.3f), 0f));
+            StaticObjects.Add(new Wall(new Vector3(4.85f, 1.5f, 0f), new Vector3(0.3f, 4f, 10f), 0f));
+            StaticObjects.Add(new Wall(new Vector3(-0.15f, 1.5f, 4.85f), new Vector3(9.7f, 4f, 0.3f), 0f));
             StaticObjects.Add(new Floor(new Vector3(0f, -0.01f, 0f), new Vector3(10f, 0.02f, 10f), 0f));
-            StaticObjects.Add(new Table(new Vector3(-1f, 0.4f, -1f), new Vector3(2f, 0.8f, 2f), 0f));
-            StaticObjects.Add(new Box(new Vector3(4.20f, 0.5f, 4.20f), new Vector3(1f, 1f, 1f), 0f));
+            StaticObjects.Add(new Box(new Vector3(4f, 0.7f, 4f), new Vector3(1.4f, 1.4f, 1.4f), 0f));
+            StaticObjects.Add(new Map(new Vector3(-1f, 0.801f, -1f), new Vector3(1.8f, 0.002f, 1.8f), 0f));
+            StaticObjects.Add(new Table(new Vector3(-1f, 0.75f, -1f), new Vector3(2f, 0.1f, 2f), 0f));
+            StaticObjects.Add(new Table(new Vector3(-1.95f, 0.35f, -0.05f), new Vector3(0.1f, 0.7f, 0.1f), 0f));
+            StaticObjects.Add(new Table(new Vector3(-1.95f, 0.35f, -1.95f), new Vector3(0.1f, 0.7f, 0.1f), 0f));
+            StaticObjects.Add(new Table(new Vector3(-0.05f, 0.35f, -1.95f), new Vector3(0.1f, 0.7f, 0.1f), 0f));
+            StaticObjects.Add(new Table(new Vector3(-0.05f, 0.35f, -0.05f), new Vector3(0.1f, 0.7f, 0.1f), 0f));
 
-
-            // Mapa
-            // Tanques 1 jugador + 5 enemigos
         }
         #endregion
 
@@ -101,6 +108,34 @@ namespace TGC.MonoGame.TP.Scenes
             {
                 changeScene = true;
             }
+
+            if (input.keyboardState.IsKeyDown(Keys.Right))
+            {
+                mainCameraPosition -= Vector3.UnitX / 100;
+            }
+            else if (input.keyboardState.IsKeyDown(Keys.Left))
+            {
+                mainCameraPosition += Vector3.UnitX / 100;
+            }
+            else if (input.keyboardState.IsKeyDown(Keys.Up))
+            {
+                mainCameraPosition += Vector3.UnitZ / 100;
+            }
+            else if (input.keyboardState.IsKeyDown(Keys.Down))
+            {
+                mainCameraPosition -= Vector3.UnitZ / 100;
+            }
+            else if (input.keyboardState.IsKeyDown(Keys.NumPad0))
+            {
+                mainCameraPosition += Vector3.UnitY / 100;
+            }
+            else if (input.keyboardState.IsKeyDown(Keys.NumPad1))
+            {
+                mainCameraPosition -= Vector3.UnitY / 100;
+            }
+
+            MainCamera.Position = mainCameraPosition;
+            MainCamera.BuildView();
         }
 
         public override void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap)

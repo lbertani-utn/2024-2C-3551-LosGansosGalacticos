@@ -107,6 +107,7 @@ namespace TGC.MonoGame.TP.Scenes.Entities
                 }
 
                 var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
+                effect.CurrentTechnique = effect.Techniques["DrawObject"];
                 effect.Parameters["World"].SetValue(relativeTransform);
                 effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
                 effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
@@ -137,10 +138,11 @@ namespace TGC.MonoGame.TP.Scenes.Entities
                 }
 
                 var relativeTransform = modelMeshesBaseTransforms[model.Meshes[i].ParentBone.Index];
+                effect.CurrentTechnique = effect.Techniques["DrawNormalMap"];
                 effect.Parameters["World"].SetValue(relativeTransform);
                 effect.Parameters["WorldViewProjection"].SetValue(relativeTransform * view * projection);
                 effect.Parameters["InverseTransposeWorld"].SetValue(Matrix.Transpose(Matrix.Invert(relativeTransform)));
-                effect.Parameters["ModelTexture"].SetValue(textures[i]);
+                effect.Parameters["WrapTexture"].SetValue(textures[i]);
                 effect.Parameters["NormalTexture"].SetValue(normals[i]);
                 effect.Parameters["ambientColor"].SetValue(materials[i].AmbientColor);
                 effect.Parameters["diffuseColor"].SetValue(materials[i].DiffuseColor);
