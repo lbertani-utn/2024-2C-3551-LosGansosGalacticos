@@ -15,8 +15,8 @@ float4x4 World;
 float4x4 InverseTransposeWorld;
 float4x4 LightViewProjection;
 
-static const float modulatedEpsilon = 0.008; //0.000041200182749889791011810302734375;
-static const float maxEpsilon = 0.004; //0.000023200045689009130001068115234375;
+static const float modulatedEpsilon = 0.004;
+static const float maxEpsilon = 0.002;
 
 float3 ambientColor; // Light's Ambient Color
 float3 diffuseColor; // Light's Diffuse Color

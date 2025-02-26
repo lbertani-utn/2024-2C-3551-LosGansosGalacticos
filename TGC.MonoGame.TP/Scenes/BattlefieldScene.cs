@@ -438,6 +438,9 @@ namespace TGC.MonoGame.TP.Scenes
                     e.DrawDepthPass(ObjectEffect, LightCamera);
                 }
             }
+            
+            // objetos que se mueven
+            // integrados en la colección de objetos dinámicos
             foreach (WorldEntity e in DynamicObjects)
             {
                 if (e.Status != WorldEntityStatus.Destroyed)
@@ -445,7 +448,22 @@ namespace TGC.MonoGame.TP.Scenes
                     e.DrawDepthPass(ObjectEffect, LightCamera);
                 }
             }
-
+            // todavía no integrados en la colección de objetos dinámicos
+            tank.Draw(LightCamera.View, LightCamera.Projection);
+            foreach (Tank t in Enemies)
+            {
+                if (t.Status != WorldEntityStatus.Destroyed)
+                {
+                    t.Draw(LightCamera.View, LightCamera.Projection);
+                }
+            }
+            foreach (Bullet b in Bullets)
+            {
+                if (b.Active)
+                {
+                    b.Draw(LightCamera.View, LightCamera.Projection, ObjectEffect);
+                }
+            }
             #endregion
 
             if (drawShadowMap)
@@ -460,18 +478,14 @@ namespace TGC.MonoGame.TP.Scenes
             graphics.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.CornflowerBlue, 1f, 0);
             ObjectEffect.Parameters["shadowMap"].SetValue(ShadowMapRenderTarget);
 
-
-
             // skybox no se ve afectado por las sombras
             SkyEffect.Draw(Camera.View, Camera.Projection, Camera.Position);
 
-            // TODO agregar sombras al terreno
             ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DrawNormalMap"];
             terrain.Draw(Camera.View, Camera.Projection);
 
 
             ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DrawObject"];
-            // TODO agregar sombras al tanque
             tank.Draw(Camera.View, Camera.Projection);
 
 
@@ -490,8 +504,6 @@ namespace TGC.MonoGame.TP.Scenes
                 }
             }
 
-
-            // TODO agregar sombras a tanques enemigos
             foreach (Tank t in Enemies)
             {
                 if (t.Status != WorldEntityStatus.Destroyed && t.Intersects(Frustum))
@@ -499,7 +511,6 @@ namespace TGC.MonoGame.TP.Scenes
                     t.Draw(Camera.View, Camera.Projection);
                 }
             }
-            // TODO agregar sombras a proyectiles
             foreach (Bullet b in Bullets)
             {
                 if (b.Active)
@@ -510,7 +521,6 @@ namespace TGC.MonoGame.TP.Scenes
             #endregion
 
             DrawGizmos(drawBoundingBoxes, drawPositions);
-
         }
 
         protected override void DrawGizmos(bool drawBoundingBoxes, bool drawPositions)
