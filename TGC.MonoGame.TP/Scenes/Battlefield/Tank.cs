@@ -300,6 +300,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
                 DefaultEffect.Parameters["KDiffuse"].SetValue(Materials[i].KDiffuse);
                 DefaultEffect.Parameters["KSpecular"].SetValue(Materials[i].KSpecular);
                 DefaultEffect.Parameters["shininess"].SetValue(Materials[i].Shininess);
+                DefaultEffect.Parameters["Tiling"].SetValue(Vector2.One);
                 tankModel.Meshes[i].Draw();
             }
         }

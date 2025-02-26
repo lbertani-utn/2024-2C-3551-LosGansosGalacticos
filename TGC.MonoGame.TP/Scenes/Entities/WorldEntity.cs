@@ -93,7 +93,7 @@ namespace TGC.MonoGame.TP.Scenes.Entities
             }
         }
 
-        protected void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures, Material[] materials)
+        protected void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures, Material[] materials, float tiling)
         {
             model.Root.Transform = _world;
             var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
@@ -118,11 +118,12 @@ namespace TGC.MonoGame.TP.Scenes.Entities
                 effect.Parameters["KDiffuse"].SetValue(materials[i].KDiffuse);
                 effect.Parameters["KSpecular"].SetValue(materials[i].KSpecular);
                 effect.Parameters["shininess"].SetValue(materials[i].Shininess);
+                effect.Parameters["Tiling"].SetValue(Vector2.One * tiling);
                 model.Meshes[i].Draw();
             }
         }
         
-        protected void DrawWithNormalMap(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures, Texture[] normals, Material[] materials)
+        protected void DrawWithNormalMap(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures, Texture[] normals, Material[] materials, float tiling)
         {
             model.Root.Transform = _world;
             var modelMeshesBaseTransforms = new Matrix[model.Bones.Count];
@@ -148,6 +149,7 @@ namespace TGC.MonoGame.TP.Scenes.Entities
                 effect.Parameters["KDiffuse"].SetValue(materials[i].KDiffuse);
                 effect.Parameters["KSpecular"].SetValue(materials[i].KSpecular);
                 effect.Parameters["shininess"].SetValue(materials[i].Shininess);
+                effect.Parameters["Tiling"].SetValue(Vector2.One * tiling);
                 model.Meshes[i].Draw();
             }
         }
@@ -175,7 +177,7 @@ namespace TGC.MonoGame.TP.Scenes.Entities
         protected void Draw(Matrix view, Matrix projection, Effect effect, Model model, Texture[] textures, Texture[] normals,  Material[] materials)
         {
             //throw new NotImplementedException(); // TODO Implementar Draw con normal map
-            Draw(view, projection, effect, model, textures, materials);
+            Draw(view, projection, effect, model, textures, materials, 1f);
         }
 
         public virtual void DrawBoundingBox(Gizmos.Gizmos gizmos)

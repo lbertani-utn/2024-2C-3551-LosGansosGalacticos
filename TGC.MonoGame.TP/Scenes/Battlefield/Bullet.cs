@@ -125,7 +125,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
 
         public override void Draw(Matrix view, Matrix projection, Effect effect)
         {
-            Draw(view, projection, effect, Model, Textures, Materials); 
+            Draw(view, projection, effect, Model, Textures, Materials, 1f); 
         }
 
         public override void DrawDepthPass(Effect effect, TargetCamera lightCamera)
@@ -135,7 +135,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
 
         public override void DrawShadowed(Matrix view, Matrix projection, Effect effect)
         {
-            base.Draw(view, projection, effect, Model, Textures, Materials);
+            base.Draw(view, projection, effect, Model, Textures, Materials, 1f);
         }
 
         public override void DrawShadowMap(Matrix view, Matrix projection, Effect effect)
