@@ -62,14 +62,34 @@ namespace TGC.MonoGame.TP.Scenes
             DebugCamera.BuildView();
 
             // cámara en fuente de luz - sol
-            LightPosition = new Vector3(-1000f, 550f, 600f); // posición de la luz para que tenga sentido con el skyboxc
-            float LightCameraFarPlaneDistance = 5000f; //Vector3.Distance(LightPosition, new Vector3(512, 0, -512)); // 1350;
-            float LightCameraNearPlaneDistance = 1f; //Vector3.Distance(LightPosition, new Vector3(-512, 0, 512)); // 200;
+            LightPosition = new Vector3(-1000f, 250f, 800f); // posición de la luz para que tenga sentido con el skybox
+            float LightCameraNearPlaneDistance = 600f;
+            float LightCameraFarPlaneDistance = 2025f;
             LightCamera = new TargetCamera(1f, LightPosition, Vector3.Zero);
             LightCamera.BuildProjection(1f, LightCameraNearPlaneDistance, LightCameraFarPlaneDistance, MathHelper.PiOver2);
             LightCamera.BuildView();
 
         }
+
+        private Vector2 CalculateNearPlaneFarPlaneDistance (Vector3 lightPosition)
+        {
+            float min = float.MaxValue;
+            float max = float.MinValue;
+
+            for (int i = -512; i <= 512; i++)
+            {
+                for (int j = -512; j <= 512; j++)
+                {
+                    float dist = Vector3.Distance(lightPosition, new Vector3(i, terrain.Height(i, j), j));
+                    min = Math.Min(min, dist);
+                    max = Math.Max(max, dist);
+                }
+            }
+
+            return new Vector2(min, max);
+        }
+
+
 
         #region Load
         public override void LoadContent()
