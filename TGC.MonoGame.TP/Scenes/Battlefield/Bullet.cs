@@ -12,7 +12,6 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
     {
         private static Model Model;
         private static Texture[] Textures;
-        //private static Texture[] Normals;
         private static Material[] Materials;
         private static Vector3 BoxSize;
         private const float gravity = 9.8f;
@@ -36,9 +35,6 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
 
             Textures = new Texture[Model.Meshes.Count];
             Textures[0] = Content.Load<Texture2D>("Textures/metal");
-
-            //Normals = new Texture[Model.Meshes.Count];
-            //Normals[0] = Content.Load<Texture2D>("Textures/default_normal");
 
             Materials = new Material[Model.Meshes.Count];
             Materials[0] = new DefaultMaterial();
@@ -139,7 +135,6 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
 
         public override void DrawShadowed(Matrix view, Matrix projection, Effect effect)
         {
-            //base.DrawShadowed(view, projection, effect, Model, Textures, Normals, Materials);
             base.Draw(view, projection, effect, Model, Textures, Materials);
         }
 

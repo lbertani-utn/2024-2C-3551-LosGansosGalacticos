@@ -12,7 +12,6 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
     {
         private static Model Model;
         private static Texture[] Textures;
-        //private static Texture[] Normals;
         private static Material[] Materials;
         private static BoundingBoxHelper ModelBoundingBox;
         private static BoundingBoxHelper ModelDrawBox;
@@ -36,16 +35,6 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             Textures[3] = wood;
             Textures[4] = leaf;
             Textures[5] = leaf;
-
-            //Normals = new Texture[Model.Meshes.Count];
-            //Texture woodNormal = Content.Load<Texture2D>("Models/tree/bark_loo_normal");
-            //Texture leafNormal = Content.Load<Texture2D>("Models/tree/leaf_normal");
-            //Normals[0] = woodNormal;
-            //Normals[1] = woodNormal;
-            //Normals[2] = woodNormal;
-            //Normals[3] = woodNormal;
-            //Normals[4] = leafNormal;
-            //Normals[5] = leafNormal;
 
             Materials = new Material[Model.Meshes.Count];
             Material bark = new Bark();
@@ -99,7 +88,6 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
 
         public override void DrawShadowed(Matrix view, Matrix projection, Effect effect)
         {
-            //base.DrawShadowed(view, projection, effect, Model, Textures, Normals, Materials);
             base.Draw(view, projection, effect, Model, Textures, Materials);
         }
 
