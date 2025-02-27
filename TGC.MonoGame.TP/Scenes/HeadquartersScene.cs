@@ -6,17 +6,24 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
-using TGC.MonoGame.TP.Scenes.Battlefield;
-using TGC.MonoGame.TP.Scenes.Entities;
+using TGC.MonoGame.TP.UI;
+using TGC.MonoGame.TP.Scenes.Entities; 
 using TGC.MonoGame.TP.Scenes.Headquarters;
+using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 
 namespace TGC.MonoGame.TP.Scenes
 {
     class HeadquartersScene : Scene
     {
+        private const float TitleScale = 5F;
+        private const float MenuScale = 2F;
+
         private Effect ObjectEffect;
         Vector3 mainCameraPosition;
-
+        private MenuType menu;
+        private int selectedOption = 0;
+        
 
         public HeadquartersScene(GraphicsDeviceManager graphics, ContentManager content) : base(graphics, content)
         {
@@ -25,11 +32,12 @@ namespace TGC.MonoGame.TP.Scenes
 
         public override void Initialize()
         {
+            menu = MenuType.Main;
             StaticObjects = new List<WorldEntity>();
 
             // cámara principal - apuntando a la messa
-            Vector3 targetPosition = new Vector3(-1f, 0.8f, -1f);
-            mainCameraPosition = new Vector3(-3.0f, 1.7f, -1.6f);
+            Vector3 targetPosition = new Vector3(0f, 0.8f, -1f);
+            mainCameraPosition = new Vector3(-2.7f, 1.26f, -1.73f);
             MainCamera = new TargetCamera(graphics.GraphicsDevice.Viewport.AspectRatio, mainCameraPosition, targetPosition);
             MainCamera.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphics.GraphicsDevice.Viewport.AspectRatio, 0.001f, 25f);
             camera = MainCamera;
@@ -56,14 +64,16 @@ namespace TGC.MonoGame.TP.Scenes
             int ShadowmapSize = 2048;
             ShadowMapRenderTarget = new RenderTarget2D(graphics.GraphicsDevice, ShadowmapSize, ShadowmapSize, false, SurfaceFormat.Single, DepthFormat.Depth24, 0, RenderTargetUsage.PlatformContents);
 
+            spriteBatch = new SpriteBatch(graphics.GraphicsDevice);
+            spriteFont = content.Load<SpriteFont>("SpriteFonts/CascadiaCode/CascadiaCodePL");
 
             AmbientColor = new Vector3(1f, 0.482352941f, 0.098039216f);
 
-            // object effect
             // ObjectEffect
             AmbientColor = Vector3.One;
             ObjectEffect = content.Load<Effect>(ContentFolder.Effects + "ObjectShader");
             LoadSceneParameters();
+
 
             Floor.LoadContent(content, ObjectEffect);
             Wall.LoadContent(content, ObjectEffect);
@@ -111,7 +121,7 @@ namespace TGC.MonoGame.TP.Scenes
             changeScene = false;
             gizmos.UpdateViewProjection(Camera.View, Camera.Projection);
 
-            if (input.keyboardState.IsKeyDown(Keys.Z) && input.previousKeyboardState.IsKeyUp(Keys.Z))
+            if (input.IsKeyPressed(Keys.Z))
             {
                 changeScene = true;
             }
@@ -139,6 +149,21 @@ namespace TGC.MonoGame.TP.Scenes
             else if (input.keyboardState.IsKeyDown(Keys.L))
             {
                 mainCameraPosition -= Vector3.UnitY / 100;
+            }
+
+            if (input.IsKeyPressed(Keys.Down) || input.IsKeyPressed(Keys.S))
+            {
+                selectedOption++;
+                // TODO MenuSoundEffectInstance.Play();
+            }
+            else if (input.IsKeyPressed(Keys.Up) || input.IsKeyPressed(Keys.W))
+            {
+                selectedOption--;
+                // TODO MenuSoundEffectInstance.Play();
+            }
+            else if (input.IsKeyPressed(Keys.Enter))
+            {
+
             }
 
             MainCamera.Position = mainCameraPosition;
@@ -190,7 +215,56 @@ namespace TGC.MonoGame.TP.Scenes
             #endregion
 
             DrawGizmos(drawBoundingBoxes, drawPositions);
+            DrawUI();
         }
+
+        protected override void DrawUI()
+        {
+            spriteBatch.Begin();
+            DrawTitle(spriteBatch, spriteFont);
+            if (menu ==  MenuType.Main )
+            {
+                DrawMainMenu(spriteBatch, spriteFont, selectedOption);
+            }
+            if (menu == MenuType.Pause)
+            {
+                DrawPauseMenu(spriteBatch, spriteFont, selectedOption);
+            }
+            if (menu == MenuType.Options)
+            {
+                DrawOptionsMenu(spriteBatch, spriteFont, selectedOption);
+
+            }
+            spriteBatch.End();
+        }
+
+        private void DrawTitle(SpriteBatch spriteBatch, SpriteFont spriteFont)
+        {
+            TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.Title, TextHelper.TitlePosition(graphics.GraphicsDevice), Color.White, TitleScale);
+        }
+        private void DrawMainMenu(SpriteBatch spriteBatch, SpriteFont spriteFont, int selected)
+        {
+            string[] options = { Message.Play, Message.Options, Message.Exit };
+            for (int opt = 0; opt < options.Length; opt++)
+            {
+                Color color = opt != selected ? Color.White : Color.Yellow;
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, options[opt], TextHelper.MenuPosition(graphics.GraphicsDevice, spriteFont, options[opt], MenuScale, opt), color, MenuScale);
+            }
+        }
+        private void DrawPauseMenu(SpriteBatch spriteBatch, SpriteFont spriteFont, int selected)
+        {
+            string[] options = { Message.Resume, Message.Restart, Message.Options, Message.Exit };
+            for (int opt = 0; opt < options.Length; opt++)
+            {
+                Color color = opt != selected ? Color.White : Color.Yellow;
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, options[opt], TextHelper.MenuPosition(graphics.GraphicsDevice, spriteFont, options[opt], MenuScale,  opt), color, MenuScale);
+            }
+        }
+        private void DrawOptionsMenu(SpriteBatch spriteBatch, SpriteFont spriteFont, int selected)
+        {
+            TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.Title, TextHelper.TitlePosition(graphics.GraphicsDevice), Color.Yellow, 7f);
+        }
+
 
         protected override void DrawGizmos(bool drawBoundingBoxes, bool drawPositions)
         {

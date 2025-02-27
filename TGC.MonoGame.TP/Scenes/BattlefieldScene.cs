@@ -272,7 +272,7 @@ namespace TGC.MonoGame.TP.Scenes
         {
             changeScene = false;
 
-            if (input.keyboardState.IsKeyDown(Keys.Z) && input.previousKeyboardState.IsKeyUp(Keys.Z))
+            if (input.IsKeyPressed(Keys.Z))
             {
                 changeScene = true;
             }
@@ -288,7 +288,7 @@ namespace TGC.MonoGame.TP.Scenes
             }
 
             // disparo
-            if ((input.keyboardState.IsKeyDown(Keys.Space) && input.previousKeyboardState.IsKeyUp(Keys.Space)) || (input.mouseState.LeftButton == ButtonState.Pressed && input.previousMouseState.LeftButton == ButtonState.Released))
+            if (input.IsKeyPressed(Keys.Space) || input.IsLeftButtonPressed())
             {
                 tank.Shoot(Bullets, Bullets.Length);
             }
@@ -535,6 +535,11 @@ namespace TGC.MonoGame.TP.Scenes
             #endregion
 
             DrawGizmos(drawBoundingBoxes, drawPositions);
+            DrawUI();
+        }
+
+        protected override void DrawUI()
+        {
         }
 
         protected override void DrawGizmos(bool drawBoundingBoxes, bool drawPositions)

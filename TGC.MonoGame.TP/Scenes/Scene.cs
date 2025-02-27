@@ -35,6 +35,9 @@ namespace TGC.MonoGame.TP.Scenes
         protected List<WorldEntity> StaticObjects;
         protected List<WorldEntity> DynamicObjects;
 
+        // UI
+        protected SpriteBatch spriteBatch;
+        protected SpriteFont spriteFont;
 
         public bool ChangeScene { get => changeScene; }
         protected bool changeScene = false;
@@ -65,6 +68,7 @@ namespace TGC.MonoGame.TP.Scenes
         protected abstract void LoadSceneObjects();
         public abstract void Update(float elapsedTime, UserInput input);
         public abstract void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap);
+        protected abstract void DrawUI();
 
         public void SelectCamera(CameraType SelectedCamera)
         {

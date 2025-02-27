@@ -45,21 +45,21 @@ namespace TGC.MonoGame.TP.Scenes
             }
 
             // gizmos y otras opciones para debug
-            if (keyboardState.IsKeyDown(Keys.M) && previousKeyboardState.IsKeyUp(Keys.M))
+            if (IsKeyPressed(Keys.M))
             {
                 DrawShadowMap = !DrawShadowMap;
             }
-            if (keyboardState.IsKeyDown(Keys.B) && previousKeyboardState.IsKeyUp(Keys.B))
+            if (IsKeyPressed(Keys.B))
             {
                 DrawBoundingBoxes = !DrawBoundingBoxes;
                 DrawGizmos = DrawBoundingBoxes || DrawPositions;
             }
-            if (keyboardState.IsKeyDown(Keys.P) && previousKeyboardState.IsKeyUp(Keys.P))
+            if (IsKeyPressed(Keys.P))
             {
                 DrawPositions = !DrawPositions;
                 DrawGizmos = DrawBoundingBoxes || DrawPositions;
             }
-            if (keyboardState.IsKeyDown(Keys.C) && previousKeyboardState.IsKeyUp(Keys.C))
+            if (IsKeyPressed(Keys.C))
             {
                 SelectedCamera = CameraRotation[(int) SelectedCamera];
             }
@@ -67,7 +67,22 @@ namespace TGC.MonoGame.TP.Scenes
 
         }
 
-
+        public bool IsKeyPressed(Keys key)
+        {
+            return keyboardState.IsKeyDown(key) && previousKeyboardState.IsKeyUp(key);
+        }
+        public bool IsKeyReleased(Keys key)
+        {
+            return keyboardState.IsKeyUp(key) && previousKeyboardState.IsKeyDown(key);
+        }
+        public bool IsLeftButtonPressed()
+        {
+            return mouseState.LeftButton == ButtonState.Pressed && previousMouseState.LeftButton == ButtonState.Released;
+        }
+        public bool IsRightButtonReleased()
+        {
+            return mouseState.RightButton == ButtonState.Pressed && previousMouseState.RightButton == ButtonState.Released;
+        }
 
     }
 }
