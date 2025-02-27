@@ -103,8 +103,6 @@ namespace TGC.MonoGame.TP.Scenes
             StaticObjects.Add(new Table(new Vector3(-1.95f, 0.35f, -1.95f), new Vector3(0.1f, 0.7f, 0.1f), 0f));
             StaticObjects.Add(new Table(new Vector3(-0.05f, 0.35f, -1.95f), new Vector3(0.1f, 0.7f, 0.1f), 0f));
             StaticObjects.Add(new Table(new Vector3(-0.05f, 0.35f, -0.05f), new Vector3(0.1f, 0.7f, 0.1f), 0f));
-            // aux fuente de luz
-            StaticObjects.Add(new Wall(new Vector3(-5f, 2.8f, -5f), new Vector3(0.1f, 0.1f, 0.1f), 0f));
         }
         #endregion
 
