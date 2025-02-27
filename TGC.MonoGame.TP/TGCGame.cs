@@ -67,8 +67,7 @@ namespace TGC.MonoGame.TP
             HQScene.SetNextScene(BattleScene);
             BattleScene.Initialize();
             BattleScene.SetNextScene(HQScene);
-
-            currentScene = BattleScene;
+            currentScene = HQScene;
 
             input = new UserInput();
             input.Initialize(ScreenCenter);
@@ -86,9 +85,9 @@ namespace TGC.MonoGame.TP
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
-
             HQScene.LoadContent();
             BattleScene.LoadContent();
+            currentScene.LoadSceneParameters();
 
             input.Update();
 
