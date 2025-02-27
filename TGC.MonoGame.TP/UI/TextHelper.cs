@@ -11,17 +11,27 @@ namespace TGC.MonoGame.TP.UI
 {
     public class TextHelper
     {
+        private const string Placeholder = "Lorem ipsum";
+
         public static Vector2 TitlePosition(GraphicsDevice graphicsDevice)
         {
             return new Vector2(graphicsDevice.Viewport.Width / 20f, graphicsDevice.Viewport.Height / 10f);
         }
-        public static Vector2 MenuPosition(GraphicsDevice graphicsDevice, SpriteFont font, String text, float scale, int optionNumber)
+        public static Vector2 MenuPosition(GraphicsDevice graphicsDevice, SpriteFont font, float scale, int optionNumber)
         {
             float x = graphicsDevice.Viewport.Width / 8f;
             float y = graphicsDevice.Viewport.Height / 3f;
 
-            Vector2 size = font.MeasureString(text);
+            Vector2 size = font.MeasureString(Placeholder);
             return new Vector2(x, y + optionNumber * size.Y * scale * 1.25f);
+        }
+        public static Vector2 SettingPosition(GraphicsDevice graphicsDevice, SpriteFont font, float scale, int optionNumber, int settingNumber, float offset)
+        {
+            float x = graphicsDevice.Viewport.Width / 8f;
+            float y = graphicsDevice.Viewport.Height / 3f;
+
+            Vector2 size = font.MeasureString(Placeholder);
+            return new Vector2(x * (4 + offset + settingNumber), y + optionNumber * size.Y * scale * 1.25f);
         }
 
         public static Vector2 CenterText(GraphicsDevice graphicsDevice, SpriteFont font, String text, float scale)

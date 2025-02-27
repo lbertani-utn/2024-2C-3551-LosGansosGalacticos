@@ -105,14 +105,15 @@ namespace TGC.MonoGame.TP
             float elapsedTime = Convert.ToSingle(gameTime.ElapsedGameTime.TotalSeconds);
 
             input.Update();
-            if (input.Escape)
+            currentScene.Update(elapsedTime, input);
+
+            // Salir del juego.
+            if (currentScene.ExitGame)
             {
-                // Salgo del juego.
                 Exit();
             }
 
-            currentScene.Update(elapsedTime, input);
-
+            // cambiar de escena
             if (currentScene.ChangeScene)
             {
                 currentScene = currentScene.NextScene;

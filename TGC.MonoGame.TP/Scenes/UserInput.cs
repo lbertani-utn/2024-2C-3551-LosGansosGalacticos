@@ -38,11 +38,8 @@ namespace TGC.MonoGame.TP.Scenes
             mouseDeltaX = previousMouseState.Position.X - mouseState.Position.X;
             mouseDeltaY = previousMouseState.Position.Y - mouseState.Position.Y;
 
-            if (keyboardState.IsKeyDown(Keys.Escape))
-            {
-                // Salgo del juego.
-                Escape = true;
-            }
+            // guardo se si presionó Escape (según la escena saldrá o pausará el juego)
+            Escape = IsKeyPressed(Keys.Escape);
 
             // gizmos y otras opciones para debug
             if (IsKeyPressed(Keys.M))

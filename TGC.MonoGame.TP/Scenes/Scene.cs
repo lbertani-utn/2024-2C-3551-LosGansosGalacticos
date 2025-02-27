@@ -41,6 +41,9 @@ namespace TGC.MonoGame.TP.Scenes
         protected SpriteBatch spriteBatch;
         protected SpriteFont spriteFont;
 
+        public bool ExitGame { get => exitGame; }
+        protected bool exitGame = false;
+
         public bool ChangeScene { get => changeScene; }
         protected bool changeScene = false;
 

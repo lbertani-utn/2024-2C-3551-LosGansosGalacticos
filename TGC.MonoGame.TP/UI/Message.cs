@@ -24,14 +24,16 @@ namespace TGC.MonoGame.TP.UI
         public const String GodMode = "Invencible";
         public const String Volume = "Volumen";
         public const String Sound = "Efectos de sonido";
-        public const String Music = "Música";
-        public const String Volver = "Return";
+        public const String Music = "Musica"; // Música con tilde da error: Text contains characters that cannot be resolved by this SpriteFont.
+        public const String Return = "Volver";
 
         public const String Left = "<";
         public const String Right = ">";
         public const String Yes = "Si";
         public const String No = "No";
-        public const String Bar = "|";
+
+        public const char Bar = '|';
+        public const String FullBar = "||||||||||||||||||||";
 
     }
 }

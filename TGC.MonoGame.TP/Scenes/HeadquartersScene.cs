@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,8 +7,6 @@ using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.UI;
 using TGC.MonoGame.TP.Scenes.Entities; 
 using TGC.MonoGame.TP.Scenes.Headquarters;
-using System.Reflection.Metadata;
-using System.Runtime.CompilerServices;
 
 namespace TGC.MonoGame.TP.Scenes
 {
@@ -24,12 +20,17 @@ namespace TGC.MonoGame.TP.Scenes
         private float idle = 0;
 
         // UI
-        private const float TitleScale = 5F;
-        private const float MenuScale = 2F;
+        private const float titleScale = 5F;
+        private const float menuScale = 2F;
         private MenuType menuType;
+        private MenuType returnTo;
         private string[][] menuOptions;
         private int selectedOption = 0;
-
+        private Color titleColor = Color.White;
+        private Color selectedRowSelectedOption = Color.Yellow;
+        private Color selectedRowNotSelectedOption = Color.White;
+        private Color notSelectedRowSelectedOption = Color.Olive;
+        private Color notSelectedRowNotSelectedOption = Color.Gray;
 
         public HeadquartersScene(GraphicsDeviceManager graphics, ContentManager content, GameOptions options) : base(graphics, content, options)
         {
@@ -38,10 +39,11 @@ namespace TGC.MonoGame.TP.Scenes
         public override void Initialize()
         {
             menuType = MenuType.Main;
+            returnTo = MenuType.Main;
             menuOptions = new string[3][];
             menuOptions[(int) MenuType.Main] = new string[] { Message.Play, Message.Options, Message.Exit };
             menuOptions[(int) MenuType.Pause] = new string[] { Message.Resume, Message.Restart, Message.Options, Message.Exit };
-            menuOptions[(int) MenuType.Options] = new string[] { Message.Volume, Message.Sound, Message.Music, Message.GodMode, Message.Volver };
+            menuOptions[(int) MenuType.Options] = new string[] { Message.Volume, Message.Music, Message.Sound, Message.GodMode, Message.Return };
 
             StaticObjects = new List<WorldEntity>();
 
@@ -129,14 +131,14 @@ namespace TGC.MonoGame.TP.Scenes
 
         public override void Update(float elapsedTime, UserInput input)
         {
-            changeScene = false;
-            gizmos.UpdateViewProjection(Camera.View, Camera.Projection);
+            // Escape sale del juego
+            exitGame = input.Escape;
 
+            changeScene = false;
             if (input.IsKeyPressed(Keys.Z))
             {
                 changeScene = true;
             }
-
 
             // camera position
             if (input.keyboardState.IsKeyDown(Keys.J))
@@ -196,13 +198,84 @@ namespace TGC.MonoGame.TP.Scenes
                     // TODO MenuSoundEffectInstance.Play();
                 }
             }
+            else if (input.IsKeyPressed(Keys.Left) || input.IsKeyPressed(Keys.A))
+            {
+                if(menuType== MenuType.Options)
+                {
+                    if (selectedOption == 0)
+                    {
+                        options.Volume -= 0.05f; 
+                    }
+                    else if (selectedOption == 1)
+                    {
+                        options.Music = true;
+                    }
+                    else if (selectedOption == 2)
+                    {
+                        options.SoundEffects = true;
+                    }
+                    else if (selectedOption == 3)
+                    {
+                        options.GodMode = true;
+                    }
+                }
+            }
+            else if (input.IsKeyPressed(Keys.Right) || input.IsKeyPressed(Keys.D))
+            {
+                if (menuType == MenuType.Options)
+                {
+                    if (selectedOption == 0)
+                    {
+                        options.Volume += 0.05f;
+                    }
+                    else if (selectedOption == 1)
+                    {
+                        options.Music = false;
+                    }
+                    else if (selectedOption == 2)
+                    {
+                        options.SoundEffects = false;
+                    }
+                    else if (selectedOption == 3)
+                    {
+                        options.GodMode = false;
+                    }
+                }
+            }
             else if (input.IsKeyPressed(Keys.Enter))
             {
+                string option = menuOptions[(int)menuType][selectedOption];
+
+                if (option == Message.Play || option == Message.Restart)
+                {
+
+                }
+                if (option == Message.Resume)
+                {
+
+                }
+                if (option == Message.Options)
+                {
+                    returnTo = menuType;
+                    menuType = MenuType.Options;
+                    selectedOption = 0;
+                }
+                if (option == Message.Return)
+                {
+                    menuType = returnTo;
+                    selectedOption = 0;
+                }
+                if (option == Message.Exit)
+                {
+                    exitGame = true;
+                }
 
             }
 
             MainCamera.Position = mainCameraPosition;
             MainCamera.BuildView();
+            gizmos.UpdateViewProjection(Camera.View, Camera.Projection);
+
         }
 
         public override void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap)
@@ -258,19 +331,53 @@ namespace TGC.MonoGame.TP.Scenes
             spriteBatch.Begin();
             DrawTitle(spriteBatch, spriteFont);
             DrawMenu(spriteBatch, spriteFont, menuOptions[(int)menuType], selectedOption);
+            
+            if (menuType == MenuType.Options)
+            {
+                // volumen
+                int volumeLevel = (int) (options.Volume * 20f); 
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.FullBar, TextHelper.SettingPosition(graphics.GraphicsDevice, spriteFont, menuScale, 0, 0, -0.5f), GetTextColor(0, selectedOption, false, true), menuScale);
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, new string(Message.Bar, volumeLevel) , TextHelper.SettingPosition(graphics.GraphicsDevice, spriteFont, menuScale, 0, 0, -0.5f), GetTextColor(0, selectedOption, true, true), menuScale);
+
+                // música
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.Yes, TextHelper.SettingPosition(graphics.GraphicsDevice, spriteFont, menuScale, 1, 0, 0f), GetTextColor(1, selectedOption, options.Music, true), menuScale);
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.No, TextHelper.SettingPosition(graphics.GraphicsDevice, spriteFont, menuScale, 1, 1, 0f), GetTextColor(1, selectedOption, options.Music, false), menuScale);
+
+                // efectos de sonido
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.Yes, TextHelper.SettingPosition(graphics.GraphicsDevice, spriteFont, menuScale, 2, 0, 0f), GetTextColor(2, selectedOption, options.SoundEffects, true), menuScale);
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.No, TextHelper.SettingPosition(graphics.GraphicsDevice, spriteFont, menuScale, 2, 1, 0f), GetTextColor(2, selectedOption, options.SoundEffects, false), menuScale);
+
+                // invencible
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.Yes, TextHelper.SettingPosition(graphics.GraphicsDevice, spriteFont, menuScale, 3, 0, 0f), GetTextColor(3, selectedOption, options.GodMode, true), menuScale);
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.No, TextHelper.SettingPosition(graphics.GraphicsDevice, spriteFont, menuScale, 3, 1, 0f), GetTextColor(3, selectedOption, options.GodMode, false), menuScale);
+            }
             spriteBatch.End();
+        }
+
+        private Color GetTextColor(int rowNumber, int rowSelected, bool value, bool expectedValue)
+        {
+            Color c = notSelectedRowNotSelectedOption;
+            if (rowNumber != rowSelected)
+            {
+                c = value == expectedValue ? notSelectedRowSelectedOption : notSelectedRowNotSelectedOption;
+            }
+            else
+            {
+                c = value == expectedValue ? selectedRowSelectedOption : selectedRowNotSelectedOption; 
+            }
+           return c;
         }
 
         private void DrawTitle(SpriteBatch spriteBatch, SpriteFont spriteFont)
         {
-            TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.Title, TextHelper.TitlePosition(graphics.GraphicsDevice), Color.White, TitleScale);
+            TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.Title, TextHelper.TitlePosition(graphics.GraphicsDevice), titleColor, titleScale);
         }
         private void DrawMenu(SpriteBatch spriteBatch, SpriteFont spriteFont, string[] menu, int selected)
         {
             for (int opt = 0; opt < menu.Length; opt++)
             {
-                Color color = opt != selected ? Color.White : Color.Yellow;
-                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, menu[opt], TextHelper.MenuPosition(graphics.GraphicsDevice, spriteFont, menu[opt], MenuScale, opt), color, MenuScale);
+                Color color = opt != selected ? selectedRowNotSelectedOption : selectedRowSelectedOption;
+                TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, menu[opt], TextHelper.MenuPosition(graphics.GraphicsDevice, spriteFont, menuScale, opt), color, menuScale);
             }
         }
 
