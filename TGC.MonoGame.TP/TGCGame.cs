@@ -131,7 +131,7 @@ namespace TGC.MonoGame.TP
             // Aca deberiamos poner toda la logia de renderizado del juego.
             GraphicsDevice.Clear(Color.Black);
 
-            currentScene.Draw(input.SelectedCamera, input.DrawBoundingBoxes, input.DrawPositions, input.DrawShadowMap);
+            currentScene.Draw(input.SelectedCamera, input.DebugBoundingBoxes, input.DebugPositions, input.DebugShadowMap);
         }
 
         /// <summary>

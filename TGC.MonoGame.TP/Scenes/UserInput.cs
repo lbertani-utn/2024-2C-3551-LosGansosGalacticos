@@ -14,9 +14,9 @@ namespace TGC.MonoGame.TP.Scenes
         public float mouseDeltaY = 0f;
 
         public bool Escape = false;
-        public bool DrawShadowMap = false;
-        public bool DrawBoundingBoxes = false;
-        public bool DrawPositions = false;
+        public bool DebugShadowMap = false;
+        public bool DebugBoundingBoxes = false;
+        public bool DebugPositions = false;
         public bool DrawGizmos = false;
         public CameraType SelectedCamera = CameraType.Main;
         private CameraType[] CameraRotation;
@@ -44,17 +44,17 @@ namespace TGC.MonoGame.TP.Scenes
             // gizmos y otras opciones para debug
             if (IsKeyPressed(Keys.M))
             {
-                DrawShadowMap = !DrawShadowMap;
+                DebugShadowMap = !DebugShadowMap;
             }
             if (IsKeyPressed(Keys.B))
             {
-                DrawBoundingBoxes = !DrawBoundingBoxes;
-                DrawGizmos = DrawBoundingBoxes || DrawPositions;
+                DebugBoundingBoxes = !DebugBoundingBoxes;
+                DrawGizmos = DebugBoundingBoxes || DebugPositions;
             }
             if (IsKeyPressed(Keys.P))
             {
-                DrawPositions = !DrawPositions;
-                DrawGizmos = DrawBoundingBoxes || DrawPositions;
+                DebugPositions = !DebugPositions;
+                DrawGizmos = DebugBoundingBoxes || DebugPositions;
             }
             if (IsKeyPressed(Keys.C))
             {

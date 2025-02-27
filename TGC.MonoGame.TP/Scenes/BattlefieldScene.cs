@@ -409,16 +409,16 @@ namespace TGC.MonoGame.TP.Scenes
         #endregion
 
         #region Draw
-        public override void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap)
+        public override void Draw(CameraType selectedCamera, bool debugBoundingBoxes, bool debugPositions, bool debugShadowMap)
         {
-            SelectCamera(SelectedCamera);
+            SelectCamera(selectedCamera);
 
 
             #region Pass 1
 
             graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            if (!drawShadowMap)
+            if (!debugShadowMap)
             { 
                 // Set the render target as our shadow map, we are drawing the depth into this texture
                 graphics.GraphicsDevice.SetRenderTarget(ShadowMapRenderTarget);
@@ -467,7 +467,7 @@ namespace TGC.MonoGame.TP.Scenes
             }
             #endregion
 
-            if (drawShadowMap)
+            if (debugShadowMap)
             {
                 return;
             }
@@ -521,7 +521,7 @@ namespace TGC.MonoGame.TP.Scenes
             }
             #endregion
 
-            DrawGizmos(drawBoundingBoxes, drawPositions);
+            DrawGizmos(debugBoundingBoxes, debugPositions);
             DrawUI();
         }
 

@@ -100,7 +100,7 @@ namespace TGC.MonoGame.TP.Scenes
 
 
         public abstract void Update(float elapsedTime, UserInput input);
-        public abstract void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap);
+        public abstract void Draw(CameraType selectedCamera, bool debugBoundingBoxes, bool debugPositions, bool debugShadowMap);
         protected abstract void DrawUI();
 
         public void SelectCamera(CameraType SelectedCamera)
