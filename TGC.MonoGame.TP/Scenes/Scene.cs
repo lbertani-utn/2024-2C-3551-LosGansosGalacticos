@@ -61,6 +61,7 @@ namespace TGC.MonoGame.TP.Scenes
 
         }
 
+        public abstract void LoadSceneParameters();
         protected abstract void LoadSceneObjects();
         public abstract void Update(float elapsedTime, UserInput input);
         public abstract void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap);

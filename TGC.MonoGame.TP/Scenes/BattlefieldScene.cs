@@ -103,17 +103,7 @@ namespace TGC.MonoGame.TP.Scenes
             // ObjectEffect
             AmbientColor = Vector3.One;
             ObjectEffect = content.Load<Effect>(ContentFolder.Effects + "ObjectShader");
-            ObjectEffect.Parameters["LightViewProjection"].SetValue(LightCamera.View * LightCamera.Projection);
-            ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
-            ObjectEffect.Parameters["ambientColor"].SetValue(AmbientColor);
-            ObjectEffect.Parameters["diffuseColor"].SetValue(Vector3.One * 0.7f);
-            ObjectEffect.Parameters["specularColor"].SetValue(Vector3.One);
-            ObjectEffect.Parameters["KAmbient"].SetValue(0.3f);
-            ObjectEffect.Parameters["KDiffuse"].SetValue(0.4f);
-            ObjectEffect.Parameters["KSpecular"].SetValue(0.1f);
-            ObjectEffect.Parameters["shininess"].SetValue(16.0f);
-            ObjectEffect.Parameters["eyePosition"].SetValue(MainCamera.Position);
-            ObjectEffect.Parameters["Tiling"].SetValue(Vector2.One);
+            LoadSceneParameters();
 
             // Terreno
             Texture2D terrainHeightMap = content.Load<Texture2D>(ContentFolder.Textures + "Rolling Hills Height Map/Rolling Hills Height Map 256");
@@ -158,6 +148,20 @@ namespace TGC.MonoGame.TP.Scenes
 
             LoadGizmos();
             LoadSceneObjects();
+        }
+        public override void LoadSceneParameters()
+        {
+            ObjectEffect.Parameters["LightViewProjection"].SetValue(LightCamera.View * LightCamera.Projection);
+            ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
+            ObjectEffect.Parameters["ambientColor"].SetValue(AmbientColor);
+            ObjectEffect.Parameters["diffuseColor"].SetValue(Vector3.One * 0.7f);
+            ObjectEffect.Parameters["specularColor"].SetValue(Vector3.One);
+            ObjectEffect.Parameters["KAmbient"].SetValue(0.3f);
+            ObjectEffect.Parameters["KDiffuse"].SetValue(0.4f);
+            ObjectEffect.Parameters["KSpecular"].SetValue(0.1f);
+            ObjectEffect.Parameters["shininess"].SetValue(16.0f);
+            ObjectEffect.Parameters["eyePosition"].SetValue(MainCamera.Position);
+            ObjectEffect.Parameters["Tiling"].SetValue(Vector2.One);
         }
 
         protected override void LoadSceneObjects()

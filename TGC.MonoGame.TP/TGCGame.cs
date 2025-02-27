@@ -117,6 +117,7 @@ namespace TGC.MonoGame.TP
             if (currentScene.ChangeScene)
             {
                 currentScene = currentScene.NextScene;
+                currentScene.LoadSceneParameters();
             }
             base.Update(gameTime);
         }
