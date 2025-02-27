@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Scenes.Entities;
+using TGC.MonoGame.TP.UI;
 
 namespace TGC.MonoGame.TP.Scenes
 {
@@ -14,6 +15,7 @@ namespace TGC.MonoGame.TP.Scenes
         protected ContentManager content;
         protected ContentFolder contentFolder;
         protected Gizmos.Gizmos gizmos;
+        protected GameOptions options;
 
         // Camera
         protected Camera Camera { get => camera; }
@@ -45,12 +47,11 @@ namespace TGC.MonoGame.TP.Scenes
         public Scene NextScene { get => nextScene; }
         protected Scene nextScene;
 
-
-
-        public Scene(GraphicsDeviceManager graphics, ContentManager content)
+        public Scene(GraphicsDeviceManager graphics, ContentManager content, GameOptions options)
         {
             this.graphics = graphics;
             this.content = content;
+            this.options = options;
         }
 
         public abstract void Initialize();

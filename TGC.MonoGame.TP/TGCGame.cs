@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Scenes;
+using TGC.MonoGame.TP.UI;
 
 namespace TGC.MonoGame.TP
 {
@@ -44,8 +45,7 @@ namespace TGC.MonoGame.TP
         private BattlefieldScene BattleScene;
         private HeadquartersScene HQScene;
         private UserInput input;
-        private ContentFolder contentFolder;
-
+        private GameOptions options;
 
         /// <summary>
         ///     Se llama una sola vez, al principio cuando se ejecuta el ejemplo.
@@ -59,10 +59,10 @@ namespace TGC.MonoGame.TP
             // deshabilito el backface culling
             GraphicsDevice.RasterizerState = RasterizerState.CullNone;
 
-            contentFolder = new ContentFolder();
             // escenas
-            HQScene = new HeadquartersScene(Graphics, Content);
-            BattleScene = new BattlefieldScene(Graphics, Content);
+            options = new GameOptions();
+            HQScene = new HeadquartersScene(Graphics, Content, options);
+            BattleScene = new BattlefieldScene(Graphics, Content, options);
             HQScene.Initialize();
             HQScene.SetNextScene(BattleScene);
             BattleScene.Initialize();

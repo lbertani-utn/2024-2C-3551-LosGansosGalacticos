@@ -9,6 +9,7 @@ using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Scenes.Battlefield;
 using TGC.MonoGame.TP.Scenes.Entities;
+using TGC.MonoGame.TP.UI;
 
 namespace TGC.MonoGame.TP.Scenes
 {
@@ -36,9 +37,8 @@ namespace TGC.MonoGame.TP.Scenes
         private float invisibleWall;
         Random rnd;
 
-        public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content) : base(graphics, content)
+        public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content, GameOptions options) : base(graphics, content, options)
         {
-
         }
 
         public override void Initialize()
