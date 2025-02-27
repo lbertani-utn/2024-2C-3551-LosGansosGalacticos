@@ -273,6 +273,24 @@
 /processorParam:TextureFormat=Compressed
 /build:Models/tree/tree.fbx
 
+#begin Music/Evil March.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/Evil March.mp3
+
+#begin Music/High Tension.mp3
+/importer:Mp3Importer
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Music/High Tension.mp3
+
+#begin Sounds/menu_select.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/menu_select.wav
+
 #begin SpriteFonts/CascadiaCode/CascadiaCodePL.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
