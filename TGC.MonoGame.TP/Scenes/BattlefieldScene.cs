@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Scenes.Battlefield;
@@ -72,23 +73,6 @@ namespace TGC.MonoGame.TP.Scenes
 
         }
 
-        private Vector2 CalculateNearPlaneFarPlaneDistance (Vector3 lightPosition)
-        {
-            float min = float.MaxValue;
-            float max = float.MinValue;
-
-            for (int i = -512; i <= 512; i++)
-            {
-                for (int j = -512; j <= 512; j++)
-                {
-                    float dist = Vector3.Distance(lightPosition, new Vector3(i, terrain.Height(i, j), j));
-                    min = Math.Min(min, dist);
-                    max = Math.Max(max, dist);
-                }
-            }
-
-            return new Vector2(min, max);
-        }
 
 
 
@@ -148,6 +132,9 @@ namespace TGC.MonoGame.TP.Scenes
             {
                 Bullets[i] = new Bullet();
             }
+
+            // music
+            BackgroundMusic = content.Load<Song>(ContentFolder.Music + "High Tension");
 
             LoadGizmos();
             LoadSceneObjects();

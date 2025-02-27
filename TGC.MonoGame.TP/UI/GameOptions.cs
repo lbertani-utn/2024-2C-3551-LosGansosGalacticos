@@ -26,7 +26,7 @@ namespace TGC.MonoGame.TP.UI
             this.GodMode = false;
             this.SoundEffects = true;
             this.Music = true;
-            this.volume = 0.5f;
+            this.volume = 0.8f;
 
         }
 

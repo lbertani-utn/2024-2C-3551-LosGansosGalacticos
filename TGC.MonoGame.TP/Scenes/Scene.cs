@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Media;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
 using TGC.MonoGame.TP.Scenes.Entities;
@@ -41,6 +43,9 @@ namespace TGC.MonoGame.TP.Scenes
         protected SpriteBatch spriteBatch;
         protected SpriteFont spriteFont;
 
+        // audio
+        public Song BackgroundMusic;
+
         public bool ExitGame { get => exitGame; }
         protected bool exitGame = false;
 
@@ -70,6 +75,30 @@ namespace TGC.MonoGame.TP.Scenes
 
         public abstract void LoadSceneParameters();
         protected abstract void LoadSceneObjects();
+
+        protected void PlaySceneMusic()
+        {
+            if (options.Music)
+            {
+                MediaPlayer.Volume = options.Volume;
+                MediaPlayer.IsRepeating = true;
+                MediaPlayer.Play(BackgroundMusic);
+            }
+        }
+        protected void StopSceneMusic()
+        {
+            MediaPlayer.Stop();
+        }
+
+        protected void PlaySoundEffect(SoundEffect sound)
+        {
+            if (options.SoundEffects)
+            {
+                sound.Play();
+            }
+        }
+
+
         public abstract void Update(float elapsedTime, UserInput input);
         public abstract void Draw(CameraType SelectedCamera, bool drawBoundingBoxes, bool drawPositions, bool drawShadowMap);
         protected abstract void DrawUI();

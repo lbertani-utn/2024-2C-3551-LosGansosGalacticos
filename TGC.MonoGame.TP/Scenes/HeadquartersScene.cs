@@ -7,6 +7,8 @@ using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.UI;
 using TGC.MonoGame.TP.Scenes.Entities; 
 using TGC.MonoGame.TP.Scenes.Headquarters;
+using Microsoft.Xna.Framework.Media;
+using Microsoft.Xna.Framework.Audio;
 
 namespace TGC.MonoGame.TP.Scenes
 {
@@ -27,10 +29,11 @@ namespace TGC.MonoGame.TP.Scenes
         private string[][] menuOptions;
         private int selectedOption = 0;
         private Color titleColor = Color.White;
-        private Color selectedRowSelectedOption = Color.Yellow;
-        private Color selectedRowNotSelectedOption = Color.White;
-        private Color notSelectedRowSelectedOption = Color.Olive;
-        private Color notSelectedRowNotSelectedOption = Color.Gray;
+        private Color colorSelectedOption = Color.Yellow;
+        private Color colorSelectedOptionDark = Color.Olive;
+        private Color colorNotSelectedOption = Color.White;
+        private Color colorNotSelectedOptionDark = Color.Gray;
+        private SoundEffect menuSoundEffect;
 
         public HeadquartersScene(GraphicsDeviceManager graphics, ContentManager content, GameOptions options) : base(graphics, content, options)
         {
@@ -87,6 +90,9 @@ namespace TGC.MonoGame.TP.Scenes
             ObjectEffect = content.Load<Effect>(ContentFolder.Effects + "ObjectShader");
             LoadSceneParameters();
 
+            // music & sounds
+            BackgroundMusic = content.Load<Song>(ContentFolder.Music + "Evil March");
+            menuSoundEffect = content.Load<SoundEffect>(ContentFolder.Sounds + "menu_select");
 
             Floor.LoadContent(content, ObjectEffect);
             Wall.LoadContent(content, ObjectEffect);
@@ -187,7 +193,7 @@ namespace TGC.MonoGame.TP.Scenes
                 if (selectedOption < menuOptions[(int) menuType].Length - 1)
                 {
                     selectedOption++;
-                    // TODO MenuSoundEffectInstance.Play();
+                    PlaySoundEffect(menuSoundEffect);
                 }
             }
             else if (input.IsKeyPressed(Keys.Up) || input.IsKeyPressed(Keys.W))
@@ -195,28 +201,34 @@ namespace TGC.MonoGame.TP.Scenes
                 if (selectedOption > 0)
                 {
                     selectedOption--;
-                    // TODO MenuSoundEffectInstance.Play();
+                    PlaySoundEffect(menuSoundEffect);
                 }
             }
             else if (input.IsKeyPressed(Keys.Left) || input.IsKeyPressed(Keys.A))
             {
                 if(menuType== MenuType.Options)
                 {
-                    if (selectedOption == 0)
+                    if (selectedOption == 0 && options.Volume > 0)
                     {
-                        options.Volume -= 0.05f; 
+                        options.Volume -= 0.05f;
+                        MediaPlayer.Volume = options.Volume;
+                        PlaySoundEffect(menuSoundEffect);
                     }
-                    else if (selectedOption == 1)
+                    else if (selectedOption == 1 && !options.Music)
                     {
                         options.Music = true;
+                        PlaySoundEffect(menuSoundEffect);
+                        PlaySceneMusic();
                     }
-                    else if (selectedOption == 2)
+                    else if (selectedOption == 2 && !options.SoundEffects)
                     {
                         options.SoundEffects = true;
+                        PlaySoundEffect(menuSoundEffect);
                     }
-                    else if (selectedOption == 3)
+                    else if (selectedOption == 3 && !options.GodMode)
                     {
                         options.GodMode = true;
+                        PlaySoundEffect(menuSoundEffect);
                     }
                 }
             }
@@ -224,21 +236,27 @@ namespace TGC.MonoGame.TP.Scenes
             {
                 if (menuType == MenuType.Options)
                 {
-                    if (selectedOption == 0)
+                    if (selectedOption == 0 && options.Volume < 1)
                     {
                         options.Volume += 0.05f;
+                        MediaPlayer.Volume = options.Volume;
+                        PlaySoundEffect(menuSoundEffect);
                     }
-                    else if (selectedOption == 1)
+                    else if (selectedOption == 1 && options.Music)
                     {
                         options.Music = false;
+                        PlaySoundEffect(menuSoundEffect);
+                        StopSceneMusic();
                     }
-                    else if (selectedOption == 2)
+                    else if (selectedOption == 2 && options.SoundEffects)
                     {
                         options.SoundEffects = false;
+                        PlaySoundEffect(menuSoundEffect);
                     }
-                    else if (selectedOption == 3)
+                    else if (selectedOption == 3 && options.GodMode)
                     {
                         options.GodMode = false;
+                        PlaySoundEffect(menuSoundEffect);
                     }
                 }
             }
@@ -356,14 +374,14 @@ namespace TGC.MonoGame.TP.Scenes
 
         private Color GetTextColor(int rowNumber, int rowSelected, bool value, bool expectedValue)
         {
-            Color c = notSelectedRowNotSelectedOption;
+            Color c = colorNotSelectedOptionDark;
             if (rowNumber != rowSelected)
             {
-                c = value == expectedValue ? notSelectedRowSelectedOption : notSelectedRowNotSelectedOption;
+                c = value == expectedValue ? colorSelectedOptionDark : colorNotSelectedOptionDark;
             }
             else
             {
-                c = value == expectedValue ? selectedRowSelectedOption : selectedRowNotSelectedOption; 
+                c = value == expectedValue ? colorSelectedOption : colorNotSelectedOption; 
             }
            return c;
         }
@@ -376,7 +394,7 @@ namespace TGC.MonoGame.TP.Scenes
         {
             for (int opt = 0; opt < menu.Length; opt++)
             {
-                Color color = opt != selected ? selectedRowNotSelectedOption : selectedRowSelectedOption;
+                Color color = opt != selected ? colorNotSelectedOption : colorSelectedOption;
                 TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, menu[opt], TextHelper.MenuPosition(graphics.GraphicsDevice, spriteFont, menuScale, opt), color, menuScale);
             }
         }
