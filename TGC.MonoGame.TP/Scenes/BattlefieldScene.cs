@@ -33,6 +33,7 @@ namespace TGC.MonoGame.TP.Scenes
         // terreno
         private SimpleTerrain terrain;
         private float terrainSize;
+        private float invisibleWall;
         Random rnd;
 
         public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content) : base(graphics, content)
@@ -110,6 +111,8 @@ namespace TGC.MonoGame.TP.Scenes
             Texture2D terrainBaseColor = content.Load<Texture2D>(ContentFolder.Textures + "Grass/Grass_005_BaseColor");
             Texture2D terrainNormalMap = content.Load<Texture2D>(ContentFolder.Textures + "Grass/Grass_005_Normal");
             terrainSize = 1024f;
+            invisibleWall = terrainSize / 100 * 49;
+
             float heightScale = 0.4f;
             float terrainScale = terrainSize / terrainHeightMap.Width;
             terrain = new SimpleTerrain(graphics.GraphicsDevice, terrainHeightMap, terrainBaseColor, terrainNormalMap, ObjectEffect, terrainScale, heightScale);
@@ -331,6 +334,13 @@ namespace TGC.MonoGame.TP.Scenes
             Vector3 movement = RotationMatrix.Forward * tank.Speed * elapsedTime;
             tank.WheelRotation += (tank.Speed * elapsedTime / 8f); // TODO revisar esta fórmula
             tank.Position = tank.Position + movement;
+
+            if (tank.Position.X < -invisibleWall || tank.Position.X > invisibleWall || tank.Position.Z < -invisibleWall || tank.Position.Z > invisibleWall)
+            {
+                // TODO reproducir sonido
+                tank.Position.X = MathHelper.Clamp(tank.Position.X, -invisibleWall, invisibleWall);
+                tank.Position.Z = MathHelper.Clamp(tank.Position.Z, -invisibleWall, invisibleWall);
+            }
             tank.Position.Y = terrain.Height(tank.Position.X, tank.Position.Z);
 
             float distanceForward = 3.303362f;
