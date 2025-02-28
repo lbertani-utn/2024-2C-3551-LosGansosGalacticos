@@ -166,7 +166,7 @@ namespace TGC.MonoGame.TP.Scenes
         protected override void LoadSceneObjects()
         {
             LoadTerrainObjects(terrainSize, 0.1f, 0.9f);
-            LoadTanks(terrainSize, 0.2f, 0.3f);// 0.5f, 0.8f);
+            LoadTanks(terrainSize, 0.8f, 0.9f);
         }
 
 

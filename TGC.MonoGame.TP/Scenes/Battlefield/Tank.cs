@@ -427,7 +427,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         {
             float distance = Vector3.Distance(this.Position, target);
             ShootTarget(distance, bullets, bulletCount);
-            //RegulateDistance(distance);
+            RegulateDistance(distance);
             RegulateAngle(elapsedTime, target);
             UpdatePosition(elapsedTime, terrain);
         }
@@ -441,9 +441,8 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             Vector3 direction = target - this.Position;
             Vector3 directionNormal = Vector3.Normalize(direction);
             float targetYaw = (float) Math.Atan2(directionNormal.X, directionNormal.Z) + MathHelper.Pi; // Sumo Pi porque los tanques quedaban al revés
-            this.Yaw = targetYaw;
-            //float deltaYaw = MathHelper.Clamp(this.Yaw - targetYaw, elapsedTime * (-0.2f), elapsedTime * 0.2f);
-            //this.Yaw += deltaYaw;
+            float deltaYaw = MathHelper.Clamp(targetYaw - this.Yaw, elapsedTime * (-0.2f), elapsedTime * 0.2f);
+            this.Yaw += deltaYaw;
         }
 
         public void UpdatePosition(float elapsedTime, SimpleTerrain terrain)
