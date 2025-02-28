@@ -9,17 +9,20 @@ using TGC.MonoGame.TP.Scenes.Entities;
 using TGC.MonoGame.TP.Scenes.Headquarters;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Audio;
+using System;
 
 namespace TGC.MonoGame.TP.Scenes
 {
     class HeadquartersScene : Scene
     {
+        private const float TimerInitialValue = -5f;
         private Effect ObjectEffect;
 
         // camera
         Vector3 mainCameraInitialPosition;
+        Vector3 mainCameraMovement;
         Vector3 mainCameraPosition;
-        private float idle = 0;
+        private float movementTimer = TimerInitialValue;
 
         // UI
         private const float titleScale = 5F;
@@ -110,6 +113,7 @@ namespace TGC.MonoGame.TP.Scenes
             menuType = MenuType.Main;
             returnTo = MenuType.Main;
             mainCameraInitialPosition = new Vector3(-2.50f, 1.20f, -1.95f);
+            movementTimer = TimerInitialValue;
         }
 
         public override void LoadSceneParameters()
@@ -158,40 +162,39 @@ namespace TGC.MonoGame.TP.Scenes
             if (input.keyboardState.IsKeyDown(Keys.J))
             {
                 mainCameraPosition -= Vector3.UnitX / 100;
-                idle = 0;
+                movementTimer = TimerInitialValue;
             }
             else if (input.keyboardState.IsKeyDown(Keys.U))
             {
                 mainCameraPosition += Vector3.UnitX / 100;
-                idle = 0;
+                movementTimer = TimerInitialValue;
             }
             else if (input.keyboardState.IsKeyDown(Keys.K))
             {
                 mainCameraPosition += Vector3.UnitZ / 100;
-                idle = 0;
+                movementTimer = TimerInitialValue;
             }
             else if (input.keyboardState.IsKeyDown(Keys.H))
             {
                 mainCameraPosition -= Vector3.UnitZ / 100;
-                idle = 0;
+                movementTimer = TimerInitialValue;
             }
             else if (input.keyboardState.IsKeyDown(Keys.O))
             {
                 mainCameraPosition += Vector3.UnitY / 100;
-                idle = 0;
+                movementTimer = TimerInitialValue;
             }
             else if (input.keyboardState.IsKeyDown(Keys.L))
             {
                 mainCameraPosition -= Vector3.UnitY / 100;
-                idle = 0;
+                movementTimer = TimerInitialValue;
             }
             else
             {
-                idle += elapsedTime;
-                if (idle > 5)
+                movementTimer += elapsedTime;
+                if (movementTimer > 0)
                 {
-                    idle = 0;
-                    mainCameraPosition = mainCameraInitialPosition;
+                    mainCameraPosition = mainCameraInitialPosition + (float) Math.Sin(movementTimer / 10f) * Vector3.UnitZ * 0.5f;
                 }
             }
 
