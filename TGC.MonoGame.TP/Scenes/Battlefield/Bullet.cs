@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using TGC.MonoGame.TP.Cameras;
@@ -59,7 +61,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         {
         }
 
-        public void Update(float elapsedTime, SimpleTerrain terrain, List<WorldEntity> Entities, Tank[] tanks)
+        public void Update(float elapsedTime, SimpleTerrain terrain, List<WorldEntity> Entities, Tank[] tanks, SoundEffect hit)
         {
             // actualizo posición
             _lastPosition = _position;
@@ -99,23 +101,33 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
                 }
             }
 
+            // colisiones con tanque jugador
+            // TODO deformar tanque
+            float? intersect = tanks[0].Intersects(_movementRay);
+            if (intersect != null && intersect.Value < distance)
+            {
+                // TODO daño
+                tanks[0].UpdateHullIntegrity();
+                hit.Play();
+                Active = false;
+                return;
+            }
+
             // colisiones con tanques enemigos
             // TODO deformar tanques
-            for (int tank = 0; tank < tanks.Length; tank++)
+            for (int tank = 1; tank < tanks.Length; tank++)
             {
                 if (tanks[tank].Status != WorldEntityStatus.Destroyed)
                 {
-                    float? intersect = tanks[tank].Intersects(_movementRay);
+                    intersect = tanks[tank].Intersects(_movementRay);
                     if (intersect != null && intersect.Value < distance)
                     {
                         // TODO daño
-
+                        tanks[tank].UpdateHullIntegrity();
                         Active = false;
                         return;
                     }
                 }
-
-
             }
 
         }

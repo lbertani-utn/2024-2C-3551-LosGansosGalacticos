@@ -44,7 +44,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         public const float pitchLimit = 0.25f;
         public const float rollLimit = 0.25f;
 
-
+        public float HullIntegrity { get; set; }
         public float Speed
         {
             get => Propulsion + Downhill;
@@ -491,6 +491,17 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             {
                 Shoot(bullets, bulletCount);
             }
+        }
+
+        public void UpdateHullIntegrity()
+        {
+            HullIntegrity -=0;
+            if (HullIntegrity <= 0)
+            {
+                Status = WorldEntityStatus.Destroyed;
+            }
+
+
         }
         #endregion
 

@@ -47,9 +47,9 @@ namespace TGC.MonoGame.TP.Scenes
         protected float shadowMapTime = 0;
 
         // sound effects
-        private SoundEffect shot;
-        private SoundEffect recharge;
-        private SoundEffect hit;
+        private SoundEffect shotSound;
+        private SoundEffect rechargeSound;
+        private SoundEffect hitSound;
 
 
         public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content, GameOptions options) : base(graphics, content, options)
@@ -151,9 +151,9 @@ namespace TGC.MonoGame.TP.Scenes
 
             // music & sounds
             BackgroundMusic = content.Load<Song>(ContentFolder.Music + "High Tension");
-            hit = content.Load<SoundEffect>(ContentFolder.Sounds + "iron hit");
-            recharge = content.Load<SoundEffect>(ContentFolder.Sounds + "gun reload");
-            shot = content.Load<SoundEffect>(ContentFolder.Sounds + "cannon shot");
+            hitSound = content.Load<SoundEffect>(ContentFolder.Sounds + "iron hit");
+            rechargeSound = content.Load<SoundEffect>(ContentFolder.Sounds + "gun reload");
+            shotSound = content.Load<SoundEffect>(ContentFolder.Sounds + "cannon shot");
 
             LoadGizmos();
             LoadSceneObjects();
@@ -297,7 +297,7 @@ namespace TGC.MonoGame.TP.Scenes
             // recarga 
             if (player.recharging > 1f && player.recharging <= 1f + elapsedTime)
             {
-                recharge.Play();
+                rechargeSound.Play();
             }
             player.recharging = MathHelper.Clamp(player.recharging - elapsedTime, 0f, Tank.CannonCooldown);
 
@@ -305,7 +305,7 @@ namespace TGC.MonoGame.TP.Scenes
             if ((input.IsKeyPressed(Keys.Space) || input.IsLeftButtonPressed()) && player.recharging == 0f)
             {
                 player.Shoot(Bullets, Bullets.Length);
-                shot.Play();
+                shotSound.Play();
             }
 
             // dirección rotación
@@ -429,28 +429,32 @@ namespace TGC.MonoGame.TP.Scenes
                             e.Status = WorldEntityStatus.Destroyed;
                         }
                     }
-                    /// colisiones entre tanques y objetos del escenario
+                    /// colisiones entre tanques
                     for (int tank2 = 0; tank2 < tanks.Length; tank2++)
                     {
                         if (tank != tank2 && tanks[tank2].Status != WorldEntityStatus.Destroyed)
                         {
                             // TODO daño
+                            tanks[tank].UpdateHullIntegrity();
+                            tanks[tank2].UpdateHullIntegrity();
+                            if (tank == 0 || tank2 == 0)
+                            {
+                                hitSound.Play();
+                            }
                         }
                     }
                     tanks[tank].Update(elapsedTime);
                 }
-
-                /// colisiones proyectiles
-                foreach (Bullet b in Bullets)
-                {
-                    if (b.Active)
-                    {
-                        b.Update(elapsedTime, terrain, StaticObjects, tanks);
-                    }
-                }
-
             }
 
+            /// colisiones proyectiles
+            foreach (Bullet b in Bullets)
+            {
+                if (b.Active)
+                {
+                    b.Update(elapsedTime, terrain, StaticObjects, tanks, hitSound);
+                }
+            }
 
         }
         #endregion
