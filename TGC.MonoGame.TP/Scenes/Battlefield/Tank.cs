@@ -33,8 +33,8 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         public float Roll = 0f;
         public Matrix World;
 
-        private const float CannonCooldown = 3f;
-        private float recharging = 0f;
+        public const float CannonCooldown = 3f;
+        public float recharging = 0f;
         private Matrix ShootingPosition;
         private Matrix ShootingDirection;
         public WorldEntityStatus Status;
@@ -235,8 +235,6 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
 
         public void Update(float elapsedTime)
         {
-            recharging = MathHelper.Clamp(recharging - elapsedTime, 0f, CannonCooldown);
-
             // Transformaciones
             // Set the world matrix as the root transform of the model.
             tankModel.Root.Transform = World;
@@ -425,6 +423,8 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         #region enemy tanks
         public void AttackPlayer(float elapsedTime, Vector3 target, Bullet[] bullets, int bulletCount, SimpleTerrain terrain)
         {
+            recharging = MathHelper.Clamp(recharging - elapsedTime, 0f, CannonCooldown);
+
             float distance = Vector3.Distance(this.Position, target);
             ShootTarget(distance, bullets, bulletCount);
             RegulateDistance(distance);

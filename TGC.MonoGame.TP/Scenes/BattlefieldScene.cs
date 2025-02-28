@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.Serialization.Formatters;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -44,6 +45,12 @@ namespace TGC.MonoGame.TP.Scenes
         protected RenderTarget2D shadowMapTerrain;
         protected RenderTarget2D shadowMapStaticObjectst;
         protected float shadowMapTime = 0;
+
+        // sound effects
+        private SoundEffect shot;
+        private SoundEffect recharge;
+        private SoundEffect hit;
+
 
         public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content, GameOptions options) : base(graphics, content, options)
         {
@@ -142,8 +149,11 @@ namespace TGC.MonoGame.TP.Scenes
                 Bullets[i] = new Bullet();
             }
 
-            // music
+            // music & sounds
             BackgroundMusic = content.Load<Song>(ContentFolder.Music + "High Tension");
+            hit = content.Load<SoundEffect>(ContentFolder.Sounds + "iron hit");
+            recharge = content.Load<SoundEffect>(ContentFolder.Sounds + "gun reload");
+            shot = content.Load<SoundEffect>(ContentFolder.Sounds + "cannon shot");
 
             LoadGizmos();
             LoadSceneObjects();
@@ -284,10 +294,18 @@ namespace TGC.MonoGame.TP.Scenes
                 player.Propulsion = MathHelper.Clamp(player.Propulsion + Tank.Friction, Tank.ReverseSpeedLimit, 0);
             }
 
+            // recarga 
+            if (player.recharging > 1f && player.recharging <= 1f + elapsedTime)
+            {
+                recharge.Play();
+            }
+            player.recharging = MathHelper.Clamp(player.recharging - elapsedTime, 0f, Tank.CannonCooldown);
+
             // disparo
-            if (input.IsKeyPressed(Keys.Space) || input.IsLeftButtonPressed())
+            if ((input.IsKeyPressed(Keys.Space) || input.IsLeftButtonPressed()) && player.recharging == 0f)
             {
                 player.Shoot(Bullets, Bullets.Length);
+                shot.Play();
             }
 
             // dirección rotación
