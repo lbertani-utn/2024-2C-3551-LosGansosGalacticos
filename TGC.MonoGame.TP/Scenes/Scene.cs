@@ -118,7 +118,6 @@ namespace TGC.MonoGame.TP.Scenes
 
         private void ClearFlags()
         {
-            exitGame = false;
             changeScene = false;
             restartScene = false;
             changeRestartScene = false;
@@ -127,6 +126,14 @@ namespace TGC.MonoGame.TP.Scenes
         public abstract void Update(float elapsedTime, UserInput input);
         public abstract void Draw(CameraType selectedCamera, bool debugBoundingBoxes, bool debugPositions, bool debugShadowMap);
         protected abstract void DrawUI();
+
+        protected void RestoreDeviceState()
+        {
+            // SpriteBatch altera el estado de esto
+            graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
+            graphics.GraphicsDevice.RasterizerState = RasterizerState.CullNone;
+            graphics.GraphicsDevice.BlendState = BlendState.Opaque;
+        }
 
         public void SelectCamera(CameraType SelectedCamera)
         {

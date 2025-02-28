@@ -145,6 +145,7 @@ namespace TGC.MonoGame.TP.Scenes
 
         public override void LoadSceneParameters()
         {
+            // ObjectEffect
             ObjectEffect.Parameters["LightViewProjection"].SetValue(LightCamera.View * LightCamera.Projection);
             ObjectEffect.Parameters["lightPosition"].SetValue(LightPosition);
             ObjectEffect.Parameters["ambientColor"].SetValue(AmbientColor);
@@ -417,7 +418,6 @@ namespace TGC.MonoGame.TP.Scenes
 
 
             #region Pass 1
-
             graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             if (!debugShadowMap)

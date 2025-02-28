@@ -48,6 +48,7 @@ namespace TGC.MonoGame.TP.Scenes
             menuOptions[(int) MenuType.Pause] = new string[] { Message.Resume, Message.Restart, Message.Options, Message.Exit };
             menuOptions[(int) MenuType.Options] = new string[] { Message.Volume, Message.Music, Message.Sound, Message.GodMode, Message.Return };
 
+
             StaticObjects = new List<WorldEntity>();
 
             // cámara principal - apuntando al centro de la messa
@@ -309,6 +310,7 @@ namespace TGC.MonoGame.TP.Scenes
 
 
             #region Pass 1
+            graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
             if (!debugShadowMap)
             {
@@ -320,7 +322,6 @@ namespace TGC.MonoGame.TP.Scenes
                 graphics.GraphicsDevice.SetRenderTarget(null);
             }
 
-            graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             graphics.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1f, 0);
             ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DepthPass"];
             foreach (WorldEntity e in StaticObjects)
@@ -355,7 +356,7 @@ namespace TGC.MonoGame.TP.Scenes
             spriteBatch.Begin();
             DrawTitle(spriteBatch, spriteFont);
             DrawMenu(spriteBatch, spriteFont, menuOptions[(int)menuType], selectedOption);
-            
+
             if (menuType == MenuType.Options)
             {
                 // volumen
@@ -376,6 +377,7 @@ namespace TGC.MonoGame.TP.Scenes
                 TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, Message.No, TextHelper.SettingPosition(graphics.GraphicsDevice, spriteFont, menuScale, 3, 1, 0f), GetTextColor(3, selectedOption, options.GodMode, false), menuScale);
             }
             spriteBatch.End();
+            RestoreDeviceState();
         }
 
         private Color GetTextColor(int rowNumber, int rowSelected, bool value, bool expectedValue)

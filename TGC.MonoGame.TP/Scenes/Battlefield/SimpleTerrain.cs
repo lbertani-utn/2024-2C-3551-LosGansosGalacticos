@@ -63,7 +63,6 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             Effect.Parameters["KDiffuse"].SetValue(0.6f);
             Effect.Parameters["KSpecular"].SetValue(0f);
             Effect.Parameters["shininess"].SetValue(1.0f);
-
             graphicsDevice.SetVertexBuffer(vbTerrain);
 
             //Render con shader

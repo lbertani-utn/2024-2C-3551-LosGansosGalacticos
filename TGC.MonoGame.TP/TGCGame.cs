@@ -38,8 +38,6 @@ namespace TGC.MonoGame.TP
 
         private GraphicsDeviceManager Graphics { get; }
         private Point ScreenCenter;
-        private SpriteBatch SpriteBatch;
-
   
         private Scene currentScene;
         private BattlefieldScene BattleScene;
@@ -67,7 +65,7 @@ namespace TGC.MonoGame.TP
             HQScene.SetNextScene(BattleScene);
             BattleScene.Initialize();
             BattleScene.SetNextScene(HQScene);
-            currentScene = HQScene;
+            currentScene = HQScene; //BattleScene;
 
             input = new UserInput();
             input.Initialize(ScreenCenter);
@@ -83,8 +81,6 @@ namespace TGC.MonoGame.TP
         protected override void LoadContent()
         {
             // Aca es donde deberiamos cargar todos los contenido necesarios antes de iniciar el juego.
-            SpriteBatch = new SpriteBatch(GraphicsDevice);
-
             HQScene.LoadContent();
             BattleScene.LoadContent();
             currentScene.StartScene();
@@ -113,12 +109,22 @@ namespace TGC.MonoGame.TP
                 Exit();
             }
 
-            // cambiar de escena
+            // cambios/reinicio de escena
             if (currentScene.ChangeScene)
             {
                 currentScene = currentScene.NextScene;
-                currentScene.LoadSceneParameters();
+                currentScene.ContinueScene();
             }
+            else if (currentScene.ChangeRestartScene)
+            {
+                currentScene = currentScene.NextScene;
+                currentScene.StartScene();
+            }
+            else if (currentScene.RestartScene)
+            {
+                currentScene.StartScene();
+            }
+
             base.Update(gameTime);
         }
 
