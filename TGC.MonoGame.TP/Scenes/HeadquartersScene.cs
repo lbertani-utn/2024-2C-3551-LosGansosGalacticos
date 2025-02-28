@@ -15,7 +15,7 @@ namespace TGC.MonoGame.TP.Scenes
 {
     class HeadquartersScene : Scene
     {
-        private const float TimerInitialValue = -5f;
+        private const float TimerInitialValue = -9.8f;
         private Effect ObjectEffect;
 
         // camera
