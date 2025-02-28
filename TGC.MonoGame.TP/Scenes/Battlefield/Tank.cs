@@ -43,6 +43,8 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         public float Propulsion = 0f;
         public float Downhill = 0f;
         public const float SpeedIncrease = 0.25f;
+        public const float TurningSpeedLimit = 5f;
+        public const float ReverseSpeedLimit = -10f;
         public const float SpeedLimit = 20f;
         public const float Friction = 0.05f;
         private const float FrontWheelRotation = 1.6f;
@@ -64,7 +66,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         public float TurretRotation
         {
             get => _turretRotation;
-            set => _turretRotation = MathHelper.Clamp(value, -MathHelper.PiOver2, MathHelper.PiOver2    );
+            set => _turretRotation = MathHelper.Clamp(value, -MathHelper.PiOver2, MathHelper.PiOver2);
         }
         private float _cannonRotation = -PiOver12;
         public float CannonRotation

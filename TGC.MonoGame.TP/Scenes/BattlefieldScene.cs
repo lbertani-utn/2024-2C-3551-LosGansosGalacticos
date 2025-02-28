@@ -274,7 +274,7 @@ namespace TGC.MonoGame.TP.Scenes
             }
             else if (tank.Propulsion < 0)
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.Friction, -Tank.SpeedLimit, 0);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.Friction, Tank.ReverseSpeedLimit, 0);
             }
 
             // disparo
@@ -288,24 +288,24 @@ namespace TGC.MonoGame.TP.Scenes
             {
                 tank.Yaw -= elapsedTime;
                 tank.SteerRotation -= elapsedTime;
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, -Tank.SpeedLimit, Tank.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
 
             }
             else if (input.keyboardState.IsKeyDown(Keys.Left) || input.keyboardState.IsKeyDown(Keys.A))
             {
                 tank.Yaw += elapsedTime;
                 tank.SteerRotation += elapsedTime;
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, -Tank.SpeedLimit, Tank.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
             }
 
             // avance/retroceso
             if (input.keyboardState.IsKeyDown(Keys.Up) || input.keyboardState.IsKeyDown(Keys.W))
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease, -Tank.SpeedLimit, Tank.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
             }
             else if (input.keyboardState.IsKeyDown(Keys.Down) || input.keyboardState.IsKeyDown(Keys.S))
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease, -Tank.SpeedLimit, Tank.SpeedLimit);
+                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
             }
 
             if (tank.Speed > 0f && tank.SteerRotation != 0f)
