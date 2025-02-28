@@ -40,6 +40,11 @@ namespace TGC.MonoGame.TP.Scenes
         private float invisibleWall;
         Random rnd;
 
+        // shadowmap prerenderizados
+        protected RenderTarget2D shadowMapTerrain;
+        protected RenderTarget2D shadowMapStaticObjectst;
+        protected float shadowMapTime = 0;
+
         public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content, GameOptions options) : base(graphics, content, options)
         {
         }
@@ -145,6 +150,7 @@ namespace TGC.MonoGame.TP.Scenes
         }
         protected override void LoadInitialState()
         {
+            shadowMapTime = 0;
         }
 
         public override void LoadSceneParameters()
@@ -432,66 +438,71 @@ namespace TGC.MonoGame.TP.Scenes
         #endregion
 
         #region Draw
-        public override void Draw(CameraType selectedCamera, bool debugBoundingBoxes, bool debugPositions, bool debugShadowMap)
+        public override void Draw(float elapsedTime, CameraType selectedCamera, bool debugBoundingBoxes, bool debugPositions, bool debugShadowMap)
         {
             SelectCamera(selectedCamera);
 
-
-            #region Pass 1
-            graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
-
-            if (!debugShadowMap)
-            { 
-                // Set the render target as our shadow map, we are drawing the depth into this texture
-                graphics.GraphicsDevice.SetRenderTarget(ShadowMapRenderTarget);
-            }
-            else
+            shadowMapTime += elapsedTime;
+            if (shadowMapTime > 1f)
             {
-                graphics.GraphicsDevice.SetRenderTarget(null);
-            }
+                #region Pass 1
+                shadowMapTime = 0;
+                graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
-            graphics.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1f, 0);
-            ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DepthPass"];
-
-            terrain.Draw(LightCamera.View, LightCamera.Projection);
-            foreach (WorldEntity e in StaticObjects)
-            {
-                if (e.Status != WorldEntityStatus.Destroyed)
+                if (!debugShadowMap)
                 {
-                    e.DrawDepthPass(ObjectEffect, LightCamera);
+                    // Set the render target as our shadow map, we are drawing the depth into this texture
+                    graphics.GraphicsDevice.SetRenderTarget(ShadowMapRenderTarget);
                 }
-            }
-            
-            // objetos que se mueven
-            // integrados en la colección de objetos dinámicos
-            foreach (WorldEntity e in DynamicObjects)
-            {
-                if (e.Status != WorldEntityStatus.Destroyed)
+                else
                 {
-                    e.DrawDepthPass(ObjectEffect, LightCamera);
+                    graphics.GraphicsDevice.SetRenderTarget(null);
                 }
-            }
-            // todavía no integrados en la colección de objetos dinámicos
-            player.Draw(LightCamera.View, LightCamera.Projection);
-            foreach (Tank t in tanks)
-            {
-                if (t.Status != WorldEntityStatus.Destroyed)
-                {
-                    t.Draw(LightCamera.View, LightCamera.Projection);
-                }
-            }
-            foreach (Bullet b in Bullets)
-            {
-                if (b.Active)
-                {
-                    b.Draw(LightCamera.View, LightCamera.Projection, ObjectEffect);
-                }
-            }
-            #endregion
 
-            if (debugShadowMap)
-            {
-                return;
+                graphics.GraphicsDevice.Clear(ClearOptions.Target | ClearOptions.DepthBuffer, Color.Black, 1f, 0);
+                ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DepthPass"];
+
+                terrain.Draw(LightCamera.View, LightCamera.Projection);
+                foreach (WorldEntity e in StaticObjects)
+                {
+                    if (e.Status != WorldEntityStatus.Destroyed)
+                    {
+                        e.DrawDepthPass(ObjectEffect, LightCamera);
+                    }
+                }
+
+                // objetos que se mueven
+                // integrados en la colección de objetos dinámicos
+                foreach (WorldEntity e in DynamicObjects)
+                {
+                    if (e.Status != WorldEntityStatus.Destroyed)
+                    {
+                        e.DrawDepthPass(ObjectEffect, LightCamera);
+                    }
+                }
+                // todavía no integrados en la colección de objetos dinámicos
+                player.Draw(LightCamera.View, LightCamera.Projection);
+                foreach (Tank t in tanks)
+                {
+                    if (t.Status != WorldEntityStatus.Destroyed)
+                    {
+                        t.Draw(LightCamera.View, LightCamera.Projection);
+                    }
+                }
+                foreach (Bullet b in Bullets)
+                {
+                    if (b.Active)
+                    {
+                        b.Draw(LightCamera.View, LightCamera.Projection, ObjectEffect);
+                    }
+                }
+
+                #endregion
+
+                if (debugShadowMap)
+                {
+                    return;
+                }
             }
 
             #region Pass 2

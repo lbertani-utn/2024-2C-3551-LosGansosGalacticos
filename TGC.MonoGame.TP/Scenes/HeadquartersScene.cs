@@ -307,10 +307,9 @@ namespace TGC.MonoGame.TP.Scenes
 
         }
 
-        public override void Draw(CameraType selectedCamera, bool debugBoundingBoxes, bool debugPositions, bool debugShadowMap)
+        public override void Draw(float elapsedTime, CameraType selectedCamera, bool debugBoundingBoxes, bool debugPositions, bool debugShadowMap)
         {
             SelectCamera(selectedCamera);
-
 
             #region Pass 1
             graphics.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
