@@ -59,7 +59,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         {
         }
 
-        public void Update(float elapsedTime, SimpleTerrain terrain, List<WorldEntity> Entities, Tank[] Enemies)
+        public void Update(float elapsedTime, SimpleTerrain terrain, List<WorldEntity> Entities, Tank[] tanks)
         {
             // actualizo posición
             _lastPosition = _position;
@@ -101,19 +101,21 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
 
             // colisiones con tanques enemigos
             // TODO deformar tanques
-            foreach (Tank t in Enemies)
+            for (int tank = 0; tank < tanks.Length; tank++)
             {
-                if (t.Status != WorldEntityStatus.Destroyed)
+                if (tanks[tank].Status != WorldEntityStatus.Destroyed)
                 {
-                    float? intersect = t.Intersects(_movementRay);
+                    float? intersect = tanks[tank].Intersects(_movementRay);
                     if (intersect != null && intersect.Value < distance)
                     {
-                        // TODO explosión
-                        t.Status = WorldEntityStatus.Destroyed;
+                        // TODO daño
+
                         Active = false;
                         return;
                     }
                 }
+
+
             }
 
         }

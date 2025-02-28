@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.Serialization.Formatters;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -26,10 +28,10 @@ namespace TGC.MonoGame.TP.Scenes
 
         // TODO crear clase para tanque jugador
         private Model Model { get; set; }
-        private Tank tank;
+        private Tank player;
+        private Tank[] tanks;
         private Bullet[] Bullets;
-        private const int bulletCount = 10;
-        private Tank[] Enemies;
+        private const int bulletCount = 20;
         private const int enemyCount = 5;
 
         // terreno
@@ -46,6 +48,7 @@ namespace TGC.MonoGame.TP.Scenes
         {
             StaticObjects = new List<WorldEntity>();
             DynamicObjects = new List<WorldEntity>();
+            tanks = new Tank[enemyCount + 1];
             rnd = new Random();
 
             // cámara principal - detrás del tanque
@@ -121,9 +124,10 @@ namespace TGC.MonoGame.TP.Scenes
 
 
             ApplyEffect(Model, ObjectEffect);
-            tank = new Tank(new Vector3(0f, terrain.Height(0f, 0f), 0f), new Vector3(0.1f, 0.1f, 0.1f), MathHelper.PiOver2, 0f, 0f);
-            tank.Load(content, Model);
+            player = new Tank(new Vector3(0f, terrain.Height(0f, 0f), 0f), new Vector3(0.1f, 0.1f, 0.1f), MathHelper.PiOver2, 0f, 0f);
+            player.Load(content, Model);
             Tank.DefaultEffect = ObjectEffect;
+            tanks[0] = player;
 
             // proyectiles
             Bullet.LoadContent(content, ObjectEffect);
@@ -162,7 +166,7 @@ namespace TGC.MonoGame.TP.Scenes
         protected override void LoadSceneObjects()
         {
             LoadTerrainObjects(terrainSize, 0.1f, 0.9f);
-            LoadTanks(terrainSize, 0.5f, 0.8f);
+            LoadTanks(terrainSize, 0.2f, 0.3f);// 0.5f, 0.8f);
         }
 
 
@@ -228,10 +232,7 @@ namespace TGC.MonoGame.TP.Scenes
 
         private void LoadTanks(float terrainSize, float minRadius, float maxRadius)
         {
-            Random rnd = new Random();
-            Enemies = new Tank[enemyCount];
-
-            for (int i = 0; i < enemyCount; i++)
+            for (int i = 1; i <= enemyCount; i++)
             {
                 // posición
                 Vector3 pos = GetRandomTerrainPosition(terrainSize, minRadius, maxRadius);
@@ -240,7 +241,7 @@ namespace TGC.MonoGame.TP.Scenes
                 float rot = (float)rnd.NextDouble() * MathHelper.TwoPi;
                 Tank t = new Tank(pos, new Vector3(0.01f, 0.01f, 0.01f), rot, 0f, 0f);
                 t.Load(content, Model);
-                Enemies[i] = t;
+                tanks[i] = t;
             }
         }
 
@@ -268,112 +269,110 @@ namespace TGC.MonoGame.TP.Scenes
             }
 
             // rozamiento
-            if (tank.Propulsion > 0)
+            if (player.Propulsion > 0)
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.Friction, 0, Tank.SpeedLimit);
+                player.Propulsion = MathHelper.Clamp(player.Propulsion - Tank.Friction, 0, Tank.SpeedLimit);
             }
-            else if (tank.Propulsion < 0)
+            else if (player.Propulsion < 0)
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.Friction, Tank.ReverseSpeedLimit, 0);
+                player.Propulsion = MathHelper.Clamp(player.Propulsion + Tank.Friction, Tank.ReverseSpeedLimit, 0);
             }
 
             // disparo
             if (input.IsKeyPressed(Keys.Space) || input.IsLeftButtonPressed())
             {
-                tank.Shoot(Bullets, Bullets.Length);
+                player.Shoot(Bullets, Bullets.Length);
             }
 
             // dirección rotación
             if (input.keyboardState.IsKeyDown(Keys.Right) || input.keyboardState.IsKeyDown(Keys.D))
             {
-                tank.Yaw -= elapsedTime / 5f ;
-                tank.SteerRotation -= elapsedTime;
-                if (tank.Propulsion < Tank.TurningSpeedLimit)
+                player.Yaw -= elapsedTime / 5f ;
+                player.SteerRotation -= elapsedTime;
+                if (player.Propulsion < Tank.TurningSpeedLimit)
                 {
-                    tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.TurningSpeedLimit);
+                    player.Propulsion = MathHelper.Clamp(player.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.TurningSpeedLimit);
                 }
                 else
                 {
-                    tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease * 0.7f, Tank.TurningSpeedLimit, Tank.SpeedLimit);
+                    player.Propulsion = MathHelper.Clamp(player.Propulsion - Tank.SpeedIncrease * 0.7f, Tank.TurningSpeedLimit, Tank.SpeedLimit);
                 }
             }
             else if (input.keyboardState.IsKeyDown(Keys.Left) || input.keyboardState.IsKeyDown(Keys.A))
             {
-                tank.Yaw += elapsedTime / 5f;
-                tank.SteerRotation += elapsedTime;
-                if (tank.Propulsion < Tank.TurningSpeedLimit)
+                player.Yaw += elapsedTime / 5f;
+                player.SteerRotation += elapsedTime;
+                if (player.Propulsion < Tank.TurningSpeedLimit)
                 {
-                    tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.TurningSpeedLimit);
+                    player.Propulsion = MathHelper.Clamp(player.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.TurningSpeedLimit);
                 }
                 else
                 {
-                    tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease * 0.7f, Tank.TurningSpeedLimit, Tank.SpeedLimit);
+                    player.Propulsion = MathHelper.Clamp(player.Propulsion - Tank.SpeedIncrease * 0.7f, Tank.TurningSpeedLimit, Tank.SpeedLimit);
                 }
             }
 
             // avance/retroceso
             if (input.keyboardState.IsKeyDown(Keys.Up) || input.keyboardState.IsKeyDown(Keys.W))
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
+                player.Propulsion = MathHelper.Clamp(player.Propulsion + Tank.SpeedIncrease, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
             }
             else if (input.keyboardState.IsKeyDown(Keys.Down) || input.keyboardState.IsKeyDown(Keys.S))
             {
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
+                player.Propulsion = MathHelper.Clamp(player.Propulsion - Tank.SpeedIncrease, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
             }
 
-            if (tank.Speed > 0f && tank.SteerRotation != 0f)
+            if (player.Speed > 0f && player.SteerRotation != 0f)
             {
-                float sign = tank.SteerRotation > 0 ? 1 : -1;
-                tank.SteerRotation -= (elapsedTime * 0.5f * sign);
+                float sign = player.SteerRotation > 0 ? 1 : -1;
+                player.SteerRotation -= (elapsedTime * 0.5f * sign);
             }
 
             // torreta y cañon
-            tank.TurretRotation += input.mouseDeltaX * elapsedTime * camX;
-            tank.CannonRotation += input.mouseDeltaY * elapsedTime * camY;
+            player.TurretRotation += input.mouseDeltaX * elapsedTime * camX;
+            player.CannonRotation += input.mouseDeltaY * elapsedTime * camY;
 
-            Matrix RotationMatrix = Matrix.CreateRotationY(tank.Yaw);
-            Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(tank.Yaw + tank.TurretRotation, -tank.CannonRotation, 0f);
+            Matrix RotationMatrix = Matrix.CreateRotationY(player.Yaw);
+            Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(player.Yaw + player.TurretRotation, -player.CannonRotation, 0f);
 
-            Vector3 movement = RotationMatrix.Forward * tank.Speed * elapsedTime;
-            tank.WheelRotation += (tank.Speed * elapsedTime / 8f); // TODO revisar esta fórmula
-            tank.Position = tank.Position + movement;
+            Vector3 movement = RotationMatrix.Forward * player.Speed * elapsedTime;
+            player.WheelRotation += (player.Speed * elapsedTime / 8f); // TODO revisar esta fórmula
+            player.Position = player.Position + movement;
 
-            if (tank.Position.X < -invisibleWall || tank.Position.X > invisibleWall || tank.Position.Z < -invisibleWall || tank.Position.Z > invisibleWall)
+            if (player.Position.X < -invisibleWall || player.Position.X > invisibleWall || player.Position.Z < -invisibleWall || player.Position.Z > invisibleWall)
             {
                 // TODO reproducir sonido
-                tank.Position.X = MathHelper.Clamp(tank.Position.X, -invisibleWall, invisibleWall);
-                tank.Position.Z = MathHelper.Clamp(tank.Position.Z, -invisibleWall, invisibleWall);
+                player.Position.X = MathHelper.Clamp(player.Position.X, -invisibleWall, invisibleWall);
+                player.Position.Z = MathHelper.Clamp(player.Position.Z, -invisibleWall, invisibleWall);
             }
-            tank.Position.Y = terrain.Height(tank.Position.X, tank.Position.Z);
+            player.Position.Y = terrain.Height(player.Position.X, player.Position.Z);
 
-            float distanceForward = 3.303362f;
-            float distanceRight = 3.032239f;
-            float clampPitch = elapsedTime / 4;
-            float clampRoll = elapsedTime / 4;
+            float clampPitch = elapsedTime / Tank.pitchLimit;
+            float clampRoll = elapsedTime / Tank.rollLimit;
 
             // pendiente hacia adelante/atrás 
-            Vector3 positionForward = tank.Position + RotationMatrix.Forward * distanceForward;
+            Vector3 positionForward = player.Position + RotationMatrix.Forward * Tank.distanceForward;
             positionForward.Y = terrain.Height(positionForward.X, positionForward.Z);
-            float currentPitch = (tank.Position.Y - positionForward.Y) / (tank.Position - positionForward).Length();
-            float deltaPitch = currentPitch - tank.Pitch;
-            tank.Pitch += MathHelper.Clamp(deltaPitch, -clampPitch, clampPitch);
+            float currentPitch = (player.Position.Y - positionForward.Y) / (player.Position - positionForward).Length();
+            float deltaPitch = currentPitch - player.Pitch;
+            player.Pitch += MathHelper.Clamp(deltaPitch, -clampPitch, clampPitch);
 
             // velocidad en pendiente
-            tank.Downhill = tank.Propulsion * (float)Math.Sin(currentPitch);
+            player.Downhill = player.Propulsion * (float)Math.Sin(currentPitch);
 
             // pendiente hacia los costados
-            Vector3 positionRight = tank.Position + RotationMatrix.Right * distanceRight;
+            Vector3 positionRight = player.Position + RotationMatrix.Right * Tank.distanceRight;
             positionRight.Y = terrain.Height(positionRight.X, positionRight.Z);
-            float currentRoll = (tank.Position.Y - positionRight.Y) / (tank.Position - positionRight).Length();
-            float deltaRoll = currentRoll - tank.Roll;
-            tank.Roll += MathHelper.Clamp(deltaRoll, -clampRoll, clampRoll);
+            float currentRoll = (player.Position.Y - positionRight.Y) / (player.Position - positionRight).Length();
+            float deltaRoll = currentRoll - player.Roll;
+            player.Roll += MathHelper.Clamp(deltaRoll, -clampRoll, clampRoll);
 
 
-            tank.World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(tank.Yaw + MathHelper.Pi, tank.Pitch, tank.Roll) * Matrix.CreateTranslation(tank.Position); // TODO definir escala tanque
-            tank.Update(elapsedTime);
+            player.World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(player.Yaw + MathHelper.Pi, player.Pitch, player.Roll) * Matrix.CreateTranslation(player.Position); // TODO definir escala tanque
+            player.Update(elapsedTime);
 
-            MainCamera.TargetPosition = tank.Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
-            MainCamera.Position = tank.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
+            MainCamera.TargetPosition = player.Position + CameraRotationMatrix.Forward * 40; // TODO revisar posición objetivo 
+            MainCamera.Position = player.Position + CameraRotationMatrix.Backward * 20 + Vector3.UnitY * 12; // TODO revisar posición cámara
             MainCamera.BuildView();
 
             ObjectEffect.Parameters["eyePosition"].SetValue(MainCamera.Position);
@@ -381,45 +380,53 @@ namespace TGC.MonoGame.TP.Scenes
 
             // Update the view projection matrix of the bounding frustum
             Frustum.Matrix = MainCamera.View * MainCamera.Projection;
-
             gizmos.UpdateViewProjection(Camera.View, Camera.Projection);
 
-
-            //// colisiones entre tanque y objetos del escenario
-            foreach (WorldEntity e in StaticObjects)
+            // movimiento tanques enemigos
+            for (int tank = 1; tank < tanks.Length; tank++)
             {
-                if (e.Status != WorldEntityStatus.Destroyed)
+                if (tanks[tank].Status != WorldEntityStatus.Destroyed)
                 {
-                    if (tank.Intersects(e.GetHitBox()))
+                    tanks[tank].AttackPlayer(elapsedTime, player.Position, Bullets, bulletCount, terrain);
+                }
+            }
+
+            // colisiones tanques
+            for (int tank = 0; tank < tanks.Length; tank++)
+            {
+                if (tanks[tank].Status != WorldEntityStatus.Destroyed)
+                {
+                    /// colisiones entre tanques y objetos del escenario
+                    foreach (WorldEntity e in StaticObjects)
                     {
-                        // TODO destruir objeto
-                        e.Status = WorldEntityStatus.Destroyed;
+                        if (e.Status != WorldEntityStatus.Destroyed && tanks[tank].Intersects(e.GetHitBox()))
+                        {
+                            // TODO destruir objeto
+                            e.Status = WorldEntityStatus.Destroyed;
+                        }
+                    }
+                    /// colisiones entre tanques y objetos del escenario
+                    for (int tank2 = 0; tank2 < tanks.Length; tank2++)
+                    {
+                        if (tank != tank2 && tanks[tank2].Status != WorldEntityStatus.Destroyed)
+                        {
+                            // TODO daño
+                        }
+                    }
+                    tanks[tank].Update(elapsedTime);
+                }
+
+                /// colisiones proyectiles
+                foreach (Bullet b in Bullets)
+                {
+                    if (b.Active)
+                    {
+                        b.Update(elapsedTime, terrain, StaticObjects, tanks);
                     }
                 }
+
             }
 
-            // tanques enemigos
-            foreach (Tank t in Enemies)
-            {
-                if (t.Status != WorldEntityStatus.Destroyed)
-                {
-                    if (tank.Intersects(t))
-                    {
-                        // TODO destruir objeto
-                        t.Status = WorldEntityStatus.Destroyed;
-                    }
-                    t.Update(elapsedTime);
-                }
-            }
-
-            // proyectiles
-            foreach (Bullet b in Bullets)
-            {
-                if (b.Active)
-                {
-                    b.Update(elapsedTime, terrain, StaticObjects, Enemies);
-                }
-            }
 
         }
         #endregion
@@ -465,8 +472,8 @@ namespace TGC.MonoGame.TP.Scenes
                 }
             }
             // todavía no integrados en la colección de objetos dinámicos
-            tank.Draw(LightCamera.View, LightCamera.Projection);
-            foreach (Tank t in Enemies)
+            player.Draw(LightCamera.View, LightCamera.Projection);
+            foreach (Tank t in tanks)
             {
                 if (t.Status != WorldEntityStatus.Destroyed)
                 {
@@ -502,7 +509,7 @@ namespace TGC.MonoGame.TP.Scenes
 
 
             ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DrawObject"];
-            tank.Draw(Camera.View, Camera.Projection);
+            player.Draw(Camera.View, Camera.Projection);
 
 
             foreach (WorldEntity e in StaticObjects)
@@ -520,7 +527,7 @@ namespace TGC.MonoGame.TP.Scenes
                 }
             }
 
-            foreach (Tank t in Enemies)
+            foreach (Tank t in tanks)
             {
                 if (t.Status != WorldEntityStatus.Destroyed && t.Intersects(Frustum))
                 {
@@ -570,14 +577,14 @@ namespace TGC.MonoGame.TP.Scenes
                     {
                         b.DrawBoundingBox(gizmos);
                     }
-                    foreach (Tank t in Enemies)
+                    foreach (Tank t in tanks)
                     {
                         if (t.Status != WorldEntityStatus.Destroyed)
                         {
                             t.DrawBoundingBox(gizmos);
                         }
                     }
-                    tank.DrawBoundingBox(gizmos);
+                    player.DrawBoundingBox(gizmos);
                     gizmos.DrawFrustum(MainCamera.View * MainCamera.Projection, Color.White);
                 }
 

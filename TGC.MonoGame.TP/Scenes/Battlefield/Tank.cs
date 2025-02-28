@@ -1,6 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Collisions;
 using TGC.MonoGame.TP.Materials;
 using TGC.MonoGame.TP.Scenes.Entities;
@@ -16,7 +19,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         Vector3[] BoundingVolumeTraslation;
         Vector3[] BoundingVolumeScale;
 
-
+        public const float ShootingDistance = 100f;
         private const float PiOver3 = 1.04720f;
         private const float PiOver6 = 0.52356f;
         private const float PiOver12 = 0.26180f;
@@ -35,6 +38,12 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         private Matrix ShootingPosition;
         private Matrix ShootingDirection;
         public WorldEntityStatus Status;
+
+        public const float distanceForward = 3.303362f;
+        public const float distanceRight = 3.032239f;
+        public const float pitchLimit = 0.25f;
+        public const float rollLimit = 0.25f;
+
 
         public float Speed
         {
@@ -412,6 +421,83 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
                 }
             }
         }
+
+        #region enemy tanks
+        public void AttackPlayer(float elapsedTime, Vector3 target, Bullet[] bullets, int bulletCount, SimpleTerrain terrain)
+        {
+            float distance = Vector3.Distance(this.Position, target);
+            ShootTarget(distance, bullets, bulletCount);
+            //RegulateDistance(distance);
+            RegulateAngle(elapsedTime, target);
+            UpdatePosition(elapsedTime, terrain);
+        }
+        public void RegulateDistance(float distance)
+        {
+            float direction = MathHelper.Clamp(distance - Tank.ShootingDistance, -1f, 1f);
+            this.Propulsion = MathHelper.Clamp(this.Propulsion + Tank.SpeedIncrease * direction, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
+        }
+        public void RegulateAngle(float elapsedTime, Vector3 target)
+        {
+            Vector3 direction = target - this.Position;
+            Vector3 directionNormal = Vector3.Normalize(direction);
+            float targetYaw = (float) Math.Atan2(directionNormal.X, directionNormal.Z) + MathHelper.Pi; // Sumo Pi porque los tanques quedaban al revés
+            this.Yaw = targetYaw;
+            //float deltaYaw = MathHelper.Clamp(this.Yaw - targetYaw, elapsedTime * (-0.2f), elapsedTime * 0.2f);
+            //this.Yaw += deltaYaw;
+        }
+
+        public void UpdatePosition(float elapsedTime, SimpleTerrain terrain)
+        {
+            if (this.Speed > 0f && this.SteerRotation != 0f)
+            {
+                float sign = this.SteerRotation > 0 ? 1 : -1;
+                this.SteerRotation -= (elapsedTime * 0.5f * sign);
+            }
+
+            // torreta y cañon
+            //this.TurretRotation += input.mouseDeltaX * elapsedTime * camX;
+            //this.CannonRotation += input.mouseDeltaY * elapsedTime * camY;
+
+            Matrix RotationMatrix = Matrix.CreateRotationY(this.Yaw);
+            Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(this.Yaw + this.TurretRotation, -this.CannonRotation, 0f);
+
+            Vector3 movement = RotationMatrix.Forward * this.Speed * elapsedTime;
+            this.WheelRotation += (this.Speed * elapsedTime / 8f); // TODO revisar esta fórmula
+            this.Position = this.Position + movement;
+            this.Position.Y = terrain.Height(this.Position.X, this.Position.Z);
+
+            float clampPitch = elapsedTime / Tank.pitchLimit;
+            float clampRoll = elapsedTime / Tank.rollLimit;
+
+            // pendiente hacia adelante/atrás 
+            Vector3 positionForward = this.Position + RotationMatrix.Forward * Tank.distanceForward;
+            positionForward.Y = terrain.Height(positionForward.X, positionForward.Z);
+            float currentPitch = (this.Position.Y - positionForward.Y) / (this.Position - positionForward).Length();
+            float deltaPitch = currentPitch - this.Pitch;
+            this.Pitch += MathHelper.Clamp(deltaPitch, -clampPitch, clampPitch);
+
+            // velocidad en pendiente
+            this.Downhill = this.Propulsion * (float)Math.Sin(currentPitch);
+
+            // pendiente hacia los costados
+            Vector3 positionRight = this.Position + RotationMatrix.Right * Tank.distanceRight;
+            positionRight.Y = terrain.Height(positionRight.X, positionRight.Z);
+            float currentRoll = (this.Position.Y - positionRight.Y) / (this.Position - positionRight).Length();
+            float deltaRoll = currentRoll - this.Roll;
+            this.Roll += MathHelper.Clamp(deltaRoll, -clampRoll, clampRoll);
+            this.World = Matrix.CreateScale(0.01f) * Matrix.CreateFromYawPitchRoll(this.Yaw + MathHelper.Pi, this.Pitch, this.Roll) * Matrix.CreateTranslation(this.Position); // TODO definir escala tanque
+            this.Update(elapsedTime);
+        }
+
+        public void ShootTarget(float distance, Bullet[] bullets, int bulletCount)
+        {
+            if (distance > Tank.ShootingDistance * 0.8f && distance < Tank.ShootingDistance * 1.2f)
+            {
+                Shoot(bullets, bulletCount);
+            }
+        }
+        #endregion
+
 
     }
 }
