@@ -33,7 +33,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         public float Roll = 0f;
         public Matrix World;
 
-        private const float CannonCooldown = 1f;
+        private const float CannonCooldown = 3f;
         private float recharging = 0f;
         private Matrix ShootingPosition;
         private Matrix ShootingDirection;
@@ -452,10 +452,7 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
                 float sign = this.SteerRotation > 0 ? 1 : -1;
                 this.SteerRotation -= (elapsedTime * 0.5f * sign);
             }
-
-            // torreta y cañon
-            //this.TurretRotation += input.mouseDeltaX * elapsedTime * camX;
-            //this.CannonRotation += input.mouseDeltaY * elapsedTime * camY;
+            this.CannonRotation = 0;
 
             Matrix RotationMatrix = Matrix.CreateRotationY(this.Yaw);
             Matrix CameraRotationMatrix = Matrix.CreateFromYawPitchRoll(this.Yaw + this.TurretRotation, -this.CannonRotation, 0f);
