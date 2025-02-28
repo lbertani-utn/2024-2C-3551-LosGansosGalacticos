@@ -286,16 +286,29 @@ namespace TGC.MonoGame.TP.Scenes
             // dirección rotación
             if (input.keyboardState.IsKeyDown(Keys.Right) || input.keyboardState.IsKeyDown(Keys.D))
             {
-                tank.Yaw -= elapsedTime;
+                tank.Yaw -= elapsedTime / 5f ;
                 tank.SteerRotation -= elapsedTime;
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
-
+                if (tank.Propulsion < Tank.TurningSpeedLimit)
+                {
+                    tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.TurningSpeedLimit);
+                }
+                else
+                {
+                    tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease * 0.7f, Tank.TurningSpeedLimit, Tank.SpeedLimit);
+                }
             }
             else if (input.keyboardState.IsKeyDown(Keys.Left) || input.keyboardState.IsKeyDown(Keys.A))
             {
-                tank.Yaw += elapsedTime;
+                tank.Yaw += elapsedTime / 5f;
                 tank.SteerRotation += elapsedTime;
-                tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.SpeedLimit);
+                if (tank.Propulsion < Tank.TurningSpeedLimit)
+                {
+                    tank.Propulsion = MathHelper.Clamp(tank.Propulsion + Tank.SpeedIncrease * 0.5f, Tank.ReverseSpeedLimit, Tank.TurningSpeedLimit);
+                }
+                else
+                {
+                    tank.Propulsion = MathHelper.Clamp(tank.Propulsion - Tank.SpeedIncrease * 0.7f, Tank.TurningSpeedLimit, Tank.SpeedLimit);
+                }
             }
 
             // avance/retroceso
