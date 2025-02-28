@@ -139,6 +139,10 @@ namespace TGC.MonoGame.TP.Scenes
             LoadGizmos();
             LoadSceneObjects();
         }
+        protected override void LoadInitialState()
+        {
+        }
+
         public override void LoadSceneParameters()
         {
             ObjectEffect.Parameters["LightViewProjection"].SetValue(LightCamera.View * LightCamera.Projection);
@@ -257,9 +261,7 @@ namespace TGC.MonoGame.TP.Scenes
         #region Update
         public override void Update(float elapsedTime, UserInput input)
         {
-            changeScene = false;
-
-            if (input.IsKeyPressed(Keys.Z))
+            if (input.Escape || input.IsKeyPressed(Keys.Z))
             {
                 changeScene = true;
             }

@@ -46,14 +46,17 @@ namespace TGC.MonoGame.TP.Scenes
         // audio
         public Song BackgroundMusic;
 
+        // control de escenas
         public bool ExitGame { get => exitGame; }
         protected bool exitGame = false;
-
-        public bool ChangeScene { get => changeScene; }
-        protected bool changeScene = false;
-
         public Scene NextScene { get => nextScene; }
         protected Scene nextScene;
+        public bool ChangeScene { get => changeScene; }
+        protected bool changeScene = false;
+        public bool RestartScene { get => restartScene; }
+        protected bool restartScene = false;
+        public bool ChangeRestartScene { get => changeRestartScene; }
+        protected bool changeRestartScene = false;
 
         public Scene(GraphicsDeviceManager graphics, ContentManager content, GameOptions options)
         {
@@ -76,6 +79,7 @@ namespace TGC.MonoGame.TP.Scenes
         public abstract void LoadSceneParameters();
         protected abstract void LoadSceneObjects();
 
+        protected abstract void LoadInitialState();
         protected void PlaySceneMusic()
         {
             if (options.Music)
@@ -98,6 +102,27 @@ namespace TGC.MonoGame.TP.Scenes
             }
         }
 
+        public void StartScene()
+        {
+            ClearFlags();
+            LoadInitialState();
+            LoadSceneParameters();
+            PlaySceneMusic();
+        }
+        public void ContinueScene()
+        {
+            ClearFlags();
+            LoadSceneParameters();
+            PlaySceneMusic();
+        }
+
+        private void ClearFlags()
+        {
+            exitGame = false;
+            changeScene = false;
+            restartScene = false;
+            changeRestartScene = false;
+        }
 
         public abstract void Update(float elapsedTime, UserInput input);
         public abstract void Draw(CameraType selectedCamera, bool debugBoundingBoxes, bool debugPositions, bool debugShadowMap);

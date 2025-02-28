@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using TGC.MonoGame.TP.Cameras;
 
-namespace TGC.MonoGame.TP.Scenes
+namespace TGC.MonoGame.TP.UI
 {
     class UserInput
     {

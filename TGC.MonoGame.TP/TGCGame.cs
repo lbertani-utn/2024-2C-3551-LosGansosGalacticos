@@ -87,7 +87,7 @@ namespace TGC.MonoGame.TP
 
             HQScene.LoadContent();
             BattleScene.LoadContent();
-            currentScene.LoadSceneParameters();
+            currentScene.StartScene();
 
             input.Update();
 

@@ -12,6 +12,7 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="UI\HUD.cs" />
     <Compile Remove="UI\UIManager.cs" />
   </ItemGroup>
   <ItemGroup>

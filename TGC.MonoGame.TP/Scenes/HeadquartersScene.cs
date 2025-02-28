@@ -104,6 +104,13 @@ namespace TGC.MonoGame.TP.Scenes
             LoadSceneObjects();
         }
 
+        protected override void LoadInitialState()
+        {
+            menuType = MenuType.Main;
+            returnTo = MenuType.Main;
+            mainCameraInitialPosition = new Vector3(-2.50f, 1.20f, -1.95f);
+        }
+
         public override void LoadSceneParameters()
         {
             ObjectEffect.Parameters["LightViewProjection"].SetValue(LightCamera.View * LightCamera.Projection);
@@ -266,11 +273,12 @@ namespace TGC.MonoGame.TP.Scenes
 
                 if (option == Message.Play || option == Message.Restart)
                 {
-
+                    changeRestartScene = true;
+                    menuType = MenuType.Pause;
                 }
                 if (option == Message.Resume)
                 {
-
+                    changeScene = true;
                 }
                 if (option == Message.Options)
                 {
@@ -287,7 +295,6 @@ namespace TGC.MonoGame.TP.Scenes
                 {
                     exitGame = true;
                 }
-
             }
 
             MainCamera.Position = mainCameraPosition;
