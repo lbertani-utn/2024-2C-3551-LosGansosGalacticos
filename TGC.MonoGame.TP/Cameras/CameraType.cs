@@ -2,8 +2,8 @@
 {
     public enum CameraType
     {
-        Follow,
-        Aerial,
+        Main,
+        Debug,
         Light
     }
 }

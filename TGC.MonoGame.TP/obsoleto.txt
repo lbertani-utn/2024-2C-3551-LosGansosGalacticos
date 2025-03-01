@@ -1,0 +1,57 @@
+TGCGame
+
+
+//hq scene
+StaticObjects.Add(new Box(new Vector3(4.20f, 0.5f, 3.20f), new Vector3(1f, 1f, 1f), 0f));
+StaticObjects.Add(new Box(new Vector3(4.20f, 0.5f, 2.20f), new Vector3(1f, 1f, 1f), 0f));
+
+
+// User input
+
+public bool DrawGizmos { get { return DrawBoundingBoxes || DrawPositions; } }
+
+
+
+
+// iluminación
+
+private Vector3 DiffuseColor;
+private Vector3 SpecularColor;
+
+
+// draw menu
+
+private void DrawMainMenu(SpriteBatch spriteBatch, SpriteFont spriteFont, int selected)
+{
+    for (int opt = 0; opt < mainMenu.Length; opt++)
+    {
+        Color color = opt != selected ? Color.White : Color.Yellow;
+        TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, mainMenu[opt], TextHelper.MenuPosition(graphics.GraphicsDevice, spriteFont, mainMenu[opt], MenuScale, opt), color, MenuScale);
+    }
+}
+private void DrawPauseMenu(SpriteBatch spriteBatch, SpriteFont spriteFont, int selected)
+{
+    for (int opt = 0; opt < pauseMenu.Length; opt++)
+    {
+        Color color = opt != selected ? Color.White : Color.Yellow;
+        TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, pauseMenu[opt], TextHelper.MenuPosition(graphics.GraphicsDevice, spriteFont, pauseMenu[opt], MenuScale, opt), color, MenuScale);
+    }
+}
+private void DrawOptionsMenu(SpriteBatch spriteBatch, SpriteFont spriteFont, int selected)
+{
+    for (int opt = 0; opt < optionsMenu.Length; opt++)
+    {
+        Color color = opt != selected ? Color.White : Color.Yellow;
+        TextHelper.DrawStringWithShadow(spriteBatch, spriteFont, optionsMenu[opt], TextHelper.MenuPosition(graphics.GraphicsDevice, spriteFont, optionsMenu[opt], MenuScale, opt), color, MenuScale);
+    }
+}
+
+
+string[] mainMenu;
+string[] pauseMenu;
+string[] optionsMenu;
+mainMenu = new string[] { Message.Play, Message.Options, Message.Exit };
+pauseMenu = new string[] { Message.Resume, Message.Restart, Message.Options, Message.Exit };
+optionsMenu = new string[] { Message.Volume, Message.Sound, Message.Music, Message.GodMode, Message.Volver };
+
+
