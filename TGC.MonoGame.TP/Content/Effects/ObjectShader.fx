@@ -29,6 +29,9 @@ float3 lightPosition;
 float3 eyePosition; // Camera position
 float2 Tiling;
 
+float3 hitPosition;
+float hitRadius;
+
 texture ModelTexture;
 sampler2D textureSampler = sampler_state
 {
@@ -143,6 +146,26 @@ ShadowedVertexShaderOutput MainVS(in ShadowedVertexShaderInput input)
     return output;
 }
 
+ShadowedVertexShaderOutput TankVS(in ShadowedVertexShaderInput input)
+{
+    ShadowedVertexShaderOutput output;
+    output.Position = mul(input.Position, WorldViewProjection);
+    output.TextureCoordinates = input.TextureCoordinates * Tiling;
+    output.WorldSpacePosition = mul(input.Position, World);
+    
+    float distanceToHitPosition = distance(output.WorldSpacePosition.xyz, hitPosition);
+    if (distanceToHitPosition < hitRadius)
+    {
+        float3 direction = normalize(distanceToHitPosition - output.WorldSpacePosition.xyz);
+        float displacement = hitRadius - distanceToHitPosition;
+        output.WorldSpacePosition.xyz += (direction * displacement);
+    }
+    
+    output.LightSpacePosition = mul(output.WorldSpacePosition, LightViewProjection);
+    output.Normal = mul(float4(input.Normal, 1), InverseTransposeWorld);
+    return output;
+}
+
 float4 DrawNormalMapPS(ShadowedVertexShaderOutput input) : COLOR
 {
     // Base vectors
@@ -244,6 +267,15 @@ technique DrawObject
     pass Pass0
     {
         VertexShader = compile VS_SHADERMODEL MainVS();
+        PixelShader = compile PS_SHADERMODEL DrawObjectPS();
+    }
+};
+
+technique DrawTank
+{
+    pass Pass0
+    {
+        VertexShader = compile VS_SHADERMODEL TankVS();
         PixelShader = compile PS_SHADERMODEL DrawObjectPS();
     }
 };

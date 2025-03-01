@@ -106,8 +106,8 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             float? intersect = tanks[0].Intersects(_movementRay);
             if (intersect != null && intersect.Value < distance)
             {
-                // TODO daño
-                tanks[0].UpdateHullIntegrity();
+                Vector3 hitPosition = _lastPosition + Vector3.Normalize(move) * intersect.Value;
+                tanks[0].UpdateHullIntegrity(hitPosition);
                 hit.Play();
                 Active = false;
                 return;
@@ -122,8 +122,8 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
                     intersect = tanks[tank].Intersects(_movementRay);
                     if (intersect != null && intersect.Value < distance)
                     {
-                        // TODO daño
-                        tanks[tank].UpdateHullIntegrity();
+                        Vector3 hitPosition = _lastPosition + Vector3.Normalize(move) * intersect.Value;
+                        tanks[tank].UpdateHullIntegrity(hitPosition);
                         Active = false;
                         return;
                     }

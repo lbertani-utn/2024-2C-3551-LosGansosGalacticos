@@ -12,6 +12,11 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="ParticleSystem\**" />
+    <EmbeddedResource Remove="ParticleSystem\**" />
+    <None Remove="ParticleSystem\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="UI\HUD.cs" />
     <Compile Remove="UI\UIManager.cs" />
   </ItemGroup>

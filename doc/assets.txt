@@ -39,4 +39,7 @@ https://www.youtube.com/watch?v=6KXHutffY3s
 
 
 
+How to make a Particle System using MonoGame
+https://www.youtube.com/watch?v=-4_kj_gyWRY
+https://github.com/LubiiiCZ/DevQuickie/tree/master/Quickie003-ParticleSystem
 

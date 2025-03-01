@@ -45,6 +45,8 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
         public const float rollLimit = 0.25f;
 
         public float HullIntegrity { get; set; }
+        public Vector3 Damage { get; set; }
+
         public float Speed
         {
             get => Propulsion + Downhill;
@@ -125,6 +127,8 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             this.Roll = roll;
             this.World = Matrix.CreateScale(scale) * Matrix.CreateFromYawPitchRoll(yaw, pitch, roll) * Matrix.CreateTranslation(position);
             this.Status = WorldEntityStatus.Intact;
+            this.HullIntegrity = 1f;
+            this.Damage = Vector3.One * 1000;
         }
 
         public void LoadBoundingVolumes()
@@ -310,6 +314,8 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
                 DefaultEffect.Parameters["KSpecular"].SetValue(Materials[i].KSpecular);
                 DefaultEffect.Parameters["shininess"].SetValue(Materials[i].Shininess);
                 DefaultEffect.Parameters["Tiling"].SetValue(Vector2.One);
+                DefaultEffect.Parameters["hitPosition"].SetValue(Damage);
+                DefaultEffect.Parameters["hitRadius"].SetValue(2.0f);
                 tankModel.Meshes[i].Draw();
             }
         }
@@ -493,15 +499,15 @@ namespace TGC.MonoGame.TP.Scenes.Battlefield
             }
         }
 
-        public void UpdateHullIntegrity()
+        public void UpdateHullIntegrity(Vector3 hitPosition)
         {
-            HullIntegrity -=0;
+            Damage = hitPosition - this.Position;
+
+            HullIntegrity -=0.35f;
             if (HullIntegrity <= 0)
             {
                 Status = WorldEntityStatus.Destroyed;
             }
-
-
         }
         #endregion
 

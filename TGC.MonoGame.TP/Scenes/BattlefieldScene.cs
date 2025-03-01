@@ -11,6 +11,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using TGC.MonoGame.TP.Cameras;
 using TGC.MonoGame.TP.Geometries;
+//using TGC.MonoGame.TP.ParticleSystem;
 using TGC.MonoGame.TP.Scenes.Battlefield;
 using TGC.MonoGame.TP.Scenes.Entities;
 using TGC.MonoGame.TP.UI;
@@ -51,6 +52,9 @@ namespace TGC.MonoGame.TP.Scenes
         private SoundEffect rechargeSound;
         private SoundEffect hitSound;
 
+        // particle system
+        //private GameManager particleGameManager;
+        private Texture particleTexture;
 
         public BattlefieldScene(GraphicsDeviceManager graphics, ContentManager content, GameOptions options) : base(graphics, content, options)
         {
@@ -155,6 +159,9 @@ namespace TGC.MonoGame.TP.Scenes
             rechargeSound = content.Load<SoundEffect>(ContentFolder.Sounds + "gun reload");
             shotSound = content.Load<SoundEffect>(ContentFolder.Sounds + "cannon shot");
 
+
+            particleTexture = content.Load<Texture>(ContentFolder.Textures + "particle");
+
             LoadGizmos();
             LoadSceneObjects();
         }
@@ -177,6 +184,8 @@ namespace TGC.MonoGame.TP.Scenes
             ObjectEffect.Parameters["shininess"].SetValue(16.0f);
             ObjectEffect.Parameters["eyePosition"].SetValue(MainCamera.Position);
             ObjectEffect.Parameters["Tiling"].SetValue(Vector2.One);
+            ObjectEffect.Parameters["hitPosition"].SetValue(Vector2.One * 1000);
+            ObjectEffect.Parameters["hitRadius"].SetValue(1.5f);
         }
 
         protected override void LoadSceneObjects()
@@ -432,11 +441,14 @@ namespace TGC.MonoGame.TP.Scenes
                     /// colisiones entre tanques
                     for (int tank2 = 0; tank2 < tanks.Length; tank2++)
                     {
-                        if (tank != tank2 && tanks[tank2].Status != WorldEntityStatus.Destroyed)
+                        if (tank != tank2 && tanks[tank2].Status != WorldEntityStatus.Destroyed && tanks[tank2].Intersects(tanks[tank]))
                         {
-                            // TODO daño
-                            tanks[tank].UpdateHullIntegrity();
-                            tanks[tank2].UpdateHullIntegrity();
+                            // la posición del choque está en medio de ambos tanques
+                            Vector3 crash = (tanks[tank].Position + tanks[tank2].Position) / 2;
+                            tanks[tank].UpdateHullIntegrity(crash);
+                            tanks[tank2].UpdateHullIntegrity(crash);
+
+                            // si uno de los que choca es el jugador, reproduzco sonido
                             if (tank == 0 || tank2 == 0)
                             {
                                 hitSound.Play();
@@ -465,7 +477,7 @@ namespace TGC.MonoGame.TP.Scenes
             SelectCamera(selectedCamera);
 
             shadowMapTime += elapsedTime;
-            if (shadowMapTime > 1f)
+            if (shadowMapTime > 0.5f)
             {
                 #region Pass 1
                 shadowMapTime = 0;
@@ -503,7 +515,6 @@ namespace TGC.MonoGame.TP.Scenes
                     }
                 }
                 // todavía no integrados en la colección de objetos dinámicos
-                player.Draw(LightCamera.View, LightCamera.Projection);
                 foreach (Tank t in tanks)
                 {
                     if (t.Status != WorldEntityStatus.Destroyed)
@@ -542,9 +553,6 @@ namespace TGC.MonoGame.TP.Scenes
 
 
             ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DrawObject"];
-            player.Draw(Camera.View, Camera.Projection);
-
-
             foreach (WorldEntity e in StaticObjects)
             {
                 if (e.Status != WorldEntityStatus.Destroyed && Frustum.Intersects(e.GetDrawBox()))
@@ -559,19 +567,22 @@ namespace TGC.MonoGame.TP.Scenes
                     e.DrawShadowed(Camera.View, Camera.Projection, ObjectEffect);
                 }
             }
-
-            foreach (Tank t in tanks)
-            {
-                if (t.Status != WorldEntityStatus.Destroyed && t.Intersects(Frustum))
-                {
-                    t.Draw(Camera.View, Camera.Projection);
-                }
-            }
             foreach (Bullet b in Bullets)
             {
                 if (b.Active)
                 {
                     b.Draw(Camera.View, Camera.Projection, ObjectEffect);
+                }
+            }
+
+            // técnica con vertex shader para deformar tanques 
+            //ObjectEffect.CurrentTechnique = ObjectEffect.Techniques["DrawTank"];
+            tanks[0].Draw(Camera.View, Camera.Projection);
+            for (int t = 1; t < tanks.Length; t++)
+            {
+                if (tanks[t].Intersects(Frustum))
+                {
+                    tanks[t].Draw(Camera.View, Camera.Projection);
                 }
             }
             #endregion
